@@ -19,6 +19,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_call.out; then
   echo "FAIL: verify valid_call"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
+if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
+  echo "FAIL: verify valid_ptr_type"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -35,7 +40,7 @@ if [ "$(head -c 4 /tmp/l0_test.img)" != "L0IM" ]; then
 fi
 in_size=$(wc -c < "$ROOT/tests/valid_min.l0")
 img_size=$(wc -c < /tmp/l0_test.img)
-expected_size=$((80 + in_size))
+expected_size=$((80 + in_size + 32))
 if [ "$img_size" -ne "$expected_size" ]; then
   echo "FAIL: build image size mismatch"
   exit 1
@@ -44,8 +49,18 @@ version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_test.img | tr -d ' ')
 hdr_size=$(od -An -t u8 -j 16 -N 8 /tmp/l0_test.img | tr -d ' ')
 src_off=$(od -An -t u8 -j 32 -N 8 /tmp/l0_test.img | tr -d ' ')
 src_size=$(od -An -t u8 -j 40 -N 8 /tmp/l0_test.img | tr -d ' ')
+dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
+dbg_size=$(od -An -t u8 -j 72 -N 8 /tmp/l0_test.img | tr -d ' ')
 if [ "$version" != "1" ] || [ "$hdr_size" != "80" ] || [ "$src_off" != "80" ] || [ "$src_size" != "$in_size" ]; then
   echo "FAIL: build header fields"
+  exit 1
+fi
+if [ "$dbg_off" != "$((80 + in_size))" ] || [ "$dbg_size" != "32" ]; then
+  echo "FAIL: build debug header fields"
+  exit 1
+fi
+if [ "$(od -An -t x1 -j "$dbg_off" -N 4 /tmp/l0_test.img | tr -d ' \n')" != "4c304958" ]; then
+  echo "FAIL: build debug index magic"
   exit 1
 fi
 "$BIN" imgcheck /tmp/l0_test.img >/tmp/l0_imgcheck.out
@@ -185,6 +200,10 @@ if "$BIN" verify "$ROOT/tests/invalid_types_noncontiguous_id.l0" >/tmp/l0_bad27.
 fi
 if "$BIN" verify "$ROOT/tests/invalid_types_bad_token.l0" >/tmp/l0_bad27b.out 2>/tmp/l0_bad27b.err; then
   echo "FAIL: invalid_types_bad_token unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_bad_pointer_space.l0" >/tmp/l0_bad27c.out 2>/tmp/l0_bad27c.err; then
+  echo "FAIL: invalid_types_bad_pointer_space unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_fn_type_unknown.l0" >/tmp/l0_bad28.out 2>/tmp/l0_bad28.err; then

@@ -28,6 +28,7 @@ Bootstrap type-table requirement currently enforced:
 - bootstrap type RHS token set is currently restricted to:
   - `i1`, `i8`, `i16`, `i32`, `i64`
   - `u8`, `u16`, `u32`, `u64`
+  - `p0<i8>`
 
 Example skeleton:
 
@@ -146,6 +147,12 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - flags `0` (reserved for future use)
 - source section bounds/size consistency
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
+
+Bootstrap build output currently also includes a compact debug semantic index section:
+- magic `L0IX`
+- version `1`
+- function count
+- type count
 
 ## Planned language expansion (next milestones)
 

@@ -11,7 +11,7 @@ I am keeping this repository native-only during bootstrap:
 
 Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
-- I can run `l0c build` to produce deterministic `.l0img` header + payload output.
+- I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, and a bootstrap debug index section.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
 - I enforce canonical entry block (`b0`) per function.
@@ -29,7 +29,7 @@ Current bootstrap status:
 - I enforce type compatibility for bootstrap `arg`, `ret vN`, and binary `vN vN` operations.
 - I enforce that `cbr` condition values are typed as `i1`.
 - I parse `types` in bootstrap form and enforce contiguous canonical type IDs (`t0`, `t1`, `t2`, ...).
-- I restrict bootstrap `types` RHS tokens to the current primitive set (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`).
+- I restrict bootstrap `types` RHS tokens to the current primitive set (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `p0<i8>`).
 - I enforce that every referenced `tN` in function signatures and value result suffixes exists.
 - I use syscall-only file loading.
 - I validate strict module section order.
