@@ -113,10 +113,14 @@ code_stub_shl: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe0,0xc3
 code_stub_shl_len = . - code_stub_shl
 code_stub_shr: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe8,0xc3
 code_stub_shr_len = . - code_stub_shr
+code_stub_icmp_eq: .byte 0x31,0xc0,0x48,0x39,0xf7,0x0f,0x94,0xc0,0xc3
+code_stub_icmp_eq_len = . - code_stub_icmp_eq
 pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
 pat_bin_prefix_len = . - pat_bin_prefix
 pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
 pat_bin_suffix_len = . - pat_bin_suffix
+pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
+pat_icmp_eq_len = . - pat_icmp_eq
 pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
 pat_const_prefix_len = . - pat_const_prefix
 pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
@@ -274,10 +278,23 @@ do_build:
 
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
+    # - canonical icmp.eq kernel lowering
     # - canonical const-return kernel lowering
     # - otherwise 1-byte ret stub fallback
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_icmp_eq]
+    mov rcx, pat_icmp_eq_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_bin_kernel
+    lea r14, [rip+code_stub_icmp_eq]
+    mov r15, code_stub_icmp_eq_len
+    jmp .build_code_selected
+
+.build_try_bin_kernel:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_bin_kernel_code
@@ -2050,22 +2067,22 @@ validate_value_uses_defined:
     mov r10, r15
     sub r10, r14                 # opcode length
     cmp r10, 5
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
     mov al, byte ptr [r12+r14]
     cmp al, 'c'
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
     mov al, byte ptr [r12+r14+1]
     cmp al, 'o'
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
     mov al, byte ptr [r12+r14+2]
     cmp al, 'n'
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
     mov al, byte ptr [r12+r14+3]
     cmp al, 's'
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
     mov al, byte ptr [r12+r14+4]
     cmp al, 't'
-    jne .vvud_detect_binary
+    jne .vvud_detect_icmp
 
     mov rcx, r8
     cmp rcx, r11
@@ -2092,6 +2109,144 @@ validate_value_uses_defined:
     cmp r9, rcx
     je .vvud_bad
     jmp .vvud_ok
+
+.vvud_detect_icmp:
+    # icmp.eq def-use/type checks:
+    # - result type suffix is i1
+    # - args are exactly "vN vN"
+    # - both operands are defined
+    # - operand types match each other
+    mov r10, r15
+    sub r10, r14                 # opcode length
+    cmp r10, 7
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14]
+    cmp al, 'i'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'c'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'm'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+3]
+    cmp al, 'p'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+4]
+    cmp al, '.'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'e'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'q'
+    jne .vvud_detect_binary
+
+    push r8
+    push r11
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_result_type_id
+    cmp rax, 0
+    jl .vvud_icmp_type_bad
+    mov r15, rax
+    cmp r15, 4096
+    jae .vvud_icmp_type_bad
+    mov r9, r15
+    shl r9, 3
+    lea r10, [rip+vfp_type_is_i1_map]
+    add r10, r9
+    cmp qword ptr [r10], 1
+    jne .vvud_icmp_type_bad
+    pop r11
+    pop r8
+
+    mov rcx, r8
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    xor rbx, rbx
+    mov r9, r8
+.vvud_icmp_v1_conv:
+    cmp r9, rcx
+    jae .vvud_icmp_v1_check
+    mov al, byte ptr [r12+r9]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r10, al
+    add rbx, r10
+    inc r9
+    jmp .vvud_icmp_v1_conv
+.vvud_icmp_v1_check:
+    push rcx
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    je .vvud_icmp_v1_seen
+    pop rcx
+    jmp .vvud_bad
+.vvud_icmp_v1_seen:
+    pop rcx
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r15, qword ptr [r9]      # operand 1 type
+
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r11
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    cmp rcx, r11
+    jne .vvud_bad
+    xor rbx, rbx
+.vvud_icmp_v2_conv:
+    cmp r8, rcx
+    jae .vvud_icmp_v2_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vvud_icmp_v2_conv
+.vvud_icmp_v2_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vvud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r11, qword ptr [r9]
+    cmp r11, r15
+    jne .vvud_bad
+    jmp .vvud_ok
+
+.vvud_icmp_type_bad:
+    pop r11
+    pop r8
+    jmp .vvud_bad
 
 .vvud_detect_binary:
 
@@ -3191,19 +3346,19 @@ line_is_value_instruction:
 .lvi_check_call:
     # "call" => args must be "fN" or "fN vA vB ..."
     cmp r10, 4
-    jne .lvi_check_binary
+    jne .lvi_check_icmp
     mov al, byte ptr [rdi+r12]
     cmp al, 'c'
-    jne .lvi_check_binary
+    jne .lvi_check_icmp
     mov al, byte ptr [rdi+r12+1]
     cmp al, 'a'
-    jne .lvi_check_binary
+    jne .lvi_check_icmp
     mov al, byte ptr [rdi+r12+2]
     cmp al, 'l'
-    jne .lvi_check_binary
+    jne .lvi_check_icmp
     mov al, byte ptr [rdi+r12+3]
     cmp al, 'l'
-    jne .lvi_check_binary
+    jne .lvi_check_icmp
 
     mov rcx, r14
     cmp rcx, r15
@@ -3235,6 +3390,70 @@ line_is_value_instruction:
     cmp rcx, r15
     je .lvi_yes
     jmp .lvi_call_arg_loop
+
+.lvi_check_icmp:
+    # icmp.eq args must be "vN vN" and result type suffix must be i1
+    cmp r10, 7
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'i'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'c'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'm'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, 'p'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, '.'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'e'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'q'
+    jne .lvi_check_binary
+
+    cmp r8, 4096
+    jae .lvi_no
+    mov r11, r8
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_i1_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    jne .lvi_no
+
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    jne .lvi_no
+    jmp .lvi_yes
 
 .lvi_check_binary:
     # binary op set:
@@ -3527,10 +3746,9 @@ parse_value_result_type_id:
 .pvti_conv:
     cmp r8, r11
     jae .pvti_ok
-    mov al, byte ptr [rdi+r8]
-    sub al, '0'
+    movzx rdx, byte ptr [rdi+r8]
+    sub rdx, '0'
     imul rax, rax, 10
-    movzx rdx, al
     add rax, rdx
     inc r8
     jmp .pvti_conv

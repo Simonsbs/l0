@@ -113,6 +113,7 @@ Current bootstrap opcode-aware checks:
 - `call` target `fN` must reference a declared function in the module
 - `call` result type suffix must match the declared return type of target `fN`
 - `call` argument count must match the declared arity of target `fN`
+- `icmp.eq` requires `vN vN` operands, an `i1` result type suffix, and matching operand value types
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 
@@ -163,6 +164,7 @@ Bootstrap build output currently also includes a compact debug semantic index se
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
     - `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+    - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`

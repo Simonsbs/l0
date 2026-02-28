@@ -14,6 +14,7 @@ Current bootstrap status:
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`)
+  - two-arg compare kernel (`icmp.eq`) returning `i1`
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.

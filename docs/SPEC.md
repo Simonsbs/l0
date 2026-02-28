@@ -55,6 +55,8 @@ I also enforce a structural subset inside `fns`:
   - `call` target `fN` must exist in the module function table
   - `call` result type suffix must match callee return type
   - `call` argument count must match callee function signature arity
+  - `icmp.eq` requires `vN vN` operands and an `i1` result type suffix
+  - `icmp.eq` requires both operand value types to match
   - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
   - binary ops require operand value types to match the explicit result type suffix
 - SSA bootstrap check:
@@ -87,6 +89,7 @@ I also enforce a structural subset inside `fns`:
     - `v2 = <op> v0 v1 : t0`
     - `ret v2`
   - I currently lower these ops: `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+  - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

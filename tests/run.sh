@@ -69,6 +69,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_shr.out; then
   echo "FAIL: verify valid_shr"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_icmp_eq.l0" >/tmp/l0_ok_icmp_eq.out
+if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq.out; then
+  echo "FAIL: verify valid_icmp_eq"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -216,6 +221,21 @@ fi
 "$BIN" run /tmp/l0_test_shr.img 48 4 >/tmp/l0_run_shr.out
 if [ "$(tr -d '\n' < /tmp/l0_run_shr.out)" != "3" ]; then
   echo "FAIL: run shr image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_icmp_eq.l0" /tmp/l0_test_icmp_eq.img >/tmp/l0_build_icmp_eq.out
+if ! grep -q '^ok$' /tmp/l0_build_icmp_eq.out; then
+  echo "FAIL: build valid_icmp_eq"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq.img 9 9 >/tmp/l0_run_icmp_eq_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_t.out)" != "1" ]; then
+  echo "FAIL: run icmp.eq true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq.img 9 8 >/tmp/l0_run_icmp_eq_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_f.out)" != "0" ]; then
+  echo "FAIL: run icmp.eq false result"
   exit 1
 fi
 
@@ -411,6 +431,14 @@ if "$BIN" verify "$ROOT/tests/invalid_call_return_type_mismatch.l0" >/tmp/l0_bad
 fi
 if "$BIN" verify "$ROOT/tests/invalid_const_bad_operand.l0" >/tmp/l0_bad35.out 2>/tmp/l0_bad35.err; then
   echo "FAIL: invalid_const_bad_operand unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_icmp_result_not_i1.l0" >/tmp/l0_bad36.out 2>/tmp/l0_bad36.err; then
+  echo "FAIL: invalid_icmp_result_not_i1 unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_icmp_operand_type_mismatch.l0" >/tmp/l0_bad37.out 2>/tmp/l0_bad37.err; then
+  echo "FAIL: invalid_icmp_operand_type_mismatch unexpectedly passed"
   exit 1
 fi
 
