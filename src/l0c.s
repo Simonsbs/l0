@@ -656,6 +656,8 @@ verify_fns_payload:
     jne .vfp_bad
     cmp r10, 1                 # instruction must be inside a block
     jne .vfp_bad
+    cmp r11, 1                 # no instructions allowed after a terminator
+    je .vfp_bad
     mov rdi, r12
     mov rsi, r13
     call line_is_terminator

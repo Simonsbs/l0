@@ -21,6 +21,7 @@ Current verifier also enforces a structural subset inside `fns`:
 - block labels must be `bN:`
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
+- no instruction may appear after a terminator within the same block
 - accepted terminators in bootstrap verifier: `ret`, `ret vN`, `br bN`, `cbr vN bN bN`
 
 ## Current build artifact subset

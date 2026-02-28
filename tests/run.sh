@@ -72,5 +72,9 @@ if "$BIN" verify "$ROOT/tests/invalid_instr_before_block.l0" >/tmp/l0_bad3.out 2
   echo "FAIL: invalid_instr_before_block unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_instr_after_terminator.l0" >/tmp/l0_bad4.out 2>/tmp/l0_bad4.err; then
+  echo "FAIL: invalid_instr_after_terminator unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
