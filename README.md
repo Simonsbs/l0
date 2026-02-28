@@ -13,6 +13,7 @@ Initial bootstrap is in place:
 - `l0c` CLI skeleton (`canon`, `verify`)
 - `l0c build` producing deterministic `.l0img` container header + payload
 - `verify` now enforces function/block structural rules in `fns`
+- verifier enforces canonical entry block (`b0`) per function
 - file loader (syscalls only)
 - strict module-shape validator for fixed section order
 - canonical mode echoes validated canonical source

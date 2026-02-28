@@ -647,10 +647,20 @@ verify_fns_payload:
     cmp rax, 1
     jne .vfp_try_instr
     cmp qword ptr [rip+vfp_block_seen], 0
-    je .vfp_first_block
+    je .vfp_first_block_check
     cmp qword ptr [rip+vfp_term_seen], 1
     jne .vfp_bad
-.vfp_first_block:
+    jmp .vfp_set_block
+
+.vfp_first_block_check:
+    # canonical entry block must be b0
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_entry_block
+    cmp rax, 1
+    jne .vfp_bad
+
+.vfp_set_block:
     mov qword ptr [rip+vfp_block_seen], 1
     mov qword ptr [rip+vfp_term_seen], 0
     jmp .vfp_next_line
@@ -823,6 +833,25 @@ line_is_block_label:
     mov rax, 1
     ret
 .lbl_no:
+    xor rax, rax
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if exactly "b0:"
+line_is_entry_block:
+    cmp rsi, 3
+    jne .leb_no
+    mov al, byte ptr [rdi]
+    cmp al, 'b'
+    jne .leb_no
+    mov al, byte ptr [rdi+1]
+    cmp al, '0'
+    jne .leb_no
+    mov al, byte ptr [rdi+2]
+    cmp al, ':'
+    jne .leb_no
+    mov rax, 1
+    ret
+.leb_no:
     xor rax, rax
     ret
 

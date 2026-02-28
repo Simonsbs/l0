@@ -22,6 +22,7 @@ Current verifier also enforces a structural subset inside `fns`:
 - function headers must match canonical `fn fN (arg_types)->tN {` shape
 - argument type list must be empty or comma-separated `tN` entries
 - block labels must be `bN:`
+- first block in every function must be `b0:`
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
 - no instruction may appear after a terminator within the same block

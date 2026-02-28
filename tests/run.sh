@@ -98,5 +98,9 @@ if "$BIN" verify "$ROOT/tests/invalid_value_bad_opcode_token.l0" >/tmp/l0_bad8.o
   echo "FAIL: invalid_value_bad_opcode_token unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_first_block_not_b0.l0" >/tmp/l0_bad9.out 2>/tmp/l0_bad9.err; then
+  echo "FAIL: invalid_first_block_not_b0 unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
