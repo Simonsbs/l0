@@ -14,6 +14,7 @@
 .lcomm vfp_fns_body_ptr, 8
 .lcomm vfp_last_fn_id, 8
 .lcomm vfp_last_block_id, 8
+.lcomm vfp_fn_arg_count_map, 32768
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
 
@@ -733,6 +734,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_term_seen], 0
     mov qword ptr [rip+vfp_last_fn_id], -1
     mov qword ptr [rip+vfp_last_block_id], -1
+    call clear_fn_arg_count_map
 
 .vfp_next_line:
     cmp r15, 0
@@ -805,6 +807,14 @@ verify_fns_payload:
     cmp rbx, rax
     jne .vfp_bad
     mov qword ptr [rip+vfp_last_fn_id], rbx
+    cmp rbx, 4096
+    jae .vfp_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_fn_arg_count_map]
+    add r9, r8
+    mov rax, qword ptr [rip+vfp_fn_arg_count]
+    mov qword ptr [r9], rax
     mov qword ptr [rip+vfp_state_in_fn], 1
     mov qword ptr [rip+vfp_fn_seen], 1
     mov qword ptr [rip+vfp_block_seen], 0
@@ -1230,6 +1240,14 @@ clear_value_seen_map:
     lea rdi, [rip+vfp_value_seen_map]
     xor rax, rax
     mov rcx, 1024
+    rep stosq
+    ret
+
+# clear_fn_arg_count_map
+clear_fn_arg_count_map:
+    lea rdi, [rip+vfp_fn_arg_count_map]
+    xor rax, rax
+    mov rcx, 4096
     rep stosq
     ret
 
@@ -2243,6 +2261,81 @@ verify_call_targets_in_module:
 .vctm_fid_check:
     cmp r9, rbx
     jae .vctm_bad
+    # count call operands in args tail and enforce exact callee arity
+    mov r8, rcx                   # cursor after callee fN
+    xor r10, r10                  # call_arg_count
+
+    # locate suffix start by scanning backward for " : tN"
+    mov rcx, r13
+    dec rcx
+    mov r11, rcx
+.vctm_back_digits:
+    mov al, byte ptr [r12+rcx]
+    cmp al, '0'
+    jb .vctm_digits_done
+    cmp al, '9'
+    ja .vctm_digits_done
+    cmp rcx, 0
+    je .vctm_bad
+    dec rcx
+    jmp .vctm_back_digits
+.vctm_digits_done:
+    cmp rcx, r11
+    je .vctm_bad
+    cmp rcx, 3
+    jb .vctm_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 't'
+    jne .vctm_bad
+    mov al, byte ptr [r12+rcx-1]
+    cmp al, ' '
+    jne .vctm_bad
+    mov al, byte ptr [r12+rcx-2]
+    cmp al, ':'
+    jne .vctm_bad
+    mov al, byte ptr [r12+rcx-3]
+    cmp al, ' '
+    jne .vctm_bad
+    mov r11, rcx
+    sub r11, 3                    # args_end exclusive
+
+    cmp r8, r11
+    je .vctm_check_arity
+.vctm_call_arg_loop:
+    cmp r8, r11
+    jae .vctm_bad
+    mov al, byte ptr [r12+r8]
+    cmp al, ' '
+    jne .vctm_bad
+    inc r8
+    cmp r8, r11
+    jae .vctm_bad
+    mov al, byte ptr [r12+r8]
+    cmp al, 'v'
+    jne .vctm_bad
+    inc r8
+    mov rdi, r12
+    mov rsi, r11
+    mov rcx, r8
+    call parse_digits
+    cmp rax, 1
+    jne .vctm_bad
+    mov r8, rcx
+    inc r10
+    cmp r8, r11
+    je .vctm_check_arity
+    jmp .vctm_call_arg_loop
+
+.vctm_check_arity:
+    cmp r9, 4096
+    jae .vctm_bad
+    mov r8, r9
+    shl r8, 3
+    lea rcx, [rip+vfp_fn_arg_count_map]
+    add rcx, r8
+    mov rax, qword ptr [rcx]
+    cmp r10, rax
+    jne .vctm_bad
     jmp .vctm_next_line
 
 .vctm_bad:

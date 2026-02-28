@@ -187,5 +187,9 @@ if "$BIN" verify "$ROOT/tests/invalid_value_type_unknown.l0" >/tmp/l0_bad29.out 
   echo "FAIL: invalid_value_type_unknown unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_call_arity_mismatch.l0" >/tmp/l0_bad30.out 2>/tmp/l0_bad30.err; then
+  echo "FAIL: invalid_call_arity_mismatch unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

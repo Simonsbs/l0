@@ -104,6 +104,7 @@ Current bootstrap opcode-aware checks:
 - `arg` index must be within the function argument count
 - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
 - `call` target `fN` must reference a declared function in the module
+- `call` argument count must match the declared arity of target `fN`
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 
 Current bootstrap SSA check:
