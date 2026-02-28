@@ -38,6 +38,16 @@ if [ "$version" != "1" ] || [ "$hdr_size" != "80" ] || [ "$src_off" != "80" ] ||
   echo "FAIL: build header fields"
   exit 1
 fi
+"$BIN" imgcheck /tmp/l0_test.img >/tmp/l0_imgcheck.out
+if ! grep -q '^ok$' /tmp/l0_imgcheck.out; then
+  echo "FAIL: imgcheck valid image"
+  exit 1
+fi
+printf 'BADIMG' >/tmp/l0_bad.img
+if "$BIN" imgcheck /tmp/l0_bad.img >/tmp/l0_badimg.out 2>/tmp/l0_badimg.err; then
+  echo "FAIL: imgcheck accepted invalid image"
+  exit 1
+fi
 
 if "$BIN" verify "$ROOT/tests/invalid_order.l0" >/tmp/l0_bad.out 2>/tmp/l0_bad.err; then
   echo "FAIL: invalid_order unexpectedly passed"

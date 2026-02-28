@@ -6,7 +6,7 @@
 .lcomm img_header_buf, 80
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -22,10 +22,13 @@ err_parse_msg: .ascii "error: invalid module shape or non-canonical input\n"
 err_parse_len = . - err_parse_msg
 err_build_msg: .ascii "error: cannot write output image\n"
 err_build_len = . - err_build_msg
+err_img_msg: .ascii "error: invalid or corrupt L0IMG\n"
+err_img_len = . - err_img_msg
 
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
+cmd_imgcheck: .ascii "imgcheck\0"
 img_header_len = 80
 
 kw_ver: .ascii "ver "
@@ -77,12 +80,22 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne usage
+    jne .check_imgcheck
     cmp r13, 4
     jne usage
     mov r11, [r12+32]         # argv[3] output path
     mov qword ptr [rip+out_path_ptr], r11
     jmp do_build
+
+.check_imgcheck:
+    lea rsi, [rip+cmd_imgcheck]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne usage
+    cmp r13, 3
+    jne usage
+    jmp do_imgcheck
 
 usage:
     lea rsi, [rip+usage_msg]
@@ -207,6 +220,38 @@ do_build:
     syscall
     jmp fail_build
 
+do_imgcheck:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    cmp rbx, img_header_len
+    jb fail_img
+
+    lea r8, [rip+file_buf]
+    mov rax, qword ptr [r8+0]
+    mov r9, 0x000000004d49304c
+    cmp rax, r9
+    jne fail_img
+    mov rax, qword ptr [r8+16]    # header_size
+    cmp rax, img_header_len
+    jne fail_img
+    mov rax, qword ptr [r8+32]    # src_off
+    cmp rax, img_header_len
+    jne fail_img
+    mov rax, qword ptr [r8+40]    # src_size
+    add rax, img_header_len
+    cmp rax, rbx
+    jne fail_img
+
+    lea rsi, [rip+ok_msg]
+    mov rdx, ok_len
+    mov rdi, 1
+    call write_fd
+    mov rdi, 0
+    call exit
+
 fail_io:
     cmp rax, -2
     je fail_read
@@ -239,6 +284,14 @@ fail_build:
     mov rdi, 2
     call write_fd
     mov rdi, 6
+    call exit
+
+fail_img:
+    lea rsi, [rip+err_img_msg]
+    mov rdx, err_img_len
+    mov rdi, 2
+    call write_fd
+    mov rdi, 7
     call exit
 
 # rdi=path ; returns rax=size or negative code

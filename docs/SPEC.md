@@ -33,6 +33,12 @@ Function-level grammar is staged next.
   - `qword[9]`: `debug_size` (`0` in bootstrap)
 - followed by raw canonical source bytes at `src_off`.
 
+`l0c imgcheck <file.l0img>` validates bootstrap container integrity:
+- magic match
+- header size match
+- source offset match
+- image size consistency (`src_off + src_size == file_size`)
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy
