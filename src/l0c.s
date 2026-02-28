@@ -3988,11 +3988,11 @@ try_select_const_kernel_code:
     add r8, pat_const_prefix_len     # literal start
     cmp r8, r13
     jae .tsck_no
-    mov rbx, 0                        # sign flag
+    mov r9, 0                        # sign flag
     mov al, byte ptr [r12+r8]
     cmp al, '-'
     jne .tsck_digits
-    mov rbx, 1
+    mov r9, 1
     inc r8
     cmp r8, r13
     jae .tsck_no
@@ -4030,7 +4030,7 @@ try_select_const_kernel_code:
     jne .tsck_no
 
     mov rax, r14
-    cmp rbx, 1
+    cmp r9, 1
     jne .tsck_emit
     neg rax
 

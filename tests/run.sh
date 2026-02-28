@@ -29,6 +29,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_const.out; then
   echo "FAIL: verify valid_const"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_const_neg.l0" >/tmp/l0_ok_const_neg.out
+if ! grep -q '^ok$' /tmp/l0_ok_const_neg.out; then
+  echo "FAIL: verify valid_const_neg"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_sub.l0" >/tmp/l0_ok_sub.out
 if ! grep -q '^ok$' /tmp/l0_ok_sub.out; then
   echo "FAIL: verify valid_sub"
@@ -131,6 +136,16 @@ fi
 "$BIN" run /tmp/l0_test_const.img >/tmp/l0_run_const.out
 if [ "$(tr -d '\n' < /tmp/l0_run_const.out)" != "42" ]; then
   echo "FAIL: run const image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_const_neg.l0" /tmp/l0_test_const_neg.img >/tmp/l0_build_const_neg.out
+if ! grep -q '^ok$' /tmp/l0_build_const_neg.out; then
+  echo "FAIL: build valid_const_neg"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_const_neg.img >/tmp/l0_run_const_neg.out
+if [ "$(tr -d '\n' < /tmp/l0_run_const_neg.out)" != "18446744073709551611" ]; then
+  echo "FAIL: run const negative image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_sub.l0" /tmp/l0_test_sub.img >/tmp/l0_build_sub.out

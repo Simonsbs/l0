@@ -89,6 +89,7 @@ I also enforce a structural subset inside `fns`:
   - I currently lower these ops: `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
+    - `v0 = const -N : t0`
     - `ret v0`
   - I currently use `c3` (`ret`) as the fallback for other verified inputs
 - I then write a 32-byte bootstrap debug semantic index (`L0IX`):

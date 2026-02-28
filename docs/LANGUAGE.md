@@ -163,7 +163,7 @@ Bootstrap build output currently also includes a compact debug semantic index se
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
     - `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
-    - const-return kernel (`const N` -> `ret v0`)
+    - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`
