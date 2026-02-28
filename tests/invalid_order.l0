@@ -1,0 +1,6 @@
+ver 1
+consts { }
+types { t0=i64 }
+extern { }
+globals { }
+fns { }
