@@ -39,6 +39,7 @@ I also enforce a structural subset inside `fns`:
   - `arg` requires numeric index operand
   - `arg` index must be within the function argument count
   - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
+  - `call` target `fN` must exist in the module function table
   - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - SSA bootstrap check:
   - each `vN` may be defined only once per function

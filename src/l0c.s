@@ -10,6 +10,7 @@
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
 .lcomm vfp_fn_body_ptr, 8
+.lcomm vfp_fns_body_ptr, 8
 .lcomm vfp_last_fn_id, 8
 .lcomm vfp_last_block_id, 8
 .lcomm vfp_block_seen_map, 2048
@@ -567,6 +568,7 @@ verify_fns_payload:
     jne .vfp_bad
     inc r14
     dec r15
+    mov qword ptr [rip+vfp_fns_body_ptr], r14
 
     mov qword ptr [rip+vfp_state_in_fn], 0
     mov qword ptr [rip+vfp_fn_seen], 0
@@ -618,6 +620,12 @@ verify_fns_payload:
     cmp qword ptr [rip+vfp_fn_seen], 1
     jne .vfp_bad
     cmp r15, 0
+    jne .vfp_bad
+    mov rdi, qword ptr [rip+vfp_fns_body_ptr]
+    mov rsi, r12
+    sub rsi, rdi
+    call verify_call_targets_in_module
+    cmp rax, 1
     jne .vfp_bad
     mov rax, 1
     jmp .vfp_done
@@ -1909,6 +1917,153 @@ verify_branch_targets_in_function:
 .vbt_ok:
     mov rax, 1
 .vbt_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# verify_call_targets_in_module
+# rdi=fns_body_ptr, rsi=fns_body_len (bytes up to closing fns line)
+# uses vfp_last_fn_id to derive function count
+# out: rax=1 valid, 0 invalid
+verify_call_targets_in_module:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r14, rdi
+    mov r15, rsi
+    mov rbx, qword ptr [rip+vfp_last_fn_id]
+    inc rbx                      # fn_count
+
+.vctm_next_line:
+    cmp r15, 0
+    je .vctm_ok
+
+    xor rcx, rcx
+.vctm_find_nl:
+    cmp rcx, r15
+    jae .vctm_bad
+    mov al, byte ptr [r14+rcx]
+    cmp al, 10
+    je .vctm_line_ready
+    inc rcx
+    jmp .vctm_find_nl
+
+.vctm_line_ready:
+    cmp rcx, 0
+    je .vctm_bad
+    mov r12, r14
+    mov r13, rcx
+
+    lea r14, [r14+rcx+1]
+    sub r15, rcx
+    dec r15
+
+    # detect value call prefix: "  vN = call fN"
+    cmp r13, 14
+    jb .vctm_next_line
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vctm_next_line
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vctm_next_line
+    mov al, byte ptr [r12+2]
+    cmp al, 'v'
+    jne .vctm_next_line
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 3
+    call parse_digits
+    cmp rax, 1
+    jne .vctm_next_line
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, '='
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'c'
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'a'
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'l'
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'l'
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vctm_next_line
+    inc rcx
+    cmp rcx, r13
+    jae .vctm_next_line
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'f'
+    jne .vctm_next_line
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vctm_bad
+    xor r9, r9
+.vctm_fid_conv:
+    cmp r8, rcx
+    jae .vctm_fid_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul r9, r9, 10
+    movzx r10, al
+    add r9, r10
+    inc r8
+    jmp .vctm_fid_conv
+.vctm_fid_check:
+    cmp r9, rbx
+    jae .vctm_bad
+    jmp .vctm_next_line
+
+.vctm_bad:
+    xor rax, rax
+    jmp .vctm_done
+.vctm_ok:
+    mov rax, 1
+.vctm_done:
     pop r15
     pop r14
     pop r13

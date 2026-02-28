@@ -171,5 +171,9 @@ if "$BIN" verify "$ROOT/tests/invalid_noncontiguous_fn_id.l0" >/tmp/l0_bad25.out
   echo "FAIL: invalid_noncontiguous_fn_id unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_call_target_missing_fn.l0" >/tmp/l0_bad26.out 2>/tmp/l0_bad26.err; then
+  echo "FAIL: invalid_call_target_missing_fn unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
