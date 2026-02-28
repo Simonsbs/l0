@@ -10,6 +10,7 @@
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
 .lcomm vfp_fn_body_ptr, 8
+.lcomm vfp_last_block_id, 8
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
 
@@ -570,6 +571,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_fn_seen], 0
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
+    mov qword ptr [rip+vfp_last_block_id], -1
 
 .vfp_next_line:
     cmp r15, 0
@@ -628,6 +630,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_fn_seen], 1
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
+    mov qword ptr [rip+vfp_last_block_id], -1
     mov qword ptr [rip+vfp_fn_body_ptr], r14
     call clear_block_seen_map
     call clear_value_seen_map
@@ -691,6 +694,13 @@ verify_fns_payload:
     call test_and_set_block_seen
     cmp rax, 1
     je .vfp_bad
+
+    # canonical block order: require contiguous ascending ids
+    mov rax, qword ptr [rip+vfp_last_block_id]
+    add rax, 1
+    cmp rbx, rax
+    jne .vfp_bad
+    mov qword ptr [rip+vfp_last_block_id], rbx
 
     mov qword ptr [rip+vfp_block_seen], 1
     mov qword ptr [rip+vfp_term_seen], 0

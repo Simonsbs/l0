@@ -159,5 +159,9 @@ if "$BIN" verify "$ROOT/tests/invalid_call_use_before_def.l0" >/tmp/l0_bad22.out
   echo "FAIL: invalid_call_use_before_def unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_noncontiguous_block_id.l0" >/tmp/l0_bad23.out 2>/tmp/l0_bad23.err; then
+  echo "FAIL: invalid_noncontiguous_block_id unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

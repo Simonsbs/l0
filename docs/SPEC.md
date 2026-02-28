@@ -25,6 +25,7 @@ I also enforce a structural subset inside `fns`:
 - first block in every function must be `b0:`
 - `b0:` may not appear again later in the same function
 - all block labels must be unique within each function
+- block labels must appear in contiguous canonical order: `b0`, `b1`, `b2`, ...
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
 - no instruction may appear after a terminator within the same block

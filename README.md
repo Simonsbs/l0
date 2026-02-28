@@ -15,6 +15,7 @@ Current bootstrap status:
 - I enforce function/block structural rules in `fns`.
 - I enforce canonical entry block (`b0`) per function.
 - I reject duplicate `b0` and duplicate block labels in a function.
+- I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).
 - I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.

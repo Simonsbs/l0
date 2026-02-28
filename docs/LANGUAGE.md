@@ -61,6 +61,7 @@ Function body requirements currently enforced:
 - `b0:` must be unique inside a function
 - block labels use `bN:`
 - every block label must be unique inside a function
+- block labels must be contiguous in canonical order (`b0`, `b1`, `b2`, ...)
 - instruction lines are indented with two spaces
 - each block must terminate before next block or function close
 - no instruction is allowed after a terminator within the same block
