@@ -102,6 +102,7 @@ Current bootstrap checks enforce structural shape:
 Current bootstrap opcode-aware checks:
 - `arg` requires a numeric index operand
 - `arg` index must be within the function argument count
+- `arg` result type must match the declared type of function argument index `N`
 - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
 - `call` target `fN` must reference a declared function in the module
 - `call` argument count must match the declared arity of target `fN`
@@ -110,7 +111,7 @@ Current bootstrap opcode-aware checks:
 Current bootstrap SSA check:
 - each SSA value id (`vN`) may be assigned once per function
 - def-before-use is enforced for:
-  - `ret vN`
+  - `ret vN` (with return-type compatibility check)
   - `cbr vN bT bF` condition value
   - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
   - bootstrap binary operands (`vN vN`)

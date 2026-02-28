@@ -44,6 +44,7 @@ I also enforce a structural subset inside `fns`:
 - opcode-specific bootstrap checks now include:
   - `arg` requires numeric index operand
   - `arg` index must be within the function argument count
+  - `arg` result type must match the declared type of function argument index `N`
   - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
   - `call` target `fN` must exist in the module function table
   - `call` argument count must match callee function signature arity
@@ -51,7 +52,7 @@ I also enforce a structural subset inside `fns`:
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:
-    - `ret vN`
+    - `ret vN` (and `vN` type must match function return type)
     - `cbr vN bT bF` condition value
     - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
     - bootstrap binary op operands (`vN vN`)

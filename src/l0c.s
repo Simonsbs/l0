@@ -10,13 +10,16 @@
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
+.lcomm vfp_fn_ret_type, 8
 .lcomm vfp_fn_body_ptr, 8
 .lcomm vfp_fns_body_ptr, 8
 .lcomm vfp_last_fn_id, 8
 .lcomm vfp_last_block_id, 8
+.lcomm vfp_fn_arg_type_map, 8192
 .lcomm vfp_fn_arg_count_map, 32768
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
+.lcomm vfp_value_type_map, 524288
 
 .section .rodata
 usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
@@ -935,10 +938,22 @@ verify_fns_payload:
     call parse_value_lhs_id
     cmp rax, 0
     jl .vfp_bad
-    mov rdi, rax
+    mov rbx, rax
+    mov rdi, rbx
     call test_and_set_value_seen
     cmp rax, 1
     je .vfp_bad
+    # record value result type id for downstream type checks
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_result_type_id
+    cmp rax, 0
+    jl .vfp_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov qword ptr [r9], rax
     jmp .vfp_next_line
 
 .vfp_bad:
@@ -1016,6 +1031,15 @@ line_is_fn_header:
 .lfh_arg_id_done:
     cmp r9, qword ptr [rip+vfp_type_count]
     jae .lfh_no
+    # record expected function argument type id
+    mov r11, qword ptr [rip+vfp_fn_arg_count]
+    cmp r11, 1024
+    jae .lfh_no
+    mov r8, r11
+    shl r8, 3
+    lea r10, [rip+vfp_fn_arg_type_map]
+    add r10, r8
+    mov qword ptr [r10], r9
     inc qword ptr [rip+vfp_fn_arg_count]
     cmp rcx, rsi
     jae .lfh_no
@@ -1073,6 +1097,7 @@ line_is_fn_header:
 .lfh_ret_id_done:
     cmp r9, qword ptr [rip+vfp_type_count]
     jae .lfh_no
+    mov qword ptr [rip+vfp_fn_ret_type], r9
     cmp rcx, rsi
     jae .lfh_no
     mov al, byte ptr [rdi+rcx]
@@ -1408,6 +1433,14 @@ validate_terminator_uses_defined:
     mov rdi, rbx
     call value_seen_exists
     cmp rax, 1
+    jne .vtud_bad
+    # ret value type must match current function return type
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, qword ptr [rip+vfp_fn_ret_type]
     jne .vtud_bad
     jmp .vtud_ok
 
@@ -2696,6 +2729,14 @@ line_is_value_instruction:
 .lvi_arg_done:
     cmp r10, qword ptr [rip+vfp_fn_arg_count]
     jae .lvi_no
+    # arg result type must match declared function arg type
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_fn_arg_type_map]
+    add r9, r11
+    mov r11, qword ptr [r9]
+    cmp r8, r11
+    jne .lvi_no
     jmp .lvi_yes
 
 .lvi_check_call:
@@ -2989,6 +3030,64 @@ parse_value_lhs_id:
 .pvli_ok:
     ret
 .pvli_bad:
+    mov rax, -1
+    ret
+
+# parse_value_result_type_id
+# rdi=line_ptr, rsi=line_len
+# out: rax=type id or -1 on parse error
+parse_value_result_type_id:
+    cmp rsi, 6
+    jb .pvti_bad
+    mov r9, rsi
+    dec r9                       # last index
+    mov r10, r9
+.pvti_back_digits:
+    mov al, byte ptr [rdi+r9]
+    cmp al, '0'
+    jb .pvti_digits_done
+    cmp al, '9'
+    ja .pvti_digits_done
+    cmp r9, 0
+    je .pvti_bad
+    dec r9
+    jmp .pvti_back_digits
+.pvti_digits_done:
+    cmp r9, r10
+    je .pvti_bad
+    cmp r9, 3
+    jb .pvti_bad
+    mov al, byte ptr [rdi+r9]
+    cmp al, 't'
+    jne .pvti_bad
+    mov al, byte ptr [rdi+r9-1]
+    cmp al, ' '
+    jne .pvti_bad
+    mov al, byte ptr [rdi+r9-2]
+    cmp al, ':'
+    jne .pvti_bad
+    mov al, byte ptr [rdi+r9-3]
+    cmp al, ' '
+    jne .pvti_bad
+
+    xor rax, rax
+    mov r8, r9
+    inc r8                       # first type digit
+    mov r11, r10
+    inc r11                      # one-past last type digit
+.pvti_conv:
+    cmp r8, r11
+    jae .pvti_ok
+    mov al, byte ptr [rdi+r8]
+    sub al, '0'
+    imul rax, rax, 10
+    movzx rdx, al
+    add rax, rdx
+    inc r8
+    jmp .pvti_conv
+.pvti_ok:
+    ret
+.pvti_bad:
     mov rax, -1
     ret
 

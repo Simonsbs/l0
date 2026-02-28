@@ -191,5 +191,13 @@ if "$BIN" verify "$ROOT/tests/invalid_call_arity_mismatch.l0" >/tmp/l0_bad30.out
   echo "FAIL: invalid_call_arity_mismatch unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_arg_result_type_mismatch.l0" >/tmp/l0_bad31.out 2>/tmp/l0_bad31.err; then
+  echo "FAIL: invalid_arg_result_type_mismatch unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_ret_value_type_mismatch.l0" >/tmp/l0_bad33.out 2>/tmp/l0_bad33.err; then
+  echo "FAIL: invalid_ret_value_type_mismatch unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
