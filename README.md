@@ -50,6 +50,7 @@ Current bootstrap status:
 
 - Language reference: `docs/LANGUAGE.md`
 - MVP/compiler spec: `docs/SPEC.md`
+- Implementable spec contract: `docs/IMPLEMENTABLE_SPEC.md`
 - Canonicalization notes: `docs/CANON.md`
 - ABI notes: `docs/ABI_SYSV_AMD64.md`
 - Execution plan: `docs/PLAN.md`
