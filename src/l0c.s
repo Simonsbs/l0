@@ -650,6 +650,12 @@ verify_fns_payload:
     je .vfp_first_block_check
     cmp qword ptr [rip+vfp_term_seen], 1
     jne .vfp_bad
+    # after first block, b0 must not appear again
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_entry_block
+    cmp rax, 1
+    je .vfp_bad
     jmp .vfp_set_block
 
 .vfp_first_block_check:

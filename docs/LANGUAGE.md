@@ -58,6 +58,7 @@ Where:
 Function body requirements currently enforced:
 - at least one block
 - first block must be `b0:`
+- `b0:` must be unique inside a function
 - block labels use `bN:`
 - instruction lines are indented with two spaces
 - each block must terminate before next block or function close

@@ -23,6 +23,7 @@ Current verifier also enforces a structural subset inside `fns`:
 - argument type list must be empty or comma-separated `tN` entries
 - block labels must be `bN:`
 - first block in every function must be `b0:`
+- `b0:` may not appear again later in the same function
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
 - no instruction may appear after a terminator within the same block

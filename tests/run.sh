@@ -102,5 +102,9 @@ if "$BIN" verify "$ROOT/tests/invalid_first_block_not_b0.l0" >/tmp/l0_bad9.out 2
   echo "FAIL: invalid_first_block_not_b0 unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_duplicate_b0.l0" >/tmp/l0_bad10.out 2>/tmp/l0_bad10.err; then
+  echo "FAIL: invalid_duplicate_b0 unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
