@@ -126,5 +126,13 @@ if "$BIN" verify "$ROOT/tests/invalid_duplicate_value_def.l0" >/tmp/l0_bad15.out
   echo "FAIL: invalid_duplicate_value_def unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_br_target_missing.l0" >/tmp/l0_bad16.out 2>/tmp/l0_bad16.err; then
+  echo "FAIL: invalid_br_target_missing unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_cbr_target_missing.l0" >/tmp/l0_bad17.out 2>/tmp/l0_bad17.err; then
+  echo "FAIL: invalid_cbr_target_missing unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

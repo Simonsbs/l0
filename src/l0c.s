@@ -9,6 +9,7 @@
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
+.lcomm vfp_fn_body_ptr, 8
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
 
@@ -627,6 +628,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_fn_seen], 1
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
+    mov qword ptr [rip+vfp_fn_body_ptr], r14
     call clear_block_seen_map
     call clear_value_seen_map
     jmp .vfp_next_line
@@ -641,6 +643,12 @@ verify_fns_payload:
     cmp qword ptr [rip+vfp_block_seen], 1
     jne .vfp_bad
     cmp qword ptr [rip+vfp_term_seen], 1
+    jne .vfp_bad
+    mov rdi, qword ptr [rip+vfp_fn_body_ptr]
+    mov rsi, r12
+    sub rsi, rdi
+    call verify_branch_targets_in_function
+    cmp rax, 1
     jne .vfp_bad
     mov qword ptr [rip+vfp_state_in_fn], 0
     jmp .vfp_next_line
@@ -915,10 +923,10 @@ parse_block_id:
     # convert decimal digits in [1, rsi-1) to integer
     xor rax, rax
     mov r8, 1
+    mov r10, rsi
+    dec r10
 .pbi_conv:
-    cmp r8, rsi
-    jae .pbi_ok
-    cmp r8, rcx
+    cmp r8, r10
     je .pbi_ok
     mov bl, byte ptr [rdi+r8]
     sub bl, '0'
@@ -1000,6 +1008,235 @@ test_and_set_value_seen:
     ret
 .tvss_seen:
     mov rax, 1
+    ret
+
+# block_seen_exists
+# rdi=block_id
+# out: rax=1 if seen, 0 if not seen
+block_seen_exists:
+    cmp rdi, 16384
+    jae .bse_no
+    mov r8, rdi
+    shr r8, 3
+    mov r9, rdi
+    and r9, 7
+    lea r10, [rip+vfp_block_seen_map]
+    add r10, r8
+    mov al, byte ptr [r10]
+    mov dl, 1
+    mov cl, r9b
+    shl dl, cl
+    test al, dl
+    jne .bse_yes
+.bse_no:
+    xor rax, rax
+    ret
+.bse_yes:
+    mov rax, 1
+    ret
+
+# verify_branch_targets_in_function
+# rdi=fn_body_ptr, rsi=fn_body_len (bytes up to function-close line)
+# out: rax=1 valid, 0 invalid
+verify_branch_targets_in_function:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r14, rdi
+    mov r15, rsi
+
+.vbt_next_line:
+    cmp r15, 0
+    je .vbt_ok
+
+    xor rcx, rcx
+.vbt_find_nl:
+    cmp rcx, r15
+    jae .vbt_bad
+    mov al, byte ptr [r14+rcx]
+    cmp al, 10
+    je .vbt_line_ready
+    inc rcx
+    jmp .vbt_find_nl
+
+.vbt_line_ready:
+    cmp rcx, 0
+    je .vbt_bad
+    mov r12, r14
+    mov r13, rcx
+
+    lea r14, [r14+rcx+1]
+    sub r15, rcx
+    dec r15
+
+    # Check "  br bN"
+    cmp r13, 7
+    jb .vbt_try_cbr
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vbt_try_cbr
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vbt_try_cbr
+    mov al, byte ptr [r12+2]
+    cmp al, 'b'
+    jne .vbt_try_cbr
+    mov al, byte ptr [r12+3]
+    cmp al, 'r'
+    jne .vbt_try_cbr
+    mov al, byte ptr [r12+4]
+    cmp al, ' '
+    jne .vbt_try_cbr
+    mov al, byte ptr [r12+5]
+    cmp al, 'b'
+    jne .vbt_try_cbr
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 6
+    call parse_digits
+    cmp rax, 1
+    jne .vbt_try_cbr
+    cmp rcx, r13
+    jne .vbt_try_cbr
+    xor rbx, rbx
+    mov r8, 6
+.vbt_br_conv:
+    cmp r8, rcx
+    jae .vbt_br_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vbt_br_conv
+.vbt_br_check:
+    mov rdi, rbx
+    call block_seen_exists
+    cmp rax, 1
+    jne .vbt_bad
+    jmp .vbt_next_line
+
+.vbt_try_cbr:
+    cmp r13, 12
+    jb .vbt_next_line
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vbt_next_line
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vbt_next_line
+    mov al, byte ptr [r12+2]
+    cmp al, 'c'
+    jne .vbt_next_line
+    mov al, byte ptr [r12+3]
+    cmp al, 'b'
+    jne .vbt_next_line
+    mov al, byte ptr [r12+4]
+    cmp al, 'r'
+    jne .vbt_next_line
+    mov al, byte ptr [r12+5]
+    cmp al, ' '
+    jne .vbt_next_line
+    mov al, byte ptr [r12+6]
+    cmp al, 'v'
+    jne .vbt_next_line
+
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 7
+    call parse_digits
+    cmp rax, 1
+    jne .vbt_bad
+    cmp rcx, r13
+    jae .vbt_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vbt_bad
+    inc rcx
+    cmp rcx, r13
+    jae .vbt_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'b'
+    jne .vbt_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vbt_bad
+    cmp rcx, r13
+    jae .vbt_bad
+    xor rbx, rbx
+.vbt_cbr_t1_conv:
+    cmp r8, rcx
+    jae .vbt_cbr_t1_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vbt_cbr_t1_conv
+.vbt_cbr_t1_check:
+    mov r11, rcx
+    mov rdi, rbx
+    call block_seen_exists
+    cmp rax, 1
+    jne .vbt_bad
+    mov rcx, r11
+
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vbt_bad
+    inc rcx
+    cmp rcx, r13
+    jae .vbt_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'b'
+    jne .vbt_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vbt_bad
+    cmp rcx, r13
+    jne .vbt_bad
+    xor rbx, rbx
+.vbt_cbr_t2_conv:
+    cmp r8, rcx
+    jae .vbt_cbr_t2_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vbt_cbr_t2_conv
+.vbt_cbr_t2_check:
+    mov rdi, rbx
+    call block_seen_exists
+    cmp rax, 1
+    jne .vbt_bad
+    jmp .vbt_next_line
+
+.vbt_bad:
+    xor rax, rax
+    jmp .vbt_done
+.vbt_ok:
+    mov rax, 1
+.vbt_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # rdi=line_ptr, rsi=line_len -> rax=1 if starts with "  "

@@ -18,6 +18,7 @@ Current bootstrap status:
 - I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.
+- I enforce that `br`/`cbr` targets reference blocks declared in the same function.
 - I use syscall-only file loading.
 - I validate strict module section order.
 - `canon` currently validates and echoes canonical source.
