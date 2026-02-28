@@ -100,6 +100,16 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> <out.l0img>`
 - `l0c imgcheck <out.l0img>`
 
+### `imgcheck` bootstrap integrity rules
+
+`imgcheck` currently validates:
+- header magic `L0IM`
+- version `1`
+- header size `80`
+- flags `0` (reserved for future use)
+- source section bounds/size consistency
+- code/debug section pair consistency (both zero or both valid in-bounds ranges)
+
 ## Planned language expansion (next milestones)
 
 1. Opcode-specific verification rules:

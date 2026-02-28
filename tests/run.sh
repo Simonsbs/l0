@@ -54,6 +54,12 @@ if "$BIN" imgcheck /tmp/l0_badver.img >/tmp/l0_badver.out 2>/tmp/l0_badver.err; 
   echo "FAIL: imgcheck accepted bad version"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_badflags.img
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_badflags.img bs=1 seek=24 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_badflags.img >/tmp/l0_badflags.out 2>/tmp/l0_badflags.err; then
+  echo "FAIL: imgcheck accepted nonzero flags"
+  exit 1
+fi
 printf 'BADIMG' >/tmp/l0_bad.img
 if "$BIN" imgcheck /tmp/l0_bad.img >/tmp/l0_badimg.out 2>/tmp/l0_badimg.err; then
   echo "FAIL: imgcheck accepted invalid image"

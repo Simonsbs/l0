@@ -244,6 +244,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+16]    # header_size
     cmp rax, img_header_len
     jne fail_img
+    mov rax, qword ptr [r8+24]    # flags (bootstrap: must be zero)
+    cmp rax, 0
+    jne fail_img
     mov r10, qword ptr [r8+16]    # header_size
     mov r11, qword ptr [r8+32]    # src_off
     cmp r11, r10

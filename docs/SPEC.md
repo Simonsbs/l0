@@ -37,7 +37,7 @@ Current verifier also enforces a structural subset inside `fns`:
   - `qword[0]`: magic (`L0IM`)
   - `qword[1]`: version (`1`)
   - `qword[2]`: header size (`80`)
-  - `qword[3]`: flags (`0`)
+  - `qword[3]`: flags (`0`, reserved in bootstrap)
   - `qword[4]`: `src_off` (`80`)
   - `qword[5]`: `src_size`
   - `qword[6]`: `code_off` (`0` in bootstrap)
@@ -50,6 +50,7 @@ Current verifier also enforces a structural subset inside `fns`:
 - magic match
 - version match (`1`)
 - header size match
+- flags match (`0` in bootstrap)
 - source range consistency (`src_off >= header_size`, exact payload-end check)
 - code/debug section pair validity:
   - either both offset/size are zero
