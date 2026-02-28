@@ -17,6 +17,14 @@ Initial bootstrap is in place:
 - strict module-shape validator for fixed section order
 - canonical mode echoes validated canonical source
 
+## Documentation
+
+- Language reference: `docs/LANGUAGE.md`
+- MVP/compiler spec: `docs/SPEC.md`
+- Canonicalization notes: `docs/CANON.md`
+- ABI notes: `docs/ABI_SYSV_AMD64.md`
+- Execution plan: `docs/PLAN.md`
+
 ## Build
 
 ```sh

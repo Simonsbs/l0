@@ -2,6 +2,8 @@
 
 This is the first frozen subset for implementation.
 
+For language-level reference, also see `docs/LANGUAGE.md`.
+
 ## Module shape (strict)
 
 Exact section order is mandatory:
