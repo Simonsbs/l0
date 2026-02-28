@@ -17,6 +17,7 @@ Initial bootstrap is in place:
 - verifier rejects duplicate `b0` labels in a function
 - verifier rejects duplicate block labels in a function
 - verifier includes bootstrap opcode-operand checks for `arg` and common binary ops
+- verifier rejects duplicate SSA value definitions (`vN`) within a function
 - file loader (syscalls only)
 - strict module-shape validator for fixed section order
 - canonical mode echoes validated canonical source

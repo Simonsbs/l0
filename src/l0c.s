@@ -9,6 +9,7 @@
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_block_seen_map, 2048
+.lcomm vfp_value_seen_map, 8192
 
 .section .rodata
 usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
@@ -626,6 +627,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
     call clear_block_seen_map
+    call clear_value_seen_map
     jmp .vfp_next_line
 
 .vfp_in_fn:
@@ -709,6 +711,16 @@ verify_fns_payload:
     call line_is_value_instruction
     cmp rax, 1
     jne .vfp_bad
+    # SSA uniqueness: vN may be defined only once per function
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_lhs_id
+    cmp rax, 0
+    jl .vfp_bad
+    mov rdi, rax
+    call test_and_set_value_seen
+    cmp rax, 1
+    je .vfp_bad
     jmp .vfp_next_line
 
 .vfp_bad:
@@ -927,6 +939,14 @@ clear_block_seen_map:
     rep stosq
     ret
 
+# clear_value_seen_map
+clear_value_seen_map:
+    lea rdi, [rip+vfp_value_seen_map]
+    xor rax, rax
+    mov rcx, 1024
+    rep stosq
+    ret
+
 # test_and_set_block_seen
 # rdi=block_id
 # out: rax=1 if already seen, 0 if newly set
@@ -950,6 +970,32 @@ test_and_set_block_seen:
     xor rax, rax
     ret
 .tbss_seen:
+    mov rax, 1
+    ret
+
+# test_and_set_value_seen
+# rdi=value_id
+# out: rax=1 if already seen, 0 if newly set
+test_and_set_value_seen:
+    cmp rdi, 65536
+    jae .tvss_seen
+    mov r8, rdi
+    shr r8, 3
+    mov r9, rdi
+    and r9, 7
+    lea r10, [rip+vfp_value_seen_map]
+    add r10, r8
+    mov al, byte ptr [r10]
+    mov dl, 1
+    mov cl, r9b
+    shl dl, cl
+    test al, dl
+    jne .tvss_seen
+    or al, dl
+    mov byte ptr [r10], al
+    xor rax, rax
+    ret
+.tvss_seen:
     mov rax, 1
     ret
 
@@ -1471,6 +1517,49 @@ line_is_value_instruction:
     pop r14
     pop r13
     pop r12
+    ret
+
+# parse_value_lhs_id
+# rdi=line_ptr, rsi=line_len
+# out: rax=value id or -1 on parse error
+parse_value_lhs_id:
+    cmp rsi, 8
+    jb .pvli_bad
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .pvli_bad
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .pvli_bad
+    mov al, byte ptr [rdi+2]
+    cmp al, 'v'
+    jne .pvli_bad
+    mov rcx, 3
+    call parse_digits
+    cmp rax, 1
+    jne .pvli_bad
+    cmp rcx, rsi
+    jae .pvli_bad
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .pvli_bad
+
+    xor rax, rax
+    mov r8, 3
+.pvli_conv:
+    cmp r8, rcx
+    jae .pvli_ok
+    mov bl, byte ptr [rdi+r8]
+    sub bl, '0'
+    imul rax, rax, 10
+    movzx r9, bl
+    add rax, r9
+    inc r8
+    jmp .pvli_conv
+.pvli_ok:
+    ret
+.pvli_bad:
+    mov rax, -1
     ret
 
 # parse one-or-more digits at line index rcx

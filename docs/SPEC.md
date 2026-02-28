@@ -35,6 +35,8 @@ Current verifier also enforces a structural subset inside `fns`:
   - opcode-specific bootstrap checks now include:
     - `arg` requires numeric index operand
     - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+- SSA bootstrap check:
+  - each `vN` may be defined only once per function
 
 ## Current build artifact subset
 
