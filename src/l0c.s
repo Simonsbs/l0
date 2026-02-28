@@ -4,6 +4,10 @@
 .lcomm file_buf, 1048576
 .lcomm out_path_ptr, 8
 .lcomm img_header_buf, 80
+.lcomm vfp_state_in_fn, 8
+.lcomm vfp_fn_seen, 8
+.lcomm vfp_block_seen, 8
+.lcomm vfp_term_seen, 8
 
 .section .rodata
 usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
@@ -555,10 +559,10 @@ verify_fns_payload:
     inc r14
     dec r15
 
-    xor r8, r8                  # state: 0=top-level, 1=in-function
-    xor r9, r9                  # fn_seen
-    xor r10, r10                # block_seen in current fn
-    xor r11, r11                # terminator_seen in current block
+    mov qword ptr [rip+vfp_state_in_fn], 0
+    mov qword ptr [rip+vfp_fn_seen], 0
+    mov qword ptr [rip+vfp_block_seen], 0
+    mov qword ptr [rip+vfp_term_seen], 0
 
 .vfp_next_line:
     cmp r15, 0
@@ -587,7 +591,7 @@ verify_fns_payload:
     sub r15, rcx
     dec r15
 
-    cmp r8, 0
+    cmp qword ptr [rip+vfp_state_in_fn], 0
     je .vfp_top_level
     jmp .vfp_in_fn
 
@@ -600,7 +604,7 @@ verify_fns_payload:
     mov al, byte ptr [r12]
     cmp al, '}'
     jne .vfp_try_fn_header
-    cmp r9, 1
+    cmp qword ptr [rip+vfp_fn_seen], 1
     jne .vfp_bad
     cmp r15, 0
     jne .vfp_bad
@@ -613,10 +617,10 @@ verify_fns_payload:
     call line_is_fn_header
     cmp rax, 1
     jne .vfp_bad
-    mov r8, 1
-    mov r9, 1
-    xor r10, r10
-    xor r11, r11
+    mov qword ptr [rip+vfp_state_in_fn], 1
+    mov qword ptr [rip+vfp_fn_seen], 1
+    mov qword ptr [rip+vfp_block_seen], 0
+    mov qword ptr [rip+vfp_term_seen], 0
     jmp .vfp_next_line
 
 .vfp_in_fn:
@@ -626,11 +630,11 @@ verify_fns_payload:
     mov al, byte ptr [r12]
     cmp al, '}'
     jne .vfp_try_block
-    cmp r10, 1                 # must have at least one block
+    cmp qword ptr [rip+vfp_block_seen], 1
     jne .vfp_bad
-    cmp r11, 1                 # current block must end in terminator
+    cmp qword ptr [rip+vfp_term_seen], 1
     jne .vfp_bad
-    xor r8, r8                 # back to top-level
+    mov qword ptr [rip+vfp_state_in_fn], 0
     jmp .vfp_next_line
 
 .vfp_try_block:
@@ -639,13 +643,13 @@ verify_fns_payload:
     call line_is_block_label
     cmp rax, 1
     jne .vfp_try_instr
-    cmp r10, 0
+    cmp qword ptr [rip+vfp_block_seen], 0
     je .vfp_first_block
-    cmp r11, 1                 # previous block must already terminate
+    cmp qword ptr [rip+vfp_term_seen], 1
     jne .vfp_bad
 .vfp_first_block:
-    mov r10, 1
-    xor r11, r11
+    mov qword ptr [rip+vfp_block_seen], 1
+    mov qword ptr [rip+vfp_term_seen], 0
     jmp .vfp_next_line
 
 .vfp_try_instr:
@@ -654,16 +658,24 @@ verify_fns_payload:
     call line_is_instruction
     cmp rax, 1
     jne .vfp_bad
-    cmp r10, 1                 # instruction must be inside a block
+    cmp qword ptr [rip+vfp_block_seen], 1
     jne .vfp_bad
-    cmp r11, 1                 # no instructions allowed after a terminator
+    cmp qword ptr [rip+vfp_term_seen], 1
     je .vfp_bad
     mov rdi, r12
     mov rsi, r13
     call line_is_terminator
     cmp rax, 1
-    jne .vfp_next_line
-    mov r11, 1
+    jne .vfp_try_value_instr
+    mov qword ptr [rip+vfp_term_seen], 1
+    jmp .vfp_next_line
+
+.vfp_try_value_instr:
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_value_instruction
+    cmp rax, 1
+    jne .vfp_bad
     jmp .vfp_next_line
 
 .vfp_bad:
@@ -979,6 +991,123 @@ line_is_terminator:
     ret
 .lterm_yes:
     mov rax, 1
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if canonical value instruction:
+# "  vN = <opcode> <args> : tN"
+line_is_value_instruction:
+    cmp rsi, 14
+    jb .lvi_no
+
+    # prefix "  v"
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lvi_no
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lvi_no
+    mov al, byte ptr [rdi+2]
+    cmp al, 'v'
+    jne .lvi_no
+
+    # lhs id
+    mov rcx, 3
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, rsi
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '='
+    jne .lvi_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lvi_no
+
+    # opcode token: [a-z.]+ then single space
+    mov r8, rcx                  # op_start
+.lvi_op_loop:
+    cmp rcx, rsi
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'a'
+    jb .lvi_op_dot
+    cmp al, 'z'
+    jbe .lvi_op_next
+.lvi_op_dot:
+    cmp al, '.'
+    jne .lvi_op_done
+.lvi_op_next:
+    inc rcx
+    jmp .lvi_op_loop
+.lvi_op_done:
+    cmp rcx, r8
+    je .lvi_no
+    cmp rcx, rsi
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    mov r8, rcx                  # args_start
+    cmp r8, rsi
+    jae .lvi_no
+
+    # suffix from end: "... : tN"
+    mov r9, rsi
+    dec r9                       # last index
+    mov r10, r9
+.lvi_back_digits:
+    mov al, byte ptr [rdi+r9]
+    cmp al, '0'
+    jb .lvi_digits_done
+    cmp al, '9'
+    ja .lvi_digits_done
+    cmp r9, 0
+    je .lvi_digits_done_after_dec
+    dec r9
+    jmp .lvi_back_digits
+.lvi_digits_done_after_dec:
+    # consumed down to index 0 digit
+    jmp .lvi_no
+.lvi_digits_done:
+    cmp r9, r10                  # no trailing digits
+    je .lvi_no
+    cmp r9, 3
+    jb .lvi_no
+    mov al, byte ptr [rdi+r9]
+    cmp al, 't'
+    jne .lvi_no
+    mov al, byte ptr [rdi+r9-1]
+    cmp al, ' '
+    jne .lvi_no
+    mov al, byte ptr [rdi+r9-2]
+    cmp al, ':'
+    jne .lvi_no
+    mov al, byte ptr [rdi+r9-3]
+    cmp al, ' '
+    jne .lvi_no
+    mov r11, r9
+    sub r11, 3                   # suffix start
+    cmp r11, r8                  # args must be non-empty
+    jbe .lvi_no
+
+    mov rax, 1
+    ret
+.lvi_no:
+    xor rax, rax
     ret
 
 # parse one-or-more digits at line index rcx

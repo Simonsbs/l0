@@ -84,5 +84,13 @@ if "$BIN" verify "$ROOT/tests/invalid_fn_bad_arg_list.l0" >/tmp/l0_bad6.out 2>/t
   echo "FAIL: invalid_fn_bad_arg_list unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_value_missing_type_suffix.l0" >/tmp/l0_bad7.out 2>/tmp/l0_bad7.err; then
+  echo "FAIL: invalid_value_missing_type_suffix unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_value_bad_opcode_token.l0" >/tmp/l0_bad8.out 2>/tmp/l0_bad8.err; then
+  echo "FAIL: invalid_value_bad_opcode_token unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

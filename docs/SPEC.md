@@ -24,6 +24,9 @@ Current verifier also enforces a structural subset inside `fns`:
 - every block must end with a terminator before next block/function close
 - no instruction may appear after a terminator within the same block
 - accepted terminators in bootstrap verifier: `ret`, `ret vN`, `br bN`, `cbr vN bN bN`
+- non-terminator instruction lines must match canonical value form:
+  - `vN = <opcode> <args> : tN`
+  - opcode token is limited to `[a-z.]` in the bootstrap verifier
 
 ## Current build artifact subset
 
