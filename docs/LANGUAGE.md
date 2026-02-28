@@ -1,8 +1,8 @@
 # L0 Language Reference (Bootstrap)
 
-This document is the evolving language reference for **L0**.
+I maintain this document as the evolving language reference for **L0**.
 
-Status: bootstrap phase. This describes the currently implemented and enforced subset in `l0c verify`, plus the intended direction.
+Status: bootstrap phase. I describe the currently implemented and enforced subset in `l0c verify`, plus the intended direction.
 
 ## Design goals
 
@@ -90,6 +90,7 @@ Current bootstrap checks enforce structural shape:
 
 Current bootstrap opcode-aware checks:
 - `arg` requires a numeric index operand
+- `arg` index must be within the function argument count
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 
 Current bootstrap SSA check:

@@ -118,7 +118,11 @@ if "$BIN" verify "$ROOT/tests/invalid_binary_operands.l0" >/tmp/l0_bad13.out 2>/
   echo "FAIL: invalid_binary_operands unexpectedly passed"
   exit 1
 fi
-if "$BIN" verify "$ROOT/tests/invalid_duplicate_value_def.l0" >/tmp/l0_bad14.out 2>/tmp/l0_bad14.err; then
+if "$BIN" verify "$ROOT/tests/invalid_arg_out_of_range.l0" >/tmp/l0_bad14.out 2>/tmp/l0_bad14.err; then
+  echo "FAIL: invalid_arg_out_of_range unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_duplicate_value_def.l0" >/tmp/l0_bad15.out 2>/tmp/l0_bad15.err; then
   echo "FAIL: invalid_duplicate_value_def unexpectedly passed"
   exit 1
 fi

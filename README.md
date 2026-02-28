@@ -1,26 +1,26 @@
 # L0
 
-L0 is a low-level, typed SSA source language designed for deterministic compilation and LLM-friendly workflows.
+I am building L0 as a low-level, typed SSA source language focused on deterministic compilation and LLM-friendly workflows.
 
-This repository is intentionally native-only for bootstrap:
-- implementation language: x86-64 assembly
-- runtime dependency: none (Linux syscalls only)
-- build tools: GNU binutils + make
+I am keeping this repository native-only during bootstrap:
+- I implement the compiler in x86-64 assembly.
+- I use no runtime dependency beyond Linux syscalls.
+- I build with GNU binutils + make.
 
 ## Current status
 
-Initial bootstrap is in place:
-- `l0c` CLI skeleton (`canon`, `verify`)
-- `l0c build` producing deterministic `.l0img` container header + payload
-- `verify` now enforces function/block structural rules in `fns`
-- verifier enforces canonical entry block (`b0`) per function
-- verifier rejects duplicate `b0` labels in a function
-- verifier rejects duplicate block labels in a function
-- verifier includes bootstrap opcode-operand checks for `arg` and common binary ops
-- verifier rejects duplicate SSA value definitions (`vN`) within a function
-- file loader (syscalls only)
-- strict module-shape validator for fixed section order
-- canonical mode echoes validated canonical source
+Current bootstrap status:
+- I have a working `l0c` CLI skeleton (`canon`, `verify`).
+- I can run `l0c build` to produce deterministic `.l0img` header + payload output.
+- I enforce function/block structural rules in `fns`.
+- I enforce canonical entry block (`b0`) per function.
+- I reject duplicate `b0` and duplicate block labels in a function.
+- I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
+- I reject duplicate SSA value definitions (`vN`) within a function.
+- I enforce `arg` index bounds against the function argument count.
+- I use syscall-only file loading.
+- I validate strict module section order.
+- `canon` currently validates and echoes canonical source.
 
 ## Documentation
 
@@ -47,4 +47,4 @@ make
 
 ## Notes
 
-This is the first implementation slice. Full parser, verifier, codegen, image format, loader, and trace pipeline are being implemented incrementally from the frozen spec.
+This is still an early implementation slice. I am implementing parser, verifier, codegen, image format, loader, and trace pipeline incrementally from the frozen spec.

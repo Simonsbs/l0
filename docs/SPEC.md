@@ -1,6 +1,6 @@
 # L0 MVP Spec (Initial Freeze)
 
-This is the first frozen subset for implementation.
+I use this as the first frozen subset for implementation.
 
 For language-level reference, also see `docs/LANGUAGE.md`.
 
@@ -16,8 +16,8 @@ Exact section order is mandatory:
 
 ## Current parser subset
 
-The bootstrap parser currently validates module-level section order and required braces/newlines.
-Current verifier also enforces a structural subset inside `fns`:
+In the bootstrap phase, I currently validate module-level section order and required braces/newlines.
+I also enforce a structural subset inside `fns`:
 - at least one function
 - function headers must match canonical `fn fN (arg_types)->tN {` shape
 - argument type list must be empty or comma-separated `tN` entries
@@ -34,6 +34,7 @@ Current verifier also enforces a structural subset inside `fns`:
   - opcode token is limited to `[a-z.]` in the bootstrap verifier
   - opcode-specific bootstrap checks now include:
     - `arg` requires numeric index operand
+    - `arg` index must be within the function argument count
     - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - SSA bootstrap check:
   - each `vN` may be defined only once per function

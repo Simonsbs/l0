@@ -8,6 +8,7 @@
 .lcomm vfp_fn_seen, 8
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
+.lcomm vfp_fn_arg_count, 8
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
 
@@ -770,6 +771,7 @@ line_is_fn_header:
     jae .lfh_no
 
     # args: empty or comma-separated tN list
+    mov qword ptr [rip+vfp_fn_arg_count], 0
     mov al, byte ptr [rdi+rcx]
     cmp al, ')'
     je .lfh_after_args
@@ -782,6 +784,7 @@ line_is_fn_header:
     call parse_digits
     cmp rax, 1
     jne .lfh_no
+    inc qword ptr [rip+vfp_fn_arg_count]
     cmp rcx, rsi
     jae .lfh_no
     mov al, byte ptr [rdi+rcx]
@@ -1305,16 +1308,26 @@ line_is_value_instruction:
     mov rcx, r14
     cmp rcx, r15
     jae .lvi_no
+    xor r10, r10
 .lvi_arg_digits:
     cmp rcx, r15
-    je .lvi_yes
+    je .lvi_arg_done
     mov al, byte ptr [rdi+rcx]
     cmp al, '0'
     jb .lvi_no
     cmp al, '9'
     ja .lvi_no
+    imul r10, r10, 10
+    movzx r11, al
+    sub r11, '0'
+    add r10, r11
     inc rcx
     jmp .lvi_arg_digits
+
+.lvi_arg_done:
+    cmp r10, qword ptr [rip+vfp_fn_arg_count]
+    jae .lvi_no
+    jmp .lvi_yes
 
 .lvi_check_binary:
     # binary op set:
