@@ -679,7 +679,7 @@ verify_fns_payload:
 
 # rdi=line_ptr, rsi=line_len -> rax=1 if line starts with "fn f" and ends with " {"
 line_is_fn_header:
-    cmp rsi, 8
+    cmp rsi, 14
     jb .lfh_no
     mov al, byte ptr [rdi]
     cmp al, 'f'
@@ -708,17 +708,77 @@ line_is_fn_header:
     mov al, byte ptr [rdi+rcx]
     cmp al, '('
     jne .lfh_no
-    # line must end in " {"
-    cmp rsi, 2
-    jb .lfh_no
-    mov rdx, rsi
-    sub rdx, 2
-    mov al, byte ptr [rdi+rdx]
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+
+    # args: empty or comma-separated tN list
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ')'
+    je .lfh_after_args
+
+.lfh_arg_loop:
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 't'
+    jne .lfh_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lfh_no
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ','
+    je .lfh_arg_next
+    cmp al, ')'
+    je .lfh_after_args
+    jmp .lfh_no
+
+.lfh_arg_next:
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    jmp .lfh_arg_loop
+
+.lfh_after_args:
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ')'
+    jne .lfh_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '-'
+    jne .lfh_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '>'
+    jne .lfh_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 't'
+    jne .lfh_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lfh_no
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
     cmp al, ' '
     jne .lfh_no
-    inc rdx
-    mov al, byte ptr [rdi+rdx]
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
     cmp al, '{'
+    jne .lfh_no
+    inc rcx
+    cmp rcx, rsi
     jne .lfh_no
     mov rax, 1
     ret

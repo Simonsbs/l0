@@ -76,5 +76,13 @@ if "$BIN" verify "$ROOT/tests/invalid_instr_after_terminator.l0" >/tmp/l0_bad4.o
   echo "FAIL: invalid_instr_after_terminator unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_fn_missing_arrow.l0" >/tmp/l0_bad5.out 2>/tmp/l0_bad5.err; then
+  echo "FAIL: invalid_fn_missing_arrow unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_fn_bad_arg_list.l0" >/tmp/l0_bad6.out 2>/tmp/l0_bad6.err; then
+  echo "FAIL: invalid_fn_bad_arg_list unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

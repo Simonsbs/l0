@@ -17,7 +17,8 @@ Exact section order is mandatory:
 The bootstrap parser currently validates module-level section order and required braces/newlines.
 Current verifier also enforces a structural subset inside `fns`:
 - at least one function
-- function headers must match canonical `fn fN ... {` shape
+- function headers must match canonical `fn fN (arg_types)->tN {` shape
+- argument type list must be empty or comma-separated `tN` entries
 - block labels must be `bN:`
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
