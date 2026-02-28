@@ -3346,19 +3346,19 @@ line_is_value_instruction:
 .lvi_check_call:
     # "call" => args must be "fN" or "fN vA vB ..."
     cmp r10, 4
-    jne .lvi_check_icmp
+    jne .lvi_check_const
     mov al, byte ptr [rdi+r12]
     cmp al, 'c'
-    jne .lvi_check_icmp
+    jne .lvi_check_const
     mov al, byte ptr [rdi+r12+1]
     cmp al, 'a'
-    jne .lvi_check_icmp
+    jne .lvi_check_const
     mov al, byte ptr [rdi+r12+2]
     cmp al, 'l'
-    jne .lvi_check_icmp
+    jne .lvi_check_const
     mov al, byte ptr [rdi+r12+3]
     cmp al, 'l'
-    jne .lvi_check_icmp
+    jne .lvi_check_const
 
     mov rcx, r14
     cmp rcx, r15
@@ -3390,6 +3390,52 @@ line_is_value_instruction:
     cmp rcx, r15
     je .lvi_yes
     jmp .lvi_call_arg_loop
+
+.lvi_check_const:
+    # const args must be signed/unsigned decimal literal (no spaces)
+    cmp r10, 5
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'c'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'o'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'n'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, 's'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 't'
+    jne .lvi_check_icmp
+
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '-'
+    jne .lvi_const_digits
+    inc rcx
+    cmp rcx, r15
+    jae .lvi_no
+.lvi_const_digits:
+    mov r11, rcx
+.lvi_const_loop:
+    cmp rcx, r15
+    je .lvi_const_done
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '0'
+    jb .lvi_no
+    cmp al, '9'
+    ja .lvi_no
+    inc rcx
+    jmp .lvi_const_loop
+.lvi_const_done:
+    cmp r11, rcx
+    je .lvi_no
+    jmp .lvi_yes
 
 .lvi_check_icmp:
     # icmp.eq args must be "vN vN" and result type suffix must be i1
@@ -3611,7 +3657,8 @@ line_is_value_instruction:
     jmp .lvi_bin_checked
 
 .lvi_bin_no:
-    jmp .lvi_yes
+    # unknown opcode in bootstrap subset
+    jmp .lvi_no
 
 .lvi_bin_checked:
     cmp r11, 1

@@ -441,5 +441,9 @@ if "$BIN" verify "$ROOT/tests/invalid_icmp_operand_type_mismatch.l0" >/tmp/l0_ba
   echo "FAIL: invalid_icmp_operand_type_mismatch unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_unknown_opcode.l0" >/tmp/l0_bad38.out 2>/tmp/l0_bad38.err; then
+  echo "FAIL: invalid_unknown_opcode unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

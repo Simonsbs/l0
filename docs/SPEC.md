@@ -45,6 +45,7 @@ I also enforce a structural subset inside `fns`:
 - non-terminator instruction lines must match canonical value form:
   - `vN = <opcode> <args> : tN`
   - opcode token is limited to `[a-z.]` in the bootstrap verifier
+  - opcode must be in the current bootstrap-supported opcode set (unknown opcodes are rejected)
   - value result type suffix `tN` must exist in the parsed `types` table
 - opcode-specific bootstrap checks now include:
   - `arg` requires numeric index operand

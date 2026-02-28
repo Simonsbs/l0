@@ -105,6 +105,7 @@ Current bootstrap checks enforce structural shape:
 - value result type suffix `tM` must exist in the parsed module `types` table.
 
 Current bootstrap opcode-aware checks:
+- unknown opcodes are rejected in the current bootstrap subset
 - `arg` requires a numeric index operand
 - `arg` index must be within the function argument count
 - `arg` result type must match the declared type of function argument index `N`
