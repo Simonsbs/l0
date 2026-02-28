@@ -20,6 +20,7 @@ Current bootstrap status:
 - I reject duplicate `b0` and duplicate block labels in a function.
 - I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).
 - I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
+- I enforce bootstrap opcode-operand checks for `arg`, `const`, and common binary ops.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.
 - I enforce that `br`/`cbr` targets reference blocks declared in the same function.

@@ -108,6 +108,7 @@ Current bootstrap opcode-aware checks:
 - `arg` requires a numeric index operand
 - `arg` index must be within the function argument count
 - `arg` result type must match the declared type of function argument index `N`
+- `const` requires a decimal literal operand (`N` or `-N`)
 - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
 - `call` target `fN` must reference a declared function in the module
 - `call` result type suffix must match the declared return type of target `fN`

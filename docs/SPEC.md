@@ -50,6 +50,7 @@ I also enforce a structural subset inside `fns`:
   - `arg` requires numeric index operand
   - `arg` index must be within the function argument count
   - `arg` result type must match the declared type of function argument index `N`
+  - `const` requires a decimal literal operand (`N` or `-N`)
   - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
   - `call` target `fN` must exist in the module function table
   - `call` result type suffix must match callee return type

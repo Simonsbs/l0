@@ -24,6 +24,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
   echo "FAIL: verify valid_ptr_type"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_const.l0" >/tmp/l0_ok_const.out
+if ! grep -q '^ok$' /tmp/l0_ok_const.out; then
+  echo "FAIL: verify valid_const"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -272,6 +277,10 @@ if "$BIN" verify "$ROOT/tests/invalid_binary_operand_type_mismatch.l0" >/tmp/l0_
 fi
 if "$BIN" verify "$ROOT/tests/invalid_call_return_type_mismatch.l0" >/tmp/l0_bad34.out 2>/tmp/l0_bad34.err; then
   echo "FAIL: invalid_call_return_type_mismatch unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_const_bad_operand.l0" >/tmp/l0_bad35.out 2>/tmp/l0_bad35.err; then
+  echo "FAIL: invalid_const_bad_operand unexpectedly passed"
   exit 1
 fi
 

@@ -1928,19 +1928,19 @@ validate_value_uses_defined:
     mov r10, r15
     sub r10, r14                 # opcode length
     cmp r10, 4
-    jne .vvud_detect_binary
+    jne .vvud_detect_const
     mov al, byte ptr [r12+r14]
     cmp al, 'c'
-    jne .vvud_detect_binary
+    jne .vvud_detect_const
     mov al, byte ptr [r12+r14+1]
     cmp al, 'a'
-    jne .vvud_detect_binary
+    jne .vvud_detect_const
     mov al, byte ptr [r12+r14+2]
     cmp al, 'l'
-    jne .vvud_detect_binary
+    jne .vvud_detect_const
     mov al, byte ptr [r12+r14+3]
     cmp al, 'l'
-    jne .vvud_detect_binary
+    jne .vvud_detect_const
 
     mov rcx, r8
     cmp rcx, r11
@@ -1998,6 +1998,55 @@ validate_value_uses_defined:
     cmp rcx, r11
     je .vvud_ok
     jmp .vvud_call_arg_loop
+
+.vvud_detect_const:
+    # bootstrap const shape check:
+    # args must be a signed or unsigned decimal literal (no spaces)
+    mov r10, r15
+    sub r10, r14                 # opcode length
+    cmp r10, 5
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14]
+    cmp al, 'c'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'o'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'n'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+3]
+    cmp al, 's'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 't'
+    jne .vvud_detect_binary
+
+    mov rcx, r8
+    cmp rcx, r11
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, '-'
+    jne .vvud_const_digits
+    inc rcx
+    cmp rcx, r11
+    jae .vvud_bad
+.vvud_const_digits:
+    mov r9, rcx
+.vvud_const_loop:
+    cmp rcx, r11
+    je .vvud_const_done
+    mov al, byte ptr [r12+rcx]
+    cmp al, '0'
+    jb .vvud_bad
+    cmp al, '9'
+    ja .vvud_bad
+    inc rcx
+    jmp .vvud_const_loop
+.vvud_const_done:
+    cmp r9, rcx
+    je .vvud_bad
+    jmp .vvud_ok
 
 .vvud_detect_binary:
 
