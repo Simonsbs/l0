@@ -183,6 +183,10 @@ if "$BIN" verify "$ROOT/tests/invalid_types_noncontiguous_id.l0" >/tmp/l0_bad27.
   echo "FAIL: invalid_types_noncontiguous_id unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_types_bad_token.l0" >/tmp/l0_bad27b.out 2>/tmp/l0_bad27b.err; then
+  echo "FAIL: invalid_types_bad_token unexpectedly passed"
+  exit 1
+fi
 if "$BIN" verify "$ROOT/tests/invalid_fn_type_unknown.l0" >/tmp/l0_bad28.out 2>/tmp/l0_bad28.err; then
   echo "FAIL: invalid_fn_type_unknown unexpectedly passed"
   exit 1

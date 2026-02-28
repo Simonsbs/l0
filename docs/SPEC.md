@@ -20,6 +20,9 @@ In the bootstrap phase, I currently validate module-level section order and requ
 I now also validate a canonical bootstrap `types` table shape:
 - empty: `types { }`
 - non-empty: `types { t0=<tok>, t1=<tok>, ... }` with contiguous ids
+- bootstrap `<tok>` currently allowed set:
+  - `i1`, `i8`, `i16`, `i32`, `i64`
+  - `u8`, `u16`, `u32`, `u64`
 
 I also enforce a structural subset inside `fns`:
 - at least one function

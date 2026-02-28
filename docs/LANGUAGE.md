@@ -25,6 +25,9 @@ Section order is fixed and required:
 Bootstrap type-table requirement currently enforced:
 - `types { }` is valid (empty table).
 - non-empty `types` entries must use contiguous canonical ids: `t0`, `t1`, `t2`, ...
+- bootstrap type RHS token set is currently restricted to:
+  - `i1`, `i8`, `i16`, `i32`, `i64`
+  - `u8`, `u16`, `u32`, `u64`
 
 Example skeleton:
 

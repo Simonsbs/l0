@@ -8,6 +8,7 @@
 .lcomm vfp_fn_seen, 8
 .lcomm vfp_type_count, 8
 .lcomm vfp_type_is_i1_map, 32768
+.lcomm vfp_i1_type_id, 8
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
@@ -61,6 +62,25 @@ kw_globals: .ascii "globals {"
 kw_globals_len = . - kw_globals
 kw_fns: .ascii "fns {"
 kw_fns_len = . - kw_fns
+
+tok_i1: .ascii "i1"
+tok_i1_len = . - tok_i1
+tok_i8: .ascii "i8"
+tok_i8_len = . - tok_i8
+tok_i16: .ascii "i16"
+tok_i16_len = . - tok_i16
+tok_i32: .ascii "i32"
+tok_i32_len = . - tok_i32
+tok_i64: .ascii "i64"
+tok_i64_len = . - tok_i64
+tok_u8: .ascii "u8"
+tok_u8_len = . - tok_u8
+tok_u16: .ascii "u16"
+tok_u16_len = . - tok_u16
+tok_u32: .ascii "u32"
+tok_u32_len = . - tok_u32
+tok_u64: .ascii "u64"
+tok_u64_len = . - tok_u64
 
 .section .text
 .global _start
@@ -565,6 +585,7 @@ validate_types_section:
     push r14
     push r15
     call clear_type_is_i1_map
+    mov qword ptr [rip+vfp_i1_type_id], -1
 
     # find closing "}\n"
     xor r14, r14
@@ -669,17 +690,30 @@ validate_types_section:
 .vts_tok_done:
     cmp rcx, r8
     je .vts_bad
-    # mark type id as i1 when token exactly "i1"
-    mov r11, rcx
-    sub r11, r8
-    cmp r11, 2
-    jne .vts_tok_kind_done
-    mov al, byte ptr [r12+r8]
-    cmp al, 'i'
-    jne .vts_tok_kind_done
-    mov al, byte ptr [r12+r8+1]
-    cmp al, '1'
-    jne .vts_tok_kind_done
+    # validate token against bootstrap allowed type set
+    push r8
+    push rcx
+    push r9
+    mov r10, qword ptr [rsp+16]   # token_start
+    mov r11, qword ptr [rsp+8]    # token_end
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r11
+    sub rsi, r10
+    call type_token_is_allowed
+    cmp rax, 1
+    jne .vts_tok_badpop
+    # mark i1 types for cbr condition typing checks
+    mov r10, qword ptr [rsp+16]
+    mov r11, qword ptr [rsp+8]
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r11
+    sub rsi, r10
+    call type_token_is_i1
+    cmp rax, 1
+    jne .vts_tok_kind_not_i1
+    pop r9
     mov r11, r9
     cmp r11, 4096
     jae .vts_bad
@@ -687,6 +721,17 @@ validate_types_section:
     lea r10, [rip+vfp_type_is_i1_map]
     add r10, r11
     mov qword ptr [r10], 1
+    cmp qword ptr [rip+vfp_i1_type_id], -1
+    jne .vts_tok_i1_id_done
+    mov qword ptr [rip+vfp_i1_type_id], r9
+.vts_tok_i1_id_done:
+    pop rcx
+    pop r8
+    jmp .vts_tok_kind_done
+.vts_tok_kind_not_i1:
+    pop r9
+    pop rcx
+    pop r8
 .vts_tok_kind_done:
 
     mov al, byte ptr [r12+rcx]
@@ -698,6 +743,12 @@ validate_types_section:
     cmp rcx, r14
     jne .vts_bad                 # require single trailing space then close
     jmp .vts_set_count
+
+.vts_tok_badpop:
+    pop r9
+    pop rcx
+    pop r8
+    jmp .vts_bad
 
 .vts_after_comma:
     inc rcx
@@ -1543,13 +1594,7 @@ validate_terminator_uses_defined:
     lea r9, [rip+vfp_value_type_map]
     add r9, r8
     mov r10, qword ptr [r9]
-    cmp r10, 4096
-    jae .vtud_bad
-    mov r11, r10
-    shl r11, 3
-    lea r9, [rip+vfp_type_is_i1_map]
-    add r9, r11
-    cmp qword ptr [r9], 1
+    cmp r10, qword ptr [rip+vfp_i1_type_id]
     jne .vtud_bad
     jmp .vtud_ok
 
@@ -3200,6 +3245,132 @@ parse_value_result_type_id:
     ret
 .pvti_bad:
     mov rax, -1
+    ret
+
+# type_token_is_i1
+# rdi=token_ptr, rsi=token_len
+# out: rax=1 if token is exactly i1 else 0
+type_token_is_i1:
+    cmp rsi, tok_i1_len
+    jne .ttii1_no
+    lea rdx, [rip+tok_i1]
+    mov r8, 0
+.ttii1_loop:
+    cmp r8, tok_i1_len
+    jae .ttii1_yes
+    mov al, byte ptr [rdi+r8]
+    mov r9b, byte ptr [rdx+r8]
+    cmp al, r9b
+    jne .ttii1_no
+    inc r8
+    jmp .ttii1_loop
+.ttii1_yes:
+    mov rax, 1
+    ret
+.ttii1_no:
+    xor rax, rax
+    ret
+
+# type_token_is_allowed
+# rdi=token_ptr, rsi=token_len
+# out: rax=1 if token is in bootstrap allowed set, else 0
+type_token_is_allowed:
+    push r12
+    mov r12, rdi
+
+    # i1
+    mov rdi, r12
+    call type_token_is_i1
+    cmp rax, 1
+    je .ttia_yes
+
+    # i8
+    mov rdi, r12
+    lea rdx, [rip+tok_i8]
+    mov rcx, tok_i8_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # i16
+    mov rdi, r12
+    lea rdx, [rip+tok_i16]
+    mov rcx, tok_i16_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # i32
+    mov rdi, r12
+    lea rdx, [rip+tok_i32]
+    mov rcx, tok_i32_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # i64
+    mov rdi, r12
+    lea rdx, [rip+tok_i64]
+    mov rcx, tok_i64_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+
+    # u8
+    mov rdi, r12
+    lea rdx, [rip+tok_u8]
+    mov rcx, tok_u8_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # u16
+    mov rdi, r12
+    lea rdx, [rip+tok_u16]
+    mov rcx, tok_u16_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # u32
+    mov rdi, r12
+    lea rdx, [rip+tok_u32]
+    mov rcx, tok_u32_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+    # u64
+    mov rdi, r12
+    lea rdx, [rip+tok_u64]
+    mov rcx, tok_u64_len
+    call token_eq
+    cmp rax, 1
+    je .ttia_yes
+
+    xor rax, rax
+    jmp .ttia_done
+.ttia_yes:
+    mov rax, 1
+.ttia_done:
+    pop r12
+    ret
+
+# token_eq
+# rdi=token_ptr, rsi=token_len, rdx=lit_ptr, rcx=lit_len
+# out: rax=1 if equal else 0
+token_eq:
+    cmp rsi, rcx
+    jne .teq_no
+    mov r8, 0
+.teq_loop:
+    cmp r8, rcx
+    jae .teq_yes
+    mov al, byte ptr [rdi+r8]
+    mov r9b, byte ptr [rdx+r8]
+    cmp al, r9b
+    jne .teq_no
+    inc r8
+    jmp .teq_loop
+.teq_yes:
+    mov rax, 1
+    ret
+.teq_no:
+    xor rax, rax
     ret
 
 # parse one-or-more digits at line index rcx

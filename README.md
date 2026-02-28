@@ -29,6 +29,7 @@ Current bootstrap status:
 - I enforce type compatibility for bootstrap `arg`, `ret vN`, and binary `vN vN` operations.
 - I enforce that `cbr` condition values are typed as `i1`.
 - I parse `types` in bootstrap form and enforce contiguous canonical type IDs (`t0`, `t1`, `t2`, ...).
+- I restrict bootstrap `types` RHS tokens to the current primitive set (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`).
 - I enforce that every referenced `tN` in function signatures and value result suffixes exists.
 - I use syscall-only file loading.
 - I validate strict module section order.
