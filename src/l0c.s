@@ -85,6 +85,9 @@ tok_u64_len = . - tok_u64
 tok_p0_i8: .ascii "p0<i8>"
 tok_p0_i8_len = . - tok_p0_i8
 
+code_stub_ret: .byte 0xc3
+code_stub_ret_len = . - code_stub_ret
+
 .section .text
 .global _start
 
@@ -207,43 +210,45 @@ do_build:
     mov r10, rax               # out fd
 
     # Build structured 80-byte L0IMG header in-memory.
-    # Also emit a bootstrap 32-byte debug semantic index (L0IX).
+    # Also emit a bootstrap code stub and 32-byte debug semantic index (L0IX).
     # qword[0]  = magic "L0IM"
     # qword[1]  = version
     # qword[2]  = header size
     # qword[3]  = flags
     # qword[4]  = src offset
     # qword[5]  = src size
-    # qword[6]  = code offset (0 in bootstrap)
-    # qword[7]  = code size   (0 in bootstrap)
-    # qword[8]  = debug offset (after source payload)
+    # qword[6]  = code offset (after source payload)
+    # qword[7]  = code size   (1-byte ret stub in bootstrap)
+    # qword[8]  = debug offset (after code payload)
     # qword[9]  = debug size   (32 in bootstrap)
-    mov r9, img_header_len
-    add r9, rbx                 # debug_off
-    lea r8, [rip+img_header_buf]
+    mov r8, img_header_len
+    add r8, rbx                 # code_off
+    mov r9, r8
+    add r9, code_stub_ret_len   # debug_off
+    lea r11, [rip+img_header_buf]
     mov rax, 0x000000004d49304c
-    mov qword ptr [r8+0], rax
-    mov qword ptr [r8+8], 1
-    mov qword ptr [r8+16], img_header_len
-    mov qword ptr [r8+24], 0
-    mov qword ptr [r8+32], img_header_len
-    mov qword ptr [r8+40], rbx
-    mov qword ptr [r8+48], 0
-    mov qword ptr [r8+56], 0
-    mov qword ptr [r8+64], r9
-    mov qword ptr [r8+72], 32
+    mov qword ptr [r11+0], rax
+    mov qword ptr [r11+8], 1
+    mov qword ptr [r11+16], img_header_len
+    mov qword ptr [r11+24], 0
+    mov qword ptr [r11+32], img_header_len
+    mov qword ptr [r11+40], rbx
+    mov qword ptr [r11+48], r8
+    mov qword ptr [r11+56], code_stub_ret_len
+    mov qword ptr [r11+64], r9
+    mov qword ptr [r11+72], 32
 
     # Build debug semantic index qwords:
     # [0]=magic "L0IX" [1]=version [2]=fn_count [3]=type_count
-    lea r8, [rip+img_debug_idx_buf]
+    lea r11, [rip+img_debug_idx_buf]
     mov rax, 0x000000005849304c
-    mov qword ptr [r8+0], rax
-    mov qword ptr [r8+8], 1
+    mov qword ptr [r11+0], rax
+    mov qword ptr [r11+8], 1
     mov rax, qword ptr [rip+vfp_last_fn_id]
     inc rax
-    mov qword ptr [r8+16], rax
+    mov qword ptr [r11+16], rax
     mov rax, qword ptr [rip+vfp_type_count]
-    mov qword ptr [r8+24], rax
+    mov qword ptr [r11+24], rax
 
     mov rdi, r10
     lea rsi, [rip+img_header_buf]
@@ -255,6 +260,13 @@ do_build:
     mov rdi, r10
     lea rsi, [rip+file_buf]
     mov rdx, rbx
+    call write_all
+    cmp rax, 0
+    jne .build_write_fail
+
+    mov rdi, r10
+    lea rsi, [rip+code_stub_ret]
+    mov rdx, code_stub_ret_len
     call write_all
     cmp rax, 0
     jne .build_write_fail

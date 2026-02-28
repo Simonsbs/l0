@@ -74,11 +74,12 @@ I also enforce a structural subset inside `fns`:
   - `qword[3]`: flags (`0`, reserved in bootstrap)
   - `qword[4]`: `src_off` (`80`)
   - `qword[5]`: `src_size`
-  - `qword[6]`: `code_off` (`0` in bootstrap)
-  - `qword[7]`: `code_size` (`0` in bootstrap)
-  - `qword[8]`: `debug_off` (`src_off + src_size`)
+  - `qword[6]`: `code_off` (`src_off + src_size`)
+  - `qword[7]`: `code_size` (`1` in bootstrap; single `ret` stub)
+  - `qword[8]`: `debug_off` (`code_off + code_size`)
   - `qword[9]`: `debug_size` (`32` in bootstrap)
 - followed by raw canonical source bytes at `src_off`
+- followed by bootstrap code section bytes at `code_off` (`c3` / `ret`)
 - followed by a 32-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)
   - `qword[1]`: version (`1`)

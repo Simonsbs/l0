@@ -41,6 +41,7 @@ fi
 in_size=$(wc -c < "$ROOT/tests/valid_min.l0")
 img_size=$(wc -c < /tmp/l0_test.img)
 expected_size=$((80 + in_size + 32))
+expected_size=$((expected_size + 1))
 if [ "$img_size" -ne "$expected_size" ]; then
   echo "FAIL: build image size mismatch"
   exit 1
@@ -49,14 +50,24 @@ version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_test.img | tr -d ' ')
 hdr_size=$(od -An -t u8 -j 16 -N 8 /tmp/l0_test.img | tr -d ' ')
 src_off=$(od -An -t u8 -j 32 -N 8 /tmp/l0_test.img | tr -d ' ')
 src_size=$(od -An -t u8 -j 40 -N 8 /tmp/l0_test.img | tr -d ' ')
+code_off=$(od -An -t u8 -j 48 -N 8 /tmp/l0_test.img | tr -d ' ')
+code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test.img | tr -d ' ')
 dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
 dbg_size=$(od -An -t u8 -j 72 -N 8 /tmp/l0_test.img | tr -d ' ')
 if [ "$version" != "1" ] || [ "$hdr_size" != "80" ] || [ "$src_off" != "80" ] || [ "$src_size" != "$in_size" ]; then
   echo "FAIL: build header fields"
   exit 1
 fi
-if [ "$dbg_off" != "$((80 + in_size))" ] || [ "$dbg_size" != "32" ]; then
+if [ "$code_off" != "$((80 + in_size))" ] || [ "$code_size" != "1" ]; then
+  echo "FAIL: build code header fields"
+  exit 1
+fi
+if [ "$dbg_off" != "$((80 + in_size + 1))" ] || [ "$dbg_size" != "32" ]; then
   echo "FAIL: build debug header fields"
+  exit 1
+fi
+if [ "$(od -An -t x1 -j "$code_off" -N 1 /tmp/l0_test.img | tr -d ' \n')" != "c3" ]; then
+  echo "FAIL: build code stub bytes"
   exit 1
 fi
 if [ "$(od -An -t x1 -j "$dbg_off" -N 4 /tmp/l0_test.img | tr -d ' \n')" != "4c304958" ]; then
