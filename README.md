@@ -26,6 +26,7 @@ make
 ```sh
 ./bin/l0c canon <module.l0>
 ./bin/l0c verify <module.l0>
+./bin/l0c build <module.l0> <out.l0img>
 ```
 
 ## Notes

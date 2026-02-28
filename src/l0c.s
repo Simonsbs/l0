@@ -2,9 +2,10 @@
 
 .section .bss
 .lcomm file_buf, 1048576
+.lcomm out_path_ptr, 8
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -18,9 +19,18 @@ err_read_len = . - err_read_msg
 
 err_parse_msg: .ascii "error: invalid module shape or non-canonical input\n"
 err_parse_len = . - err_parse_msg
+err_build_msg: .ascii "error: cannot write output image\n"
+err_build_len = . - err_build_msg
 
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
+cmd_build: .ascii "build\0"
+
+img_header:
+    .ascii "L0IM"
+    .quad 1
+    .quad 0
+img_header_len = . - img_header
 
 kw_ver: .ascii "ver "
 kw_ver_len = . - kw_ver
@@ -42,7 +52,7 @@ _start:
     mov r12, rsp
     mov r13, [r12]            # argc
     cmp r13, 3
-    jne usage
+    jb usage
 
     mov r14, [r12+16]         # argv[1] command
     mov r15, [r12+24]         # argv[2] input path
@@ -51,13 +61,32 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    je do_canon
+    jne .check_verify
+    cmp r13, 3
+    jne usage
+    jmp do_canon
 
+.check_verify:
     lea rsi, [rip+cmd_verify]
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    je do_verify
+    jne .check_build
+    cmp r13, 3
+    jne usage
+    jmp do_verify
+
+.check_build:
+    lea rsi, [rip+cmd_build]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne usage
+    cmp r13, 4
+    jne usage
+    mov r11, [r12+32]         # argv[3] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    jmp do_build
 
 usage:
     lea rsi, [rip+usage_msg]
@@ -105,6 +134,59 @@ do_verify:
     mov rdi, 0
     call exit
 
+do_build:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call validate_module
+    cmp rax, 1
+    jne fail_parse
+
+    # open output path argv[3]
+    mov rdi, qword ptr [rip+out_path_ptr]
+    mov rax, 2                 # sys_open
+    mov rsi, 577               # O_WRONLY|O_CREAT|O_TRUNC
+    mov rdx, 420               # 0644
+    syscall
+    test rax, rax
+    js fail_build
+    mov r10, rax               # out fd
+
+    mov rdi, r10
+    lea rsi, [rip+img_header]
+    mov rdx, img_header_len
+    call write_all
+    cmp rax, 0
+    jne .build_write_fail
+
+    mov rdi, r10
+    lea rsi, [rip+file_buf]
+    mov rdx, rbx
+    call write_all
+    cmp rax, 0
+    jne .build_write_fail
+
+    mov rdi, r10
+    mov rax, 3                 # sys_close
+    syscall
+
+    lea rsi, [rip+ok_msg]
+    mov rdx, ok_len
+    mov rdi, 1
+    call write_fd
+    mov rdi, 0
+    call exit
+
+.build_write_fail:
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp fail_build
+
 fail_io:
     cmp rax, -2
     je fail_read
@@ -129,6 +211,14 @@ fail_parse:
     mov rdi, 2
     call write_fd
     mov rdi, 5
+    call exit
+
+fail_build:
+    lea rsi, [rip+err_build_msg]
+    mov rdx, err_build_len
+    mov rdi, 2
+    call write_fd
+    mov rdi, 6
     call exit
 
 # rdi=path ; returns rax=size or negative code
@@ -373,6 +463,29 @@ str_eq:
 write_fd:
     mov rax, 1
     syscall
+    ret
+
+# rdi=fd rsi=buf rdx=len ; rax=0 success, -1 error
+write_all:
+    mov r8, rsi
+    mov r9, rdx
+.wa_loop:
+    cmp r9, 0
+    je .wa_ok
+    mov rax, 1
+    mov rsi, r8
+    mov rdx, r9
+    syscall
+    test rax, rax
+    jle .wa_err
+    add r8, rax
+    sub r9, rax
+    jmp .wa_loop
+.wa_ok:
+    xor rax, rax
+    ret
+.wa_err:
+    mov rax, -1
     ret
 
 # rdi=status
