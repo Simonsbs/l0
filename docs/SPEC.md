@@ -20,11 +20,18 @@ Function-level grammar is staged next.
 ## Current build artifact subset
 
 `l0c build <in.l0> <out.l0img>` currently emits:
-- 20-byte bootstrap header:
-  - bytes `0..3`: magic `L0IM`
-  - bytes `4..11`: little-endian u64 version (`1`)
-  - bytes `12..19`: reserved (`0`)
-- followed by raw canonical source bytes as temporary payload.
+- fixed 80-byte bootstrap header (all little-endian u64 words):
+  - `qword[0]`: magic (`L0IM`)
+  - `qword[1]`: version (`1`)
+  - `qword[2]`: header size (`80`)
+  - `qword[3]`: flags (`0`)
+  - `qword[4]`: `src_off` (`80`)
+  - `qword[5]`: `src_size`
+  - `qword[6]`: `code_off` (`0` in bootstrap)
+  - `qword[7]`: `code_size` (`0` in bootstrap)
+  - `qword[8]`: `debug_off` (`0` in bootstrap)
+  - `qword[9]`: `debug_size` (`0` in bootstrap)
+- followed by raw canonical source bytes at `src_off`.
 
 This is an interim image format to validate end-to-end native build flow.
 

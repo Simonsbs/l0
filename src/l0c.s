@@ -3,6 +3,7 @@
 .section .bss
 .lcomm file_buf, 1048576
 .lcomm out_path_ptr, 8
+.lcomm img_header_buf, 80
 
 .section .rodata
 usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img>\n"
@@ -25,12 +26,7 @@ err_build_len = . - err_build_msg
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
-
-img_header:
-    .ascii "L0IM"
-    .quad 1
-    .quad 0
-img_header_len = . - img_header
+img_header_len = 80
 
 kw_ver: .ascii "ver "
 kw_ver_len = . - kw_ver
@@ -156,8 +152,32 @@ do_build:
     js fail_build
     mov r10, rax               # out fd
 
+    # Build structured 80-byte L0IMG header in-memory.
+    # qword[0]  = magic "L0IM"
+    # qword[1]  = version
+    # qword[2]  = header size
+    # qword[3]  = flags
+    # qword[4]  = src offset
+    # qword[5]  = src size
+    # qword[6]  = code offset (0 in bootstrap)
+    # qword[7]  = code size   (0 in bootstrap)
+    # qword[8]  = debug offset (0 in bootstrap)
+    # qword[9]  = debug size   (0 in bootstrap)
+    lea r8, [rip+img_header_buf]
+    mov rax, 0x000000004d49304c
+    mov qword ptr [r8+0], rax
+    mov qword ptr [r8+8], 1
+    mov qword ptr [r8+16], img_header_len
+    mov qword ptr [r8+24], 0
+    mov qword ptr [r8+32], img_header_len
+    mov qword ptr [r8+40], rbx
+    mov qword ptr [r8+48], 0
+    mov qword ptr [r8+56], 0
+    mov qword ptr [r8+64], 0
+    mov qword ptr [r8+72], 0
+
     mov rdi, r10
-    lea rsi, [rip+img_header]
+    lea rsi, [rip+img_header_buf]
     mov rdx, img_header_len
     call write_all
     cmp rax, 0

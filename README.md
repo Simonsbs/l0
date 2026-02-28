@@ -11,6 +11,7 @@ This repository is intentionally native-only for bootstrap:
 
 Initial bootstrap is in place:
 - `l0c` CLI skeleton (`canon`, `verify`)
+- `l0c build` producing deterministic `.l0img` container header + payload
 - file loader (syscalls only)
 - strict module-shape validator for fixed section order
 - canonical mode echoes validated canonical source
