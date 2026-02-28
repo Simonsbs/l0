@@ -17,11 +17,16 @@ Exact section order is mandatory:
 ## Current parser subset
 
 In the bootstrap phase, I currently validate module-level section order and required braces/newlines.
+I now also validate a canonical bootstrap `types` table shape:
+- empty: `types { }`
+- non-empty: `types { t0=<tok>, t1=<tok>, ... }` with contiguous ids
+
 I also enforce a structural subset inside `fns`:
 - at least one function
 - function headers must match canonical `fn fN (arg_types)->tN {` shape
 - function ids must appear in contiguous canonical order: `f0`, `f1`, `f2`, ...
 - argument type list must be empty or comma-separated `tN` entries
+- every referenced signature type `tN` must exist in the parsed `types` table
 - block labels must be `bN:`
 - first block in every function must be `b0:`
 - `b0:` may not appear again later in the same function
@@ -35,6 +40,7 @@ I also enforce a structural subset inside `fns`:
 - non-terminator instruction lines must match canonical value form:
   - `vN = <opcode> <args> : tN`
   - opcode token is limited to `[a-z.]` in the bootstrap verifier
+  - value result type suffix `tN` must exist in the parsed `types` table
 - opcode-specific bootstrap checks now include:
   - `arg` requires numeric index operand
   - `arg` index must be within the function argument count

@@ -22,6 +22,10 @@ Section order is fixed and required:
 5. `globals`
 6. `fns`
 
+Bootstrap type-table requirement currently enforced:
+- `types { }` is valid (empty table).
+- non-empty `types` entries must use contiguous canonical ids: `t0`, `t1`, `t2`, ...
+
 Example skeleton:
 
 ```text
@@ -54,6 +58,7 @@ fn fN (arg_types)->tM {
 Where:
 - `arg_types` is either empty `()` or comma-separated `tN` values, e.g. `(t0,t1)`.
 - return type is `tM`.
+- each referenced `tN` must exist in the parsed module `types` table.
 
 Function body requirements currently enforced:
 - at least one block
@@ -92,6 +97,7 @@ Current bootstrap checks enforce structural shape:
 - non-empty opcode token (restricted tokenizer subset)
 - non-empty args payload
 - explicit type suffix `: tM`
+- value result type suffix `tM` must exist in the parsed module `types` table.
 
 Current bootstrap opcode-aware checks:
 - `arg` requires a numeric index operand

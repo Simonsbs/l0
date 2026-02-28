@@ -175,5 +175,17 @@ if "$BIN" verify "$ROOT/tests/invalid_call_target_missing_fn.l0" >/tmp/l0_bad26.
   echo "FAIL: invalid_call_target_missing_fn unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_types_noncontiguous_id.l0" >/tmp/l0_bad27.out 2>/tmp/l0_bad27.err; then
+  echo "FAIL: invalid_types_noncontiguous_id unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_fn_type_unknown.l0" >/tmp/l0_bad28.out 2>/tmp/l0_bad28.err; then
+  echo "FAIL: invalid_fn_type_unknown unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_value_type_unknown.l0" >/tmp/l0_bad29.out 2>/tmp/l0_bad29.err; then
+  echo "FAIL: invalid_value_type_unknown unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

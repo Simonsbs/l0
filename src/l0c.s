@@ -6,6 +6,7 @@
 .lcomm img_header_buf, 80
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
+.lcomm vfp_type_count, 8
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
@@ -442,7 +443,7 @@ validate_module:
     jne .bad
     add r12, kw_types_len
     sub r13, kw_types_len
-    call skip_until_close_brace_newline
+    call validate_types_section
     cmp rax, 1
     jne .bad
 
@@ -545,6 +546,162 @@ skip_until_close_brace_newline:
     jmp .loop
 .fail:
     xor rax, rax
+    ret
+
+# validate_types_section
+# uses parser cursor r12/r13 currently right after "types {"
+# validates canonical bootstrap type table and stores vfp_type_count
+# accepted canonical forms:
+# - empty: " }\n"
+# - non-empty: " t0=<tok>, t1=<tok>, ... }\n" (contiguous ids from 0)
+validate_types_section:
+    push rbx
+    push r14
+    push r15
+
+    # find closing "}\n"
+    xor r14, r14
+.vts_find_close:
+    cmp r14, r13
+    jae .vts_bad
+    mov al, byte ptr [r12+r14]
+    cmp al, '}'
+    jne .vts_next
+    mov r15, r14
+    inc r15
+    cmp r15, r13
+    jae .vts_bad
+    mov al, byte ptr [r12+r15]
+    cmp al, 10
+    je .vts_have_close
+.vts_next:
+    inc r14
+    jmp .vts_find_close
+
+.vts_have_close:
+    # content is [0, r14), must start with single leading space
+    cmp r14, 1
+    jb .vts_bad
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vts_bad
+    mov qword ptr [rip+vfp_type_count], 0
+
+    # empty case: exactly " "
+    cmp r14, 1
+    je .vts_consume
+
+    # parse entries: " tN=tok" with ", " separators, trailing space before "}"
+    mov rcx, 1                    # scan index into content
+    xor rbx, rbx                  # expected type id
+
+.vts_entry:
+    cmp rcx, r14
+    jae .vts_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 't'
+    jne .vts_bad
+    inc rcx
+    mov rdi, r12
+    mov rsi, r14
+    call parse_digits
+    cmp rax, 1
+    jne .vts_bad
+
+    # convert parsed id from digits [start, rcx)
+    xor r9, r9
+    mov r8, 0                     # start unknown yet
+    mov r8, rcx
+.vts_find_digit_start:
+    cmp r8, 0
+    je .vts_bad
+    dec r8
+    mov al, byte ptr [r12+r8]
+    cmp al, '0'
+    jb .vts_digit_start_found
+    cmp al, '9'
+    jbe .vts_find_digit_start
+.vts_digit_start_found:
+    inc r8
+.vts_id_conv:
+    cmp r8, rcx
+    jae .vts_id_done
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul r9, r9, 10
+    movzx r10, al
+    add r9, r10
+    inc r8
+    jmp .vts_id_conv
+.vts_id_done:
+    cmp r9, rbx
+    jne .vts_bad
+    inc rbx
+
+    cmp rcx, r14
+    jae .vts_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, '='
+    jne .vts_bad
+    inc rcx
+    cmp rcx, r14
+    jae .vts_bad
+
+    # parse minimal type token payload until delimiter ',' or ' '
+    mov r8, rcx
+.vts_tok_loop:
+    cmp rcx, r14
+    jae .vts_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    je .vts_tok_done
+    cmp al, ' '
+    je .vts_tok_done
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_done:
+    cmp rcx, r8
+    je .vts_bad
+
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    je .vts_after_comma
+    cmp al, ' '
+    jne .vts_bad
+    inc rcx
+    cmp rcx, r14
+    jne .vts_bad                 # require single trailing space then close
+    jmp .vts_set_count
+
+.vts_after_comma:
+    inc rcx
+    cmp rcx, r14
+    jae .vts_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vts_bad
+    inc rcx
+    cmp rcx, r14
+    jae .vts_bad
+    jmp .vts_entry
+
+.vts_set_count:
+    mov qword ptr [rip+vfp_type_count], rbx
+
+.vts_consume:
+    # advance parser cursor past "}\n"
+    add r14, 2
+    add r12, r14
+    sub r13, r14
+    mov rax, 1
+    jmp .vts_done
+
+.vts_bad:
+    xor rax, rax
+.vts_done:
+    pop r15
+    pop r14
+    pop rbx
     ret
 
 # verify_fns_payload
@@ -831,9 +988,24 @@ line_is_fn_header:
     cmp al, 't'
     jne .lfh_no
     inc rcx
+    mov r8, rcx
     call parse_digits
     cmp rax, 1
     jne .lfh_no
+    xor r9, r9
+.lfh_arg_id_conv:
+    cmp r8, rcx
+    jae .lfh_arg_id_done
+    mov al, byte ptr [rdi+r8]
+    sub al, '0'
+    imul r9, r9, 10
+    movzx r10, al
+    add r9, r10
+    inc r8
+    jmp .lfh_arg_id_conv
+.lfh_arg_id_done:
+    cmp r9, qword ptr [rip+vfp_type_count]
+    jae .lfh_no
     inc qword ptr [rip+vfp_fn_arg_count]
     cmp rcx, rsi
     jae .lfh_no
@@ -873,9 +1045,24 @@ line_is_fn_header:
     cmp al, 't'
     jne .lfh_no
     inc rcx
+    mov r8, rcx
     call parse_digits
     cmp rax, 1
     jne .lfh_no
+    xor r9, r9
+.lfh_ret_id_conv:
+    cmp r8, rcx
+    jae .lfh_ret_id_done
+    mov al, byte ptr [rdi+r8]
+    sub al, '0'
+    imul r9, r9, 10
+    movzx r10, al
+    add r9, r10
+    inc r8
+    jmp .lfh_ret_id_conv
+.lfh_ret_id_done:
+    cmp r9, qword ptr [rip+vfp_type_count]
+    jae .lfh_no
     cmp rcx, rsi
     jae .lfh_no
     mov al, byte ptr [rdi+rcx]
@@ -2353,6 +2540,26 @@ line_is_value_instruction:
     mov al, byte ptr [rdi+r9-3]
     cmp al, ' '
     jne .lvi_no
+    # enforce value result type id exists in module type table
+    xor r8, r8
+    mov r11, r10
+    inc r11
+    mov rdx, r9
+    inc rdx
+.lvi_type_id_conv:
+    cmp rdx, r11
+    jae .lvi_type_id_done
+    mov al, byte ptr [rdi+rdx]
+    sub al, '0'
+    imul r8, r8, 10
+    movzx r10, al
+    add r8, r10
+    inc rdx
+    jmp .lvi_type_id_conv
+.lvi_type_id_done:
+    cmp r8, qword ptr [rip+vfp_type_count]
+    jae .lvi_no
+
     mov r15, r9
     sub r15, 3                   # args_end (exclusive), suffix start
     cmp r15, r14                 # args must be non-empty

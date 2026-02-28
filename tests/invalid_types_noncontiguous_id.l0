@@ -1,0 +1,11 @@
+ver 1
+types { t1=i64 }
+consts { }
+extern { }
+globals { }
+fns {
+fn f0 ()->t1 {
+b0:
+  ret
+}
+}
