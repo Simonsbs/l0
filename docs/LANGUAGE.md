@@ -92,6 +92,7 @@ Current bootstrap checks enforce structural shape:
 Current bootstrap opcode-aware checks:
 - `arg` requires a numeric index operand
 - `arg` index must be within the function argument count
+- `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 
 Current bootstrap SSA check:
@@ -99,6 +100,7 @@ Current bootstrap SSA check:
 - def-before-use is enforced for:
   - `ret vN`
   - `cbr vN bT bF` condition value
+  - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
   - bootstrap binary operands (`vN vN`)
 
 Note: full opcode semantics/type-checking are still being added incrementally.

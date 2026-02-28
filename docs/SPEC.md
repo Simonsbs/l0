@@ -33,15 +33,17 @@ I also enforce a structural subset inside `fns`:
 - non-terminator instruction lines must match canonical value form:
   - `vN = <opcode> <args> : tN`
   - opcode token is limited to `[a-z.]` in the bootstrap verifier
-  - opcode-specific bootstrap checks now include:
-    - `arg` requires numeric index operand
-    - `arg` index must be within the function argument count
-    - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+- opcode-specific bootstrap checks now include:
+  - `arg` requires numeric index operand
+  - `arg` index must be within the function argument count
+  - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
+  - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:
     - `ret vN`
     - `cbr vN bT bF` condition value
+    - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
     - bootstrap binary op operands (`vN vN`)
 
 ## Current build artifact subset

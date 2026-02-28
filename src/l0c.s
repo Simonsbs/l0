@@ -1306,9 +1306,85 @@ validate_value_uses_defined:
     cmp r11, r8
     jbe .vvud_bad
 
-    # detect bootstrap binary op set
+    # bootstrap call def-use check:
+    # args must be "fN" or "fN vA vB ...", and each call operand vN must be defined
     mov r10, r15
     sub r10, r14                 # opcode length
+    cmp r10, 4
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14]
+    cmp al, 'c'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'a'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'l'
+    jne .vvud_detect_binary
+    mov al, byte ptr [r12+r14+3]
+    cmp al, 'l'
+    jne .vvud_detect_binary
+
+    mov rcx, r8
+    cmp rcx, r11
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'f'
+    jne .vvud_bad
+    inc rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    cmp rcx, r11
+    je .vvud_ok
+
+.vvud_call_arg_loop:
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r11
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r9, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    xor rbx, rbx
+.vvud_call_v_conv:
+    cmp r9, rcx
+    jae .vvud_call_v_check
+    mov al, byte ptr [r12+r9]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx rdx, al
+    add rbx, rdx
+    inc r9
+    jmp .vvud_call_v_conv
+.vvud_call_v_check:
+    push rcx
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    je .vvud_call_v_seen
+    pop rcx
+    jmp .vvud_bad
+.vvud_call_v_seen:
+    pop rcx
+    cmp rcx, r11
+    je .vvud_ok
+    jmp .vvud_call_arg_loop
+
+.vvud_detect_binary:
+
+    # detect bootstrap binary op set
     mov rdx, 0
     cmp r10, 8
     jne .vvud_bin_short
@@ -2062,7 +2138,7 @@ line_is_value_instruction:
     mov r10, r13
     sub r10, r12
     cmp r10, 3
-    jne .lvi_check_binary
+    jne .lvi_check_call
     mov al, byte ptr [rdi+r12]
     cmp al, 'a'
     jne .lvi_check_binary
@@ -2096,6 +2172,54 @@ line_is_value_instruction:
     cmp r10, qword ptr [rip+vfp_fn_arg_count]
     jae .lvi_no
     jmp .lvi_yes
+
+.lvi_check_call:
+    # "call" => args must be "fN" or "fN vA vB ..."
+    cmp r10, 4
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'c'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'a'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'l'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, 'l'
+    jne .lvi_check_binary
+
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'f'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    je .lvi_yes
+
+.lvi_call_arg_loop:
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    je .lvi_yes
+    jmp .lvi_call_arg_loop
 
 .lvi_check_binary:
     # binary op set:

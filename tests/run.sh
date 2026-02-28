@@ -14,6 +14,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_branch.out; then
   echo "FAIL: verify valid_branch"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call.l0" >/tmp/l0_ok_call.out
+if ! grep -q '^ok$' /tmp/l0_ok_call.out; then
+  echo "FAIL: verify valid_call"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -144,6 +149,14 @@ if "$BIN" verify "$ROOT/tests/invalid_binary_use_before_def.l0" >/tmp/l0_bad19.o
 fi
 if "$BIN" verify "$ROOT/tests/invalid_cbr_cond_undefined.l0" >/tmp/l0_bad20.out 2>/tmp/l0_bad20.err; then
   echo "FAIL: invalid_cbr_cond_undefined unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_call_bad_shape.l0" >/tmp/l0_bad21.out 2>/tmp/l0_bad21.err; then
+  echo "FAIL: invalid_call_bad_shape unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_call_use_before_def.l0" >/tmp/l0_bad22.out 2>/tmp/l0_bad22.err; then
+  echo "FAIL: invalid_call_use_before_def unexpectedly passed"
   exit 1
 fi
 
