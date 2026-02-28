@@ -134,5 +134,17 @@ if "$BIN" verify "$ROOT/tests/invalid_cbr_target_missing.l0" >/tmp/l0_bad17.out 
   echo "FAIL: invalid_cbr_target_missing unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_ret_undefined_value.l0" >/tmp/l0_bad18.out 2>/tmp/l0_bad18.err; then
+  echo "FAIL: invalid_ret_undefined_value unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_binary_use_before_def.l0" >/tmp/l0_bad19.out 2>/tmp/l0_bad19.err; then
+  echo "FAIL: invalid_binary_use_before_def unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_cbr_cond_undefined.l0" >/tmp/l0_bad20.out 2>/tmp/l0_bad20.err; then
+  echo "FAIL: invalid_cbr_cond_undefined unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

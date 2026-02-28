@@ -711,6 +711,11 @@ verify_fns_payload:
     call line_is_terminator
     cmp rax, 1
     jne .vfp_try_value_instr
+    mov rdi, r12
+    mov rsi, r13
+    call validate_terminator_uses_defined
+    cmp rax, 1
+    jne .vfp_bad
     mov qword ptr [rip+vfp_term_seen], 1
     jmp .vfp_next_line
 
@@ -718,6 +723,11 @@ verify_fns_payload:
     mov rdi, r12
     mov rsi, r13
     call line_is_value_instruction
+    cmp rax, 1
+    jne .vfp_bad
+    mov rdi, r12
+    mov rsi, r13
+    call validate_value_uses_defined
     cmp rax, 1
     jne .vfp_bad
     # SSA uniqueness: vN may be defined only once per function
@@ -1008,6 +1018,527 @@ test_and_set_value_seen:
     ret
 .tvss_seen:
     mov rax, 1
+    ret
+
+# value_seen_exists
+# rdi=value_id
+# out: rax=1 if seen, 0 if not seen
+value_seen_exists:
+    cmp rdi, 65536
+    jae .vse_no
+    mov r8, rdi
+    shr r8, 3
+    mov r9, rdi
+    and r9, 7
+    lea r10, [rip+vfp_value_seen_map]
+    add r10, r8
+    mov al, byte ptr [r10]
+    mov dl, 1
+    mov cl, r9b
+    shl dl, cl
+    test al, dl
+    jne .vse_yes
+.vse_no:
+    xor rax, rax
+    ret
+.vse_yes:
+    mov rax, 1
+    ret
+
+# validate_terminator_uses_defined
+# rdi=line_ptr, rsi=line_len
+# out: rax=1 valid, 0 invalid
+validate_terminator_uses_defined:
+    push rbx
+    push r12
+    push r13
+
+    mov r12, rdi
+    mov r13, rsi
+
+    # "  ret" has no value use
+    cmp r13, 5
+    jne .vtud_try_retv
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vtud_bad
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vtud_bad
+    mov al, byte ptr [r12+2]
+    cmp al, 'r'
+    jne .vtud_bad
+    mov al, byte ptr [r12+3]
+    cmp al, 'e'
+    jne .vtud_bad
+    mov al, byte ptr [r12+4]
+    cmp al, 't'
+    jne .vtud_bad
+    jmp .vtud_ok
+
+.vtud_try_retv:
+    # "  ret vN" => vN must already be defined
+    cmp r13, 8
+    jb .vtud_try_cbr
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+2]
+    cmp al, 'r'
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+3]
+    cmp al, 'e'
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+4]
+    cmp al, 't'
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+5]
+    cmp al, ' '
+    jne .vtud_try_cbr
+    mov al, byte ptr [r12+6]
+    cmp al, 'v'
+    jne .vtud_try_cbr
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 7
+    call parse_digits
+    cmp rax, 1
+    jne .vtud_bad
+    cmp rcx, r13
+    jne .vtud_bad
+    xor rbx, rbx
+    mov r8, 7
+.vtud_retv_conv:
+    cmp r8, rcx
+    jae .vtud_retv_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vtud_retv_conv
+.vtud_retv_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vtud_bad
+    jmp .vtud_ok
+
+.vtud_try_cbr:
+    # "  cbr vN bT bF" => condition vN must already be defined
+    cmp r13, 12
+    jb .vtud_ok
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vtud_ok
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vtud_ok
+    mov al, byte ptr [r12+2]
+    cmp al, 'c'
+    jne .vtud_ok
+    mov al, byte ptr [r12+3]
+    cmp al, 'b'
+    jne .vtud_ok
+    mov al, byte ptr [r12+4]
+    cmp al, 'r'
+    jne .vtud_ok
+    mov al, byte ptr [r12+5]
+    cmp al, ' '
+    jne .vtud_ok
+    mov al, byte ptr [r12+6]
+    cmp al, 'v'
+    jne .vtud_ok
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 7
+    call parse_digits
+    cmp rax, 1
+    jne .vtud_bad
+    cmp rcx, r13
+    jae .vtud_bad
+    xor rbx, rbx
+    mov r8, 7
+.vtud_cbr_conv:
+    cmp r8, rcx
+    jae .vtud_cbr_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vtud_cbr_conv
+.vtud_cbr_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vtud_bad
+    jmp .vtud_ok
+
+.vtud_bad:
+    xor rax, rax
+    jmp .vtud_done
+.vtud_ok:
+    mov rax, 1
+.vtud_done:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# validate_value_uses_defined
+# rdi=line_ptr, rsi=line_len
+# out: rax=1 valid, 0 invalid
+validate_value_uses_defined:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+
+    # parse canonical prefix to locate opcode + args span
+    cmp r13, 14
+    jb .vvud_bad
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vvud_bad
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vvud_bad
+    mov al, byte ptr [r12+2]
+    cmp al, 'v'
+    jne .vvud_bad
+    mov rdi, r12
+    mov rsi, r13
+    mov rcx, 3
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    cmp rcx, r13
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r13
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, '='
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r13
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r13
+    jae .vvud_bad
+
+    mov r14, rcx                 # op_start
+.vvud_op_loop:
+    cmp rcx, r13
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'a'
+    jb .vvud_op_dot
+    cmp al, 'z'
+    jbe .vvud_op_next
+.vvud_op_dot:
+    cmp al, '.'
+    jne .vvud_op_done
+.vvud_op_next:
+    inc rcx
+    jmp .vvud_op_loop
+.vvud_op_done:
+    cmp rcx, r14
+    je .vvud_bad
+    mov r15, rcx                 # op_end
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx                  # args_start
+    cmp r8, r13
+    jae .vvud_bad
+
+    # find args_end via trailing " : tN" suffix
+    mov r9, r13
+    dec r9
+    mov r10, r9
+.vvud_back_digits:
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .vvud_digits_done
+    cmp al, '9'
+    ja .vvud_digits_done
+    cmp r9, 0
+    je .vvud_bad
+    dec r9
+    jmp .vvud_back_digits
+.vvud_digits_done:
+    cmp r9, r10
+    je .vvud_bad
+    cmp r9, 3
+    jb .vvud_bad
+    mov al, byte ptr [r12+r9]
+    cmp al, 't'
+    jne .vvud_bad
+    mov al, byte ptr [r12+r9-1]
+    cmp al, ' '
+    jne .vvud_bad
+    mov al, byte ptr [r12+r9-2]
+    cmp al, ':'
+    jne .vvud_bad
+    mov al, byte ptr [r12+r9-3]
+    cmp al, ' '
+    jne .vvud_bad
+    mov r11, r9
+    sub r11, 3                   # args_end exclusive
+    cmp r11, r8
+    jbe .vvud_bad
+
+    # detect bootstrap binary op set
+    mov r10, r15
+    sub r10, r14                 # opcode length
+    mov rdx, 0
+    cmp r10, 8
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14]
+    cmp al, 'a'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'd'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'd'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+3]
+    cmp al, '.'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 'w'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'r'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'a'
+    jne .vvud_chk_sub_wrap
+    mov al, byte ptr [r12+r14+7]
+    cmp al, 'p'
+    jne .vvud_chk_sub_wrap
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_sub_wrap:
+    mov al, byte ptr [r12+r14]
+    cmp al, 's'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'u'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'b'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+3]
+    cmp al, '.'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 'w'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'r'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'a'
+    jne .vvud_chk_mul_wrap
+    mov al, byte ptr [r12+r14+7]
+    cmp al, 'p'
+    jne .vvud_chk_mul_wrap
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_mul_wrap:
+    mov al, byte ptr [r12+r14]
+    cmp al, 'm'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'u'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'l'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+3]
+    cmp al, '.'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 'w'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'r'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'a'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+7]
+    cmp al, 'p'
+    jne .vvud_bin_short
+    mov rdx, 1
+    jmp .vvud_bin_done
+
+.vvud_bin_short:
+    cmp r10, 2
+    jne .vvud_bin_len3
+    mov al, byte ptr [r12+r14]
+    cmp al, 'o'
+    jne .vvud_bin_len3
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'r'
+    jne .vvud_bin_len3
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_bin_len3:
+    cmp r10, 3
+    jne .vvud_ok
+    mov al, byte ptr [r12+r14]
+    cmp al, 'a'
+    jne .vvud_chk_xor
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'n'
+    jne .vvud_chk_xor
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'd'
+    jne .vvud_chk_xor
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_xor:
+    mov al, byte ptr [r12+r14]
+    cmp al, 'x'
+    jne .vvud_chk_shl
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'o'
+    jne .vvud_chk_shl
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'r'
+    jne .vvud_chk_shl
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_shl:
+    mov al, byte ptr [r12+r14]
+    cmp al, 's'
+    jne .vvud_chk_shr
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'h'
+    jne .vvud_chk_shr
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'l'
+    jne .vvud_chk_shr
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_shr:
+    mov al, byte ptr [r12+r14]
+    cmp al, 's'
+    jne .vvud_ok
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'h'
+    jne .vvud_ok
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'r'
+    jne .vvud_ok
+    mov rdx, 1
+
+.vvud_bin_done:
+    cmp rdx, 1
+    jne .vvud_ok
+
+    # binary args must be "vN vN" and both vN must already be defined
+    mov rcx, r8
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    xor rbx, rbx
+    mov r9, r8
+.vvud_v1_conv:
+    cmp r9, rcx
+    jae .vvud_v1_check
+    mov al, byte ptr [r12+r9]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r10, al
+    add rbx, r10
+    inc r9
+    jmp .vvud_v1_conv
+.vvud_v1_check:
+    push rcx
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    je .vvud_v1_seen
+    pop rcx
+    jmp .vvud_bad
+.vvud_v1_seen:
+    pop rcx
+
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vvud_bad
+    inc rcx
+    cmp rcx, r11
+    jae .vvud_bad
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    cmp rcx, r11
+    jne .vvud_bad
+    xor rbx, rbx
+.vvud_v2_conv:
+    cmp r8, rcx
+    jae .vvud_v2_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vvud_v2_conv
+.vvud_v2_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vvud_bad
+
+.vvud_ok:
+    mov rax, 1
+    jmp .vvud_done
+.vvud_bad:
+    xor rax, rax
+.vvud_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # block_seen_exists

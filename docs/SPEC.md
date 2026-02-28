@@ -39,6 +39,10 @@ I also enforce a structural subset inside `fns`:
     - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
+  - def-before-use is enforced for currently validated uses:
+    - `ret vN`
+    - `cbr vN bT bF` condition value
+    - bootstrap binary op operands (`vN vN`)
 
 ## Current build artifact subset
 

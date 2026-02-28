@@ -96,6 +96,10 @@ Current bootstrap opcode-aware checks:
 
 Current bootstrap SSA check:
 - each SSA value id (`vN`) may be assigned once per function
+- def-before-use is enforced for:
+  - `ret vN`
+  - `cbr vN bT bF` condition value
+  - bootstrap binary operands (`vN vN`)
 
 Note: full opcode semantics/type-checking are still being added incrementally.
 

@@ -19,6 +19,7 @@ Current bootstrap status:
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.
 - I enforce that `br`/`cbr` targets reference blocks declared in the same function.
+- I enforce def-before-use for bootstrap value uses in `ret vN`, `cbr vN`, and binary `vN vN` ops.
 - I use syscall-only file loading.
 - I validate strict module section order.
 - `canon` currently validates and echoes canonical source.
