@@ -74,6 +74,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq.out; then
   echo "FAIL: verify valid_icmp_eq"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select.l0" >/tmp/l0_ok_cbr_eq_select.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select.out; then
+  echo "FAIL: verify valid_cbr_eq_select"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
 if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
   echo "FAIL: verify valid_memory_ops"
@@ -241,6 +246,21 @@ fi
 "$BIN" run /tmp/l0_test_icmp_eq.img 9 8 >/tmp/l0_run_icmp_eq_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_f.out)" != "0" ]; then
   echo "FAIL: run icmp.eq false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select.l0" /tmp/l0_test_cbr_eq_select.img >/tmp/l0_build_cbr_eq_select.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select.out; then
+  echo "FAIL: build valid_cbr_eq_select"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select.img 9 9 >/tmp/l0_run_cbr_eq_select_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select.img 9 8 >/tmp/l0_run_cbr_eq_select_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select false result"
   exit 1
 fi
 

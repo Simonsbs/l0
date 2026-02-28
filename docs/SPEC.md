@@ -96,6 +96,11 @@ I also enforce a structural subset inside `fns`:
     - `ret v2`
   - I currently lower these ops: `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
+  - I lower canonical `icmp.eq + cbr` select kernel shape:
+    - `v2 = icmp.eq v0 v1 : t1`
+    - `cbr v2 b1 b2`
+    - `b1: ret v0`
+    - `b2: ret v1`
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

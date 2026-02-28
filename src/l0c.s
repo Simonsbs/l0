@@ -116,12 +116,16 @@ code_stub_shr: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe8,0xc3
 code_stub_shr_len = . - code_stub_shr
 code_stub_icmp_eq: .byte 0x31,0xc0,0x48,0x39,0xf7,0x0f,0x94,0xc0,0xc3
 code_stub_icmp_eq_len = . - code_stub_icmp_eq
+code_stub_cbr_eq_select: .byte 0x48,0x89,0xf0,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc7,0xc3
+code_stub_cbr_eq_select_len = . - code_stub_cbr_eq_select
 pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
 pat_bin_prefix_len = . - pat_bin_prefix
 pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
 pat_bin_suffix_len = . - pat_bin_suffix
 pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
 pat_icmp_eq_len = . - pat_icmp_eq
+pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
+pat_cbr_eq_select_len = . - pat_cbr_eq_select
 pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
 pat_const_prefix_len = . - pat_const_prefix
 pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
@@ -279,11 +283,24 @@ do_build:
 
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
+    # - canonical icmp.eq + cbr select kernel lowering
     # - canonical icmp.eq kernel lowering
     # - canonical const-return kernel lowering
     # - otherwise 1-byte ret stub fallback
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_cbr_eq_select]
+    mov rcx, pat_cbr_eq_select_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_icmp_eq
+    lea r14, [rip+code_stub_cbr_eq_select]
+    mov r15, code_stub_cbr_eq_select_len
+    jmp .build_code_selected
+
+.build_try_icmp_eq:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_icmp_eq]
