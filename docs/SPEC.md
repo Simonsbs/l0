@@ -81,7 +81,15 @@ I also enforce a structural subset inside `fns`:
   - `qword[9]`: `debug_size` (`32` in bootstrap)
 - I then write raw canonical source bytes at `src_off`
 - I then write bootstrap code section bytes at `code_off`:
-  - I lower a canonical add2 kernel pattern to `48 89 f8 48 01 f0 c3` (`mov rax,rdi; add rax,rsi; ret`)
+  - I lower canonical two-arg kernels with the shape:
+    - `v0 = arg 0 : t0`
+    - `v1 = arg 1 : t0`
+    - `v2 = <op> v0 v1 : t0`
+    - `ret v2`
+  - I currently lower these ops: `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+  - I also lower canonical const-return kernel shape:
+    - `v0 = const N : t0`
+    - `ret v0`
   - I currently use `c3` (`ret`) as the fallback for other verified inputs
 - I then write a 32-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)

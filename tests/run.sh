@@ -29,6 +29,41 @@ if ! grep -q '^ok$' /tmp/l0_ok_const.out; then
   echo "FAIL: verify valid_const"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_sub.l0" >/tmp/l0_ok_sub.out
+if ! grep -q '^ok$' /tmp/l0_ok_sub.out; then
+  echo "FAIL: verify valid_sub"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_shl.l0" >/tmp/l0_ok_shl.out
+if ! grep -q '^ok$' /tmp/l0_ok_shl.out; then
+  echo "FAIL: verify valid_shl"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_mul.l0" >/tmp/l0_ok_mul.out
+if ! grep -q '^ok$' /tmp/l0_ok_mul.out; then
+  echo "FAIL: verify valid_mul"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_and.l0" >/tmp/l0_ok_and.out
+if ! grep -q '^ok$' /tmp/l0_ok_and.out; then
+  echo "FAIL: verify valid_and"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_or.l0" >/tmp/l0_ok_or.out
+if ! grep -q '^ok$' /tmp/l0_ok_or.out; then
+  echo "FAIL: verify valid_or"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_xor.l0" >/tmp/l0_ok_xor.out
+if ! grep -q '^ok$' /tmp/l0_ok_xor.out; then
+  echo "FAIL: verify valid_xor"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_shr.l0" >/tmp/l0_ok_shr.out
+if ! grep -q '^ok$' /tmp/l0_ok_shr.out; then
+  echo "FAIL: verify valid_shr"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -86,6 +121,86 @@ fi
 "$BIN" run /tmp/l0_test.img 7 5 >/tmp/l0_run_add2.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add2.out)" != "12" ]; then
   echo "FAIL: run add2 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_const.l0" /tmp/l0_test_const.img >/tmp/l0_build_const.out
+if ! grep -q '^ok$' /tmp/l0_build_const.out; then
+  echo "FAIL: build valid_const"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_const.img >/tmp/l0_run_const.out
+if [ "$(tr -d '\n' < /tmp/l0_run_const.out)" != "42" ]; then
+  echo "FAIL: run const image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sub.l0" /tmp/l0_test_sub.img >/tmp/l0_build_sub.out
+if ! grep -q '^ok$' /tmp/l0_build_sub.out; then
+  echo "FAIL: build valid_sub"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub.img 9 2 >/tmp/l0_run_sub.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub.out)" != "7" ]; then
+  echo "FAIL: run sub image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_shl.l0" /tmp/l0_test_shl.img >/tmp/l0_build_shl.out
+if ! grep -q '^ok$' /tmp/l0_build_shl.out; then
+  echo "FAIL: build valid_shl"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_shl.img 3 4 >/tmp/l0_run_shl.out
+if [ "$(tr -d '\n' < /tmp/l0_run_shl.out)" != "48" ]; then
+  echo "FAIL: run shl image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mul.l0" /tmp/l0_test_mul.img >/tmp/l0_build_mul.out
+if ! grep -q '^ok$' /tmp/l0_build_mul.out; then
+  echo "FAIL: build valid_mul"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mul.img 7 6 >/tmp/l0_run_mul.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mul.out)" != "42" ]; then
+  echo "FAIL: run mul image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_and.l0" /tmp/l0_test_and.img >/tmp/l0_build_and.out
+if ! grep -q '^ok$' /tmp/l0_build_and.out; then
+  echo "FAIL: build valid_and"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_and.img 14 11 >/tmp/l0_run_and.out
+if [ "$(tr -d '\n' < /tmp/l0_run_and.out)" != "10" ]; then
+  echo "FAIL: run and image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_or.l0" /tmp/l0_test_or.img >/tmp/l0_build_or.out
+if ! grep -q '^ok$' /tmp/l0_build_or.out; then
+  echo "FAIL: build valid_or"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_or.img 10 5 >/tmp/l0_run_or.out
+if [ "$(tr -d '\n' < /tmp/l0_run_or.out)" != "15" ]; then
+  echo "FAIL: run or image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_xor.l0" /tmp/l0_test_xor.img >/tmp/l0_build_xor.out
+if ! grep -q '^ok$' /tmp/l0_build_xor.out; then
+  echo "FAIL: build valid_xor"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_xor.img 10 5 >/tmp/l0_run_xor.out
+if [ "$(tr -d '\n' < /tmp/l0_run_xor.out)" != "15" ]; then
+  echo "FAIL: run xor image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_shr.l0" /tmp/l0_test_shr.img >/tmp/l0_build_shr.out
+if ! grep -q '^ok$' /tmp/l0_build_shr.out; then
+  echo "FAIL: build valid_shr"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_shr.img 48 4 >/tmp/l0_run_shr.out
+if [ "$(tr -d '\n' < /tmp/l0_run_shr.out)" != "3" ]; then
+  echo "FAIL: run shr image result"
   exit 1
 fi
 

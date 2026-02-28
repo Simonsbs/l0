@@ -12,7 +12,10 @@ I am keeping this repository native-only during bootstrap:
 Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
-- I currently lower one canonical arithmetic kernel shape to a concrete x86-64 payload (`mov rax,rdi; add rax,rsi; ret`) and use a `ret` fallback stub for other verified inputs.
+- I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
+  - two-arg arithmetic/bitwise kernels (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`)
+  - zero-arg constant-return kernel (`const N` then `ret v0`)
+- I keep a deterministic `ret` fallback stub for other verified inputs.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

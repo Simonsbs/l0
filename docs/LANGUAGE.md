@@ -161,7 +161,9 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 
 Bootstrap build output currently also includes a compact debug semantic index section:
 - I currently emit one of two bootstrap code payloads:
-  - canonical add2 kernel pattern: `48 89 f8 48 01 f0 c3` (`mov rax,rdi; add rax,rsi; ret`)
+  - canonical lowered kernel payloads for:
+    - `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+    - const-return kernel (`const N` -> `ret v0`)
   - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`

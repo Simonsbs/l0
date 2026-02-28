@@ -6,6 +6,8 @@
 .lcomm run_arg1_ptr, 8
 .lcomm run_arg2_ptr, 8
 .lcomm num_buf, 32
+.lcomm codegen_buf, 65536
+.lcomm codegen_len, 8
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 32
 .lcomm vfp_state_in_fn, 8
@@ -95,10 +97,46 @@ tok_p0_i8_len = . - tok_p0_i8
 
 code_stub_ret: .byte 0xc3
 code_stub_ret_len = . - code_stub_ret
-code_stub_add2: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0xc3
-code_stub_add2_len = . - code_stub_add2
-pat_add2: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
-pat_add2_len = . - pat_add2
+code_stub_add: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0xc3
+code_stub_add_len = . - code_stub_add
+code_stub_sub: .byte 0x48,0x89,0xf8,0x48,0x29,0xf0,0xc3
+code_stub_sub_len = . - code_stub_sub
+code_stub_and: .byte 0x48,0x89,0xf8,0x48,0x21,0xf0,0xc3
+code_stub_and_len = . - code_stub_and
+code_stub_or: .byte 0x48,0x89,0xf8,0x48,0x09,0xf0,0xc3
+code_stub_or_len = . - code_stub_or
+code_stub_xor: .byte 0x48,0x89,0xf8,0x48,0x31,0xf0,0xc3
+code_stub_xor_len = . - code_stub_xor
+code_stub_mul: .byte 0x48,0x89,0xf8,0x48,0x0f,0xaf,0xc6,0xc3
+code_stub_mul_len = . - code_stub_mul
+code_stub_shl: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe0,0xc3
+code_stub_shl_len = . - code_stub_shl
+code_stub_shr: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe8,0xc3
+code_stub_shr_len = . - code_stub_shr
+pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
+pat_bin_prefix_len = . - pat_bin_prefix
+pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
+pat_bin_suffix_len = . - pat_bin_suffix
+pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
+pat_const_prefix_len = . - pat_const_prefix
+pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
+pat_const_suffix_len = . - pat_const_suffix
+tok_add_wrap: .ascii "add.wrap"
+tok_add_wrap_len = . - tok_add_wrap
+tok_sub_wrap: .ascii "sub.wrap"
+tok_sub_wrap_len = . - tok_sub_wrap
+tok_mul_wrap: .ascii "mul.wrap"
+tok_mul_wrap_len = . - tok_mul_wrap
+tok_and: .ascii "and"
+tok_and_len = . - tok_and
+tok_or: .ascii "or"
+tok_or_len = . - tok_or
+tok_xor: .ascii "xor"
+tok_xor_len = . - tok_xor
+tok_shl: .ascii "shl"
+tok_shl_len = . - tok_shl
+tok_shr: .ascii "shr"
+tok_shr_len = . - tok_shr
 
 .section .text
 .global _start
@@ -235,19 +273,26 @@ do_build:
     jne fail_parse
 
     # select bootstrap code payload:
-    # - add2 kernel lowering if canonical pattern is present
+    # - canonical arg2 binary kernel lowering for supported ops
+    # - canonical const-return kernel lowering
     # - otherwise 1-byte ret stub fallback
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
     lea rdi, [rip+file_buf]
     mov rsi, rbx
-    lea rdx, [rip+pat_add2]
-    mov rcx, pat_add2_len
-    call find_substr
+    call try_select_bin_kernel_code
+    cmp rax, 1
+    jne .build_try_const_kernel
+    jmp .build_code_selected
+
+.build_try_const_kernel:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_const_kernel_code
     cmp rax, 1
     jne .build_code_selected
-    lea r14, [rip+code_stub_add2]
-    mov r15, code_stub_add2_len
+    lea r14, [rip+codegen_buf]
+    mov r15, qword ptr [rip+codegen_len]
 .build_code_selected:
 
     # open output path argv[3]
@@ -3691,6 +3736,322 @@ str_eq:
     ret
 .str_eq_ne:
     xor rax, rax
+    ret
+
+# find_substr_pos
+# rdi=hay_ptr, rsi=hay_len, rdx=needle_ptr, rcx=needle_len
+# out: rax=index if found, -1 otherwise
+find_substr_pos:
+    cmp rcx, 0
+    je .fsp_zero
+    cmp rsi, rcx
+    jb .fsp_no
+    xor r8, r8
+.fsp_outer:
+    mov r9, rsi
+    sub r9, rcx
+    cmp r8, r9
+    ja .fsp_no
+    xor r10, r10
+.fsp_inner:
+    cmp r10, rcx
+    je .fsp_yes
+    mov r11, r8
+    add r11, r10
+    mov al, byte ptr [rdi+r11]
+    mov r11, rdx
+    add r11, r10
+    mov r11b, byte ptr [r11]
+    cmp al, r11b
+    jne .fsp_next
+    inc r10
+    jmp .fsp_inner
+.fsp_next:
+    inc r8
+    jmp .fsp_outer
+.fsp_zero:
+    xor rax, rax
+    ret
+.fsp_yes:
+    mov rax, r8
+    ret
+.fsp_no:
+    mov rax, -1
+    ret
+
+# try_select_bin_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_bin_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_bin_prefix]
+    mov rcx, pat_bin_prefix_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsbk_no
+
+    mov r8, rax
+    add r8, pat_bin_prefix_len      # opcode start
+    cmp r8, r13
+    jae .tsbk_no
+    mov r9, r8
+.tsbk_find_space:
+    cmp r9, r13
+    jae .tsbk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, ' '
+    je .tsbk_space
+    inc r9
+    jmp .tsbk_find_space
+.tsbk_space:
+    cmp r9, r8
+    je .tsbk_no
+    mov r14, r8                       # preserve opcode start across calls
+
+    mov r10, r9
+    inc r10                          # suffix start
+    mov r11, r13
+    sub r11, r10
+    cmp r11, pat_bin_suffix_len
+    jb .tsbk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_suffix]
+    mov rdx, pat_bin_suffix_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
+
+    mov r15, r9
+    sub r15, r14                     # opcode len
+
+    # match opcode token and set r14/r15
+    cmp r15, tok_add_wrap_len
+    jne .tsbk_chk_sub
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_add_wrap]
+    mov rdx, tok_add_wrap_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_sub
+    lea r14, [rip+code_stub_add]
+    mov r15, code_stub_add_len
+    jmp .tsbk_yes
+
+.tsbk_chk_sub:
+    cmp r15, tok_sub_wrap_len
+    jne .tsbk_chk_mul
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_sub_wrap]
+    mov rdx, tok_sub_wrap_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_mul
+    lea r14, [rip+code_stub_sub]
+    mov r15, code_stub_sub_len
+    jmp .tsbk_yes
+
+.tsbk_chk_mul:
+    cmp r15, tok_mul_wrap_len
+    jne .tsbk_chk_and
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_mul_wrap]
+    mov rdx, tok_mul_wrap_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_and
+    lea r14, [rip+code_stub_mul]
+    mov r15, code_stub_mul_len
+    jmp .tsbk_yes
+
+.tsbk_chk_and:
+    cmp r15, tok_and_len
+    jne .tsbk_chk_or
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_and]
+    mov rdx, tok_and_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_or
+    lea r14, [rip+code_stub_and]
+    mov r15, code_stub_and_len
+    jmp .tsbk_yes
+
+.tsbk_chk_or:
+    cmp r15, tok_or_len
+    jne .tsbk_chk_xor
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_or]
+    mov rdx, tok_or_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_xor
+    lea r14, [rip+code_stub_or]
+    mov r15, code_stub_or_len
+    jmp .tsbk_yes
+
+.tsbk_chk_xor:
+    cmp r15, tok_xor_len
+    jne .tsbk_chk_shl
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_xor]
+    mov rdx, tok_xor_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_shl
+    lea r14, [rip+code_stub_xor]
+    mov r15, code_stub_xor_len
+    jmp .tsbk_yes
+
+.tsbk_chk_shl:
+    cmp r15, tok_shl_len
+    jne .tsbk_chk_shr
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_shl]
+    mov rdx, tok_shl_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_shr
+    lea r14, [rip+code_stub_shl]
+    mov r15, code_stub_shl_len
+    jmp .tsbk_yes
+
+.tsbk_chk_shr:
+    cmp r15, tok_shr_len
+    jne .tsbk_no
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_shr]
+    mov rdx, tok_shr_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
+    lea r14, [rip+code_stub_shr]
+    mov r15, code_stub_shr_len
+    jmp .tsbk_yes
+
+.tsbk_yes:
+    mov rax, 1
+    jmp .tsbk_done
+.tsbk_no:
+    xor rax, rax
+.tsbk_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsbk_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsbk_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_const_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if generated code in codegen_buf/codegen_len; 0 otherwise
+try_select_const_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_const_prefix]
+    mov rcx, pat_const_prefix_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsck_no
+
+    mov r8, rax
+    add r8, pat_const_prefix_len     # literal start
+    cmp r8, r13
+    jae .tsck_no
+    mov rbx, 0                        # sign flag
+    mov al, byte ptr [r12+r8]
+    cmp al, '-'
+    jne .tsck_digits
+    mov rbx, 1
+    inc r8
+    cmp r8, r13
+    jae .tsck_no
+.tsck_digits:
+    mov r10, r8
+    xor r14, r14                     # magnitude
+.tsck_loop:
+    cmp r10, r13
+    jae .tsck_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsck_done_digits
+    cmp al, '9'
+    ja .tsck_done_digits
+    imul r14, r14, 10
+    movzx r15, al
+    sub r15, '0'
+    add r14, r15
+    inc r10
+    jmp .tsck_loop
+.tsck_done_digits:
+    cmp r10, r8
+    je .tsck_no
+
+    mov r11, r13
+    sub r11, r10
+    cmp r11, pat_const_suffix_len
+    jb .tsck_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_const_suffix]
+    mov rdx, pat_const_suffix_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_no
+
+    mov rax, r14
+    cmp rbx, 1
+    jne .tsck_emit
+    neg rax
+
+.tsck_emit:
+    lea rdi, [rip+codegen_buf]
+    mov byte ptr [rdi+0], 0x48
+    mov byte ptr [rdi+1], 0xb8
+    mov qword ptr [rdi+2], rax
+    mov byte ptr [rdi+10], 0xc3
+    mov qword ptr [rip+codegen_len], 11
+    mov rax, 1
+    jmp .tsck_done
+
+.tsck_no:
+    xor rax, rax
+.tsck_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # find_substr
