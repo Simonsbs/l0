@@ -37,6 +37,7 @@ I also enforce a structural subset inside `fns`:
 - no instruction may appear after a terminator within the same block
 - accepted terminators in bootstrap verifier: `ret`, `ret vN`, `br bN`, `cbr vN bN bN`
 - `br`/`cbr` branch targets must reference block labels declared in the same function
+- `cbr` condition value must be typed as `i1`
 - non-terminator instruction lines must match canonical value form:
   - `vN = <opcode> <args> : tN`
   - opcode token is limited to `[a-z.]` in the bootstrap verifier

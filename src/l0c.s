@@ -7,6 +7,7 @@
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
 .lcomm vfp_type_count, 8
+.lcomm vfp_type_is_i1_map, 32768
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
@@ -563,6 +564,7 @@ validate_types_section:
     push rbx
     push r14
     push r15
+    call clear_type_is_i1_map
 
     # find closing "}\n"
     xor r14, r14
@@ -667,6 +669,25 @@ validate_types_section:
 .vts_tok_done:
     cmp rcx, r8
     je .vts_bad
+    # mark type id as i1 when token exactly "i1"
+    mov r11, rcx
+    sub r11, r8
+    cmp r11, 2
+    jne .vts_tok_kind_done
+    mov al, byte ptr [r12+r8]
+    cmp al, 'i'
+    jne .vts_tok_kind_done
+    mov al, byte ptr [r12+r8+1]
+    cmp al, '1'
+    jne .vts_tok_kind_done
+    mov r11, r9
+    cmp r11, 4096
+    jae .vts_bad
+    shl r11, 3
+    lea r10, [rip+vfp_type_is_i1_map]
+    add r10, r11
+    mov qword ptr [r10], 1
+.vts_tok_kind_done:
 
     mov al, byte ptr [r12+rcx]
     cmp al, ','
@@ -1290,6 +1311,14 @@ clear_fn_ret_type_map:
     rep stosq
     ret
 
+# clear_type_is_i1_map
+clear_type_is_i1_map:
+    lea rdi, [rip+vfp_type_is_i1_map]
+    xor rax, rax
+    mov rcx, 4096
+    rep stosq
+    ret
+
 # test_and_set_block_seen
 # rdi=block_id
 # out: rax=1 if already seen, 0 if newly set
@@ -1507,6 +1536,20 @@ validate_terminator_uses_defined:
     mov rdi, rbx
     call value_seen_exists
     cmp rax, 1
+    jne .vtud_bad
+    # cbr condition must be i1-typed
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vtud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_i1_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
     jne .vtud_bad
     jmp .vtud_ok
 

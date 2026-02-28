@@ -74,6 +74,7 @@ Function body requirements currently enforced:
 Function ordering requirement currently enforced:
 - function ids must be contiguous in canonical order (`f0`, `f1`, `f2`, ...)
 - `br` and `cbr` targets must reference blocks declared in the same function
+- `cbr` condition value must be typed as `i1`
 
 ## Instructions
 

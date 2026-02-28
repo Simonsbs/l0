@@ -151,6 +151,10 @@ if "$BIN" verify "$ROOT/tests/invalid_cbr_cond_undefined.l0" >/tmp/l0_bad20.out 
   echo "FAIL: invalid_cbr_cond_undefined unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_cbr_cond_not_i1.l0" >/tmp/l0_bad20b.out 2>/tmp/l0_bad20b.err; then
+  echo "FAIL: invalid_cbr_cond_not_i1 unexpectedly passed"
+  exit 1
+fi
 if "$BIN" verify "$ROOT/tests/invalid_call_bad_shape.l0" >/tmp/l0_bad21.out 2>/tmp/l0_bad21.err; then
   echo "FAIL: invalid_call_bad_shape unexpectedly passed"
   exit 1

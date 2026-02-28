@@ -1,5 +1,5 @@
 ver 1
-types { t0=i1 }
+types { t0=i64 }
 consts { }
 extern { }
 globals { }
