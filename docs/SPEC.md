@@ -67,7 +67,7 @@ I also enforce a structural subset inside `fns`:
 ## Current build artifact subset
 
 `l0c build <in.l0> <out.l0img>` currently emits:
-- fixed 80-byte bootstrap header (all little-endian u64 words):
+- I write a fixed 80-byte bootstrap header (all little-endian u64 words):
   - `qword[0]`: magic (`L0IM`)
   - `qword[1]`: version (`1`)
   - `qword[2]`: header size (`80`)
@@ -75,12 +75,14 @@ I also enforce a structural subset inside `fns`:
   - `qword[4]`: `src_off` (`80`)
   - `qword[5]`: `src_size`
   - `qword[6]`: `code_off` (`src_off + src_size`)
-  - `qword[7]`: `code_size` (`1` in bootstrap; single `ret` stub)
+  - `qword[7]`: `code_size` (bootstrap-selected code payload size)
   - `qword[8]`: `debug_off` (`code_off + code_size`)
   - `qword[9]`: `debug_size` (`32` in bootstrap)
-- followed by raw canonical source bytes at `src_off`
-- followed by bootstrap code section bytes at `code_off` (`c3` / `ret`)
-- followed by a 32-byte bootstrap debug semantic index (`L0IX`):
+- I then write raw canonical source bytes at `src_off`
+- I then write bootstrap code section bytes at `code_off`:
+  - I lower a canonical add2 kernel pattern to `48 89 f8 48 01 f0 c3` (`mov rax,rdi; add rax,rsi; ret`)
+  - I currently use `c3` (`ret`) as the fallback for other verified inputs
+- I then write a 32-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)
   - `qword[1]`: version (`1`)
   - `qword[2]`: function count

@@ -12,6 +12,7 @@ I am keeping this repository native-only during bootstrap:
 Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
+- I currently lower one canonical arithmetic kernel shape to a concrete x86-64 payload (`mov rax,rdi; add rax,rsi; ret`) and use a `ret` fallback stub for other verified inputs.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
 - I enforce canonical entry block (`b0`) per function.

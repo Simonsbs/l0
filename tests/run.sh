@@ -40,8 +40,7 @@ if [ "$(head -c 4 /tmp/l0_test.img)" != "L0IM" ]; then
 fi
 in_size=$(wc -c < "$ROOT/tests/valid_min.l0")
 img_size=$(wc -c < /tmp/l0_test.img)
-expected_size=$((80 + in_size + 32))
-expected_size=$((expected_size + 1))
+expected_size=$((80 + in_size + 7 + 32))
 if [ "$img_size" -ne "$expected_size" ]; then
   echo "FAIL: build image size mismatch"
   exit 1
@@ -58,15 +57,15 @@ if [ "$version" != "1" ] || [ "$hdr_size" != "80" ] || [ "$src_off" != "80" ] ||
   echo "FAIL: build header fields"
   exit 1
 fi
-if [ "$code_off" != "$((80 + in_size))" ] || [ "$code_size" != "1" ]; then
+if [ "$code_off" != "$((80 + in_size))" ] || [ "$code_size" != "7" ]; then
   echo "FAIL: build code header fields"
   exit 1
 fi
-if [ "$dbg_off" != "$((80 + in_size + 1))" ] || [ "$dbg_size" != "32" ]; then
+if [ "$dbg_off" != "$((80 + in_size + 7))" ] || [ "$dbg_size" != "32" ]; then
   echo "FAIL: build debug header fields"
   exit 1
 fi
-if [ "$(od -An -t x1 -j "$code_off" -N 1 /tmp/l0_test.img | tr -d ' \n')" != "c3" ]; then
+if [ "$(od -An -t x1 -j "$code_off" -N 7 /tmp/l0_test.img | tr -d ' \n')" != "4889f84801f0c3" ]; then
   echo "FAIL: build code stub bytes"
   exit 1
 fi
@@ -77,6 +76,23 @@ fi
 "$BIN" imgcheck /tmp/l0_test.img >/tmp/l0_imgcheck.out
 if ! grep -q '^ok$' /tmp/l0_imgcheck.out; then
   echo "FAIL: imgcheck valid image"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
+if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
+  echo "FAIL: build valid_branch"
+  exit 1
+fi
+branch_in_size=$(wc -c < "$ROOT/tests/valid_branch.l0")
+branch_code_off=$(od -An -t u8 -j 48 -N 8 /tmp/l0_test_branch.img | tr -d ' ')
+branch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_branch.img | tr -d ' ')
+if [ "$branch_code_off" != "$((80 + branch_in_size))" ] || [ "$branch_code_size" != "1" ]; then
+  echo "FAIL: build valid_branch fallback code header fields"
+  exit 1
+fi
+if [ "$(od -An -t x1 -j "$branch_code_off" -N 1 /tmp/l0_test_branch.img | tr -d ' \n')" != "c3" ]; then
+  echo "FAIL: build valid_branch fallback code bytes"
   exit 1
 fi
 cp /tmp/l0_test.img /tmp/l0_badver.img

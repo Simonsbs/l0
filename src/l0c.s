@@ -87,6 +87,10 @@ tok_p0_i8_len = . - tok_p0_i8
 
 code_stub_ret: .byte 0xc3
 code_stub_ret_len = . - code_stub_ret
+code_stub_add2: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0xc3
+code_stub_add2_len = . - code_stub_add2
+pat_add2: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_add2_len = . - pat_add2
 
 .section .text
 .global _start
@@ -199,6 +203,22 @@ do_build:
     cmp rax, 1
     jne fail_parse
 
+    # select bootstrap code payload:
+    # - add2 kernel lowering if canonical pattern is present
+    # - otherwise 1-byte ret stub fallback
+    lea r14, [rip+code_stub_ret]
+    mov r15, code_stub_ret_len
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_add2]
+    mov rcx, pat_add2_len
+    call find_substr
+    cmp rax, 1
+    jne .build_code_selected
+    lea r14, [rip+code_stub_add2]
+    mov r15, code_stub_add2_len
+.build_code_selected:
+
     # open output path argv[3]
     mov rdi, qword ptr [rip+out_path_ptr]
     mov rax, 2                 # sys_open
@@ -218,13 +238,13 @@ do_build:
     # qword[4]  = src offset
     # qword[5]  = src size
     # qword[6]  = code offset (after source payload)
-    # qword[7]  = code size   (1-byte ret stub in bootstrap)
+    # qword[7]  = code size   (bootstrap-selected payload size)
     # qword[8]  = debug offset (after code payload)
     # qword[9]  = debug size   (32 in bootstrap)
     mov r8, img_header_len
     add r8, rbx                 # code_off
     mov r9, r8
-    add r9, code_stub_ret_len   # debug_off
+    add r9, r15                 # debug_off
     lea r11, [rip+img_header_buf]
     mov rax, 0x000000004d49304c
     mov qword ptr [r11+0], rax
@@ -234,7 +254,7 @@ do_build:
     mov qword ptr [r11+32], img_header_len
     mov qword ptr [r11+40], rbx
     mov qword ptr [r11+48], r8
-    mov qword ptr [r11+56], code_stub_ret_len
+    mov qword ptr [r11+56], r15
     mov qword ptr [r11+64], r9
     mov qword ptr [r11+72], 32
 
@@ -265,8 +285,8 @@ do_build:
     jne .build_write_fail
 
     mov rdi, r10
-    lea rsi, [rip+code_stub_ret]
-    mov rdx, code_stub_ret_len
+    mov rsi, r14
+    mov rdx, r15
     call write_all
     cmp rax, 0
     jne .build_write_fail
@@ -3485,6 +3505,44 @@ str_eq:
     mov rax, 1
     ret
 .str_eq_ne:
+    xor rax, rax
+    ret
+
+# find_substr
+# rdi=hay_ptr, rsi=hay_len, rdx=needle_ptr, rcx=needle_len
+# out: rax=1 if found else 0
+find_substr:
+    cmp rcx, 0
+    je .fs_yes
+    cmp rsi, rcx
+    jb .fs_no
+    mov r8, 0
+.fs_outer:
+    mov r9, rsi
+    sub r9, rcx
+    cmp r8, r9
+    ja .fs_no
+    mov r10, 0
+.fs_inner:
+    cmp r10, rcx
+    je .fs_yes
+    mov r11, r8
+    add r11, r10
+    mov al, byte ptr [rdi+r11]
+    mov r11, rdx
+    add r11, r10
+    mov r11b, byte ptr [r11]
+    cmp al, r11b
+    jne .fs_next
+    inc r10
+    jmp .fs_inner
+.fs_next:
+    inc r8
+    jmp .fs_outer
+.fs_yes:
+    mov rax, 1
+    ret
+.fs_no:
     xor rax, rax
     ret
 

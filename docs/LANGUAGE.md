@@ -149,7 +149,9 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
 
 Bootstrap build output currently also includes a compact debug semantic index section:
-- bootstrap code section currently emits a single x86-64 `ret` stub byte (`0xC3`)
+- I currently emit one of two bootstrap code payloads:
+  - canonical add2 kernel pattern: `48 89 f8 48 01 f0 c3` (`mov rax,rdi; add rax,rsi; ret`)
+  - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`
 - function count
