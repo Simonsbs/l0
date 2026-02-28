@@ -13,6 +13,7 @@ Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
 - I can run `l0c build` to produce deterministic `.l0img` header + payload output.
 - I enforce function/block structural rules in `fns`.
+- I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
 - I enforce canonical entry block (`b0`) per function.
 - I reject duplicate `b0` and duplicate block labels in a function.
 - I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).

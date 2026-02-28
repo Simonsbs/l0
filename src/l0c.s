@@ -10,6 +10,7 @@
 .lcomm vfp_term_seen, 8
 .lcomm vfp_fn_arg_count, 8
 .lcomm vfp_fn_body_ptr, 8
+.lcomm vfp_last_fn_id, 8
 .lcomm vfp_last_block_id, 8
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
@@ -571,6 +572,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_fn_seen], 0
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
+    mov qword ptr [rip+vfp_last_fn_id], -1
     mov qword ptr [rip+vfp_last_block_id], -1
 
 .vfp_next_line:
@@ -626,6 +628,18 @@ verify_fns_payload:
     call line_is_fn_header
     cmp rax, 1
     jne .vfp_bad
+    # canonical function order: require contiguous ascending ids f0, f1, ...
+    mov rdi, r12
+    mov rsi, r13
+    call parse_fn_header_id
+    cmp rax, 0
+    jl .vfp_bad
+    mov rbx, rax
+    mov rax, qword ptr [rip+vfp_last_fn_id]
+    add rax, 1
+    cmp rbx, rax
+    jne .vfp_bad
+    mov qword ptr [rip+vfp_last_fn_id], rbx
     mov qword ptr [rip+vfp_state_in_fn], 1
     mov qword ptr [rip+vfp_fn_seen], 1
     mov qword ptr [rip+vfp_block_seen], 0
@@ -916,6 +930,52 @@ line_is_entry_block:
     ret
 .leb_no:
     xor rax, rax
+    ret
+
+# parse_fn_header_id
+# rdi=line_ptr, rsi=line_len
+# out: rax=function id (>=0) or -1 if invalid header prefix
+parse_fn_header_id:
+    cmp rsi, 6
+    jb .pfhi_bad
+    mov al, byte ptr [rdi]
+    cmp al, 'f'
+    jne .pfhi_bad
+    mov al, byte ptr [rdi+1]
+    cmp al, 'n'
+    jne .pfhi_bad
+    mov al, byte ptr [rdi+2]
+    cmp al, ' '
+    jne .pfhi_bad
+    mov al, byte ptr [rdi+3]
+    cmp al, 'f'
+    jne .pfhi_bad
+    mov rcx, 4
+    call parse_digits
+    cmp rax, 1
+    jne .pfhi_bad
+    cmp rcx, rsi
+    jae .pfhi_bad
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .pfhi_bad
+
+    xor rax, rax
+    mov r8, 4
+.pfhi_conv:
+    cmp r8, rcx
+    jae .pfhi_ok
+    mov bl, byte ptr [rdi+r8]
+    sub bl, '0'
+    imul rax, rax, 10
+    movzx r9, bl
+    add rax, r9
+    inc r8
+    jmp .pfhi_conv
+.pfhi_ok:
+    ret
+.pfhi_bad:
+    mov rax, -1
     ret
 
 # parse_block_id

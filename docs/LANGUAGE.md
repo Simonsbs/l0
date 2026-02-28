@@ -65,6 +65,9 @@ Function body requirements currently enforced:
 - instruction lines are indented with two spaces
 - each block must terminate before next block or function close
 - no instruction is allowed after a terminator within the same block
+
+Function ordering requirement currently enforced:
+- function ids must be contiguous in canonical order (`f0`, `f1`, `f2`, ...)
 - `br` and `cbr` targets must reference blocks declared in the same function
 
 ## Instructions

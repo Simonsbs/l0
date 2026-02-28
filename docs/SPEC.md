@@ -20,6 +20,7 @@ In the bootstrap phase, I currently validate module-level section order and requ
 I also enforce a structural subset inside `fns`:
 - at least one function
 - function headers must match canonical `fn fN (arg_types)->tN {` shape
+- function ids must appear in contiguous canonical order: `f0`, `f1`, `f2`, ...
 - argument type list must be empty or comma-separated `tN` entries
 - block labels must be `bN:`
 - first block in every function must be `b0:`

@@ -163,5 +163,13 @@ if "$BIN" verify "$ROOT/tests/invalid_noncontiguous_block_id.l0" >/tmp/l0_bad23.
   echo "FAIL: invalid_noncontiguous_block_id unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_first_fn_not_f0.l0" >/tmp/l0_bad24.out 2>/tmp/l0_bad24.err; then
+  echo "FAIL: invalid_first_fn_not_f0 unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_noncontiguous_fn_id.l0" >/tmp/l0_bad25.out 2>/tmp/l0_bad25.err; then
+  echo "FAIL: invalid_noncontiguous_fn_id unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"
