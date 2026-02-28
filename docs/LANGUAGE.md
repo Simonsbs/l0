@@ -60,6 +60,7 @@ Function body requirements currently enforced:
 - first block must be `b0:`
 - `b0:` must be unique inside a function
 - block labels use `bN:`
+- every block label must be unique inside a function
 - instruction lines are indented with two spaces
 - each block must terminate before next block or function close
 - no instruction is allowed after a terminator within the same block

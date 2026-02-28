@@ -15,6 +15,7 @@ Initial bootstrap is in place:
 - `verify` now enforces function/block structural rules in `fns`
 - verifier enforces canonical entry block (`b0`) per function
 - verifier rejects duplicate `b0` labels in a function
+- verifier rejects duplicate block labels in a function
 - verifier includes bootstrap opcode-operand checks for `arg` and common binary ops
 - file loader (syscalls only)
 - strict module-shape validator for fixed section order

@@ -24,6 +24,7 @@ Current verifier also enforces a structural subset inside `fns`:
 - block labels must be `bN:`
 - first block in every function must be `b0:`
 - `b0:` may not appear again later in the same function
+- all block labels must be unique within each function
 - instruction lines must be indented
 - every block must end with a terminator before next block/function close
 - no instruction may appear after a terminator within the same block

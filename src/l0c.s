@@ -8,6 +8,7 @@
 .lcomm vfp_fn_seen, 8
 .lcomm vfp_block_seen, 8
 .lcomm vfp_term_seen, 8
+.lcomm vfp_block_seen_map, 2048
 
 .section .rodata
 usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
@@ -624,6 +625,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_fn_seen], 1
     mov qword ptr [rip+vfp_block_seen], 0
     mov qword ptr [rip+vfp_term_seen], 0
+    call clear_block_seen_map
     jmp .vfp_next_line
 
 .vfp_in_fn:
@@ -667,6 +669,18 @@ verify_fns_payload:
     jne .vfp_bad
 
 .vfp_set_block:
+    # block label must be unique within function
+    mov rdi, r12
+    mov rsi, r13
+    call parse_block_id
+    cmp rax, 0
+    jl .vfp_bad
+    mov rbx, rax
+    mov rdi, rbx
+    call test_and_set_block_seen
+    cmp rax, 1
+    je .vfp_bad
+
     mov qword ptr [rip+vfp_block_seen], 1
     mov qword ptr [rip+vfp_term_seen], 0
     jmp .vfp_next_line
@@ -859,6 +873,84 @@ line_is_entry_block:
     ret
 .leb_no:
     xor rax, rax
+    ret
+
+# parse_block_id
+# rdi=line_ptr, rsi=line_len
+# out: rax = block id (>=0) or -1 if invalid label shape
+parse_block_id:
+    cmp rsi, 3
+    jb .pbi_bad
+    mov al, byte ptr [rdi]
+    cmp al, 'b'
+    jne .pbi_bad
+    mov rcx, 1
+    call parse_digits
+    cmp rax, 1
+    jne .pbi_bad
+    cmp rcx, rsi
+    jae .pbi_bad
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ':'
+    jne .pbi_bad
+    inc rcx
+    cmp rcx, rsi
+    jne .pbi_bad
+
+    # convert decimal digits in [1, rsi-1) to integer
+    xor rax, rax
+    mov r8, 1
+.pbi_conv:
+    cmp r8, rsi
+    jae .pbi_ok
+    cmp r8, rcx
+    je .pbi_ok
+    mov bl, byte ptr [rdi+r8]
+    sub bl, '0'
+    imul rax, rax, 10
+    movzx r9, bl
+    add rax, r9
+    inc r8
+    jmp .pbi_conv
+
+.pbi_ok:
+    ret
+.pbi_bad:
+    mov rax, -1
+    ret
+
+# clear_block_seen_map
+clear_block_seen_map:
+    lea rdi, [rip+vfp_block_seen_map]
+    xor rax, rax
+    mov rcx, 256
+    rep stosq
+    ret
+
+# test_and_set_block_seen
+# rdi=block_id
+# out: rax=1 if already seen, 0 if newly set
+test_and_set_block_seen:
+    cmp rdi, 16384
+    jae .tbss_seen
+    mov r8, rdi
+    shr r8, 3                      # byte index
+    mov r9, rdi
+    and r9, 7                      # bit index
+    lea r10, [rip+vfp_block_seen_map]
+    add r10, r8
+    mov al, byte ptr [r10]
+    mov dl, 1
+    mov cl, r9b
+    shl dl, cl
+    test al, dl
+    jne .tbss_seen
+    or al, dl
+    mov byte ptr [r10], al
+    xor rax, rax
+    ret
+.tbss_seen:
+    mov rax, 1
     ret
 
 # rdi=line_ptr, rsi=line_len -> rax=1 if starts with "  "
