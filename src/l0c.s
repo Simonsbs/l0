@@ -1906,6 +1906,17 @@ validate_value_uses_defined:
 .vvud_bin_done:
     cmp rdx, 1
     jne .vvud_ok
+    # for binary ops, operand value types must match explicit result type suffix
+    push r8
+    push r11
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_result_type_id
+    cmp rax, 0
+    jl .vvud_bin_type_bad
+    mov r15, rax
+    pop r11
+    pop r8
 
     # binary args must be "vN vN" and both vN must already be defined
     mov rcx, r8
@@ -1941,6 +1952,13 @@ validate_value_uses_defined:
     jmp .vvud_bad
 .vvud_v1_seen:
     pop rcx
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, r15
+    jne .vvud_bad
 
     mov al, byte ptr [r12+rcx]
     cmp al, ' '
@@ -1976,6 +1994,13 @@ validate_value_uses_defined:
     call value_seen_exists
     cmp rax, 1
     jne .vvud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, r15
+    jne .vvud_bad
 
 .vvud_ok:
     mov rax, 1
@@ -1989,6 +2014,11 @@ validate_value_uses_defined:
     pop r12
     pop rbx
     ret
+
+.vvud_bin_type_bad:
+    pop r11
+    pop r8
+    jmp .vvud_bad
 
 # block_seen_exists
 # rdi=block_id

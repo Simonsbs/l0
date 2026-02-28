@@ -51,6 +51,7 @@ I also enforce a structural subset inside `fns`:
   - `call` result type suffix must match callee return type
   - `call` argument count must match callee function signature arity
   - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+  - binary ops require operand value types to match the explicit result type suffix
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:

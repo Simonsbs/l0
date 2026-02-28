@@ -109,6 +109,7 @@ Current bootstrap opcode-aware checks:
 - `call` result type suffix must match the declared return type of target `fN`
 - `call` argument count must match the declared arity of target `fN`
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+- binary ops require both operand value types to match the explicit result type suffix
 
 Current bootstrap SSA check:
 - each SSA value id (`vN`) may be assigned once per function
