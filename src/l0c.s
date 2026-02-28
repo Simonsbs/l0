@@ -1034,6 +1034,11 @@ line_is_terminator:
 # rdi=line_ptr, rsi=line_len -> rax=1 if canonical value instruction:
 # "  vN = <opcode> <args> : tN"
 line_is_value_instruction:
+    push r12
+    push r13
+    push r14
+    push r15
+
     cmp rsi, 14
     jb .lvi_no
 
@@ -1075,7 +1080,7 @@ line_is_value_instruction:
     jae .lvi_no
 
     # opcode token: [a-z.]+ then single space
-    mov r8, rcx                  # op_start
+    mov r12, rcx                 # op_start
 .lvi_op_loop:
     cmp rcx, rsi
     jae .lvi_no
@@ -1091,16 +1096,17 @@ line_is_value_instruction:
     inc rcx
     jmp .lvi_op_loop
 .lvi_op_done:
-    cmp rcx, r8
+    cmp rcx, r12
     je .lvi_no
+    mov r13, rcx                 # op_end
     cmp rcx, rsi
     jae .lvi_no
     mov al, byte ptr [rdi+rcx]
     cmp al, ' '
     jne .lvi_no
     inc rcx
-    mov r8, rcx                  # args_start
-    cmp r8, rsi
+    mov r14, rcx                 # args_start
+    cmp r14, rsi
     jae .lvi_no
 
     # suffix from end: "... : tN"
@@ -1137,15 +1143,242 @@ line_is_value_instruction:
     mov al, byte ptr [rdi+r9-3]
     cmp al, ' '
     jne .lvi_no
-    mov r11, r9
-    sub r11, 3                   # suffix start
-    cmp r11, r8                  # args must be non-empty
+    mov r15, r9
+    sub r15, 3                   # args_end (exclusive), suffix start
+    cmp r15, r14                 # args must be non-empty
     jbe .lvi_no
 
+    # opcode-aware checks
+    # "arg" => args must be digits only
+    mov r10, r13
+    sub r10, r12
+    cmp r10, 3
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'a'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'r'
+    jne .lvi_check_binary
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'g'
+    jne .lvi_check_binary
+    # digits-only span [r14, r15)
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+.lvi_arg_digits:
+    cmp rcx, r15
+    je .lvi_yes
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '0'
+    jb .lvi_no
+    cmp al, '9'
+    ja .lvi_no
+    inc rcx
+    jmp .lvi_arg_digits
+
+.lvi_check_binary:
+    # binary op set:
+    # add.wrap sub.wrap mul.wrap and or xor shl shr
+    mov r10, r13
+    sub r10, r12
+    mov r11, 0
+
+    cmp r10, 8
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'a'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'd'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'd'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, '.'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 'w'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'r'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'a'
+    jne .lvi_chk_sub_wrap
+    mov al, byte ptr [rdi+r12+7]
+    cmp al, 'p'
+    jne .lvi_chk_sub_wrap
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_chk_sub_wrap:
+    mov al, byte ptr [rdi+r12]
+    cmp al, 's'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'u'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'b'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, '.'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 'w'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'r'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'a'
+    jne .lvi_chk_mul_wrap
+    mov al, byte ptr [rdi+r12+7]
+    cmp al, 'p'
+    jne .lvi_chk_mul_wrap
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_chk_mul_wrap:
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'm'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'u'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'l'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, '.'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 'w'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'r'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'a'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+7]
+    cmp al, 'p'
+    jne .lvi_bin_short_ops
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_bin_short_ops:
+    cmp r10, 2
+    jne .lvi_bin_len3
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'o'
+    jne .lvi_bin_len3
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'r'
+    jne .lvi_bin_len3
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_bin_len3:
+    cmp r10, 3
+    jne .lvi_bin_no
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'a'
+    jne .lvi_chk_xor
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'n'
+    jne .lvi_chk_xor
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'd'
+    jne .lvi_chk_xor
+    mov r11, 1
+    jmp .lvi_bin_checked
+.lvi_chk_xor:
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'x'
+    jne .lvi_chk_shl
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'o'
+    jne .lvi_chk_shl
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'r'
+    jne .lvi_chk_shl
+    mov r11, 1
+    jmp .lvi_bin_checked
+.lvi_chk_shl:
+    mov al, byte ptr [rdi+r12]
+    cmp al, 's'
+    jne .lvi_chk_shr
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'h'
+    jne .lvi_chk_shr
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'l'
+    jne .lvi_chk_shr
+    mov r11, 1
+    jmp .lvi_bin_checked
+.lvi_chk_shr:
+    mov al, byte ptr [rdi+r12]
+    cmp al, 's'
+    jne .lvi_bin_no
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'h'
+    jne .lvi_bin_no
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'r'
+    jne .lvi_bin_no
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_bin_no:
+    jmp .lvi_yes
+
+.lvi_bin_checked:
+    cmp r11, 1
+    jne .lvi_yes
+    # enforce args "vN vN"
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lvi_no
+    inc rcx
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    jne .lvi_no
+    jmp .lvi_yes
+
+.lvi_yes:
     mov rax, 1
-    ret
+    jmp .lvi_done
 .lvi_no:
     xor rax, rax
+.lvi_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
     ret
 
 # parse one-or-more digits at line index rcx

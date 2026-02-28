@@ -87,6 +87,10 @@ Current bootstrap checks enforce structural shape:
 - non-empty args payload
 - explicit type suffix `: tM`
 
+Current bootstrap opcode-aware checks:
+- `arg` requires a numeric index operand
+- binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+
 Note: full opcode semantics/type-checking are still being added incrementally.
 
 ## Canonicalization policy (current)

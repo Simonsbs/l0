@@ -106,5 +106,13 @@ if "$BIN" verify "$ROOT/tests/invalid_duplicate_b0.l0" >/tmp/l0_bad10.out 2>/tmp
   echo "FAIL: invalid_duplicate_b0 unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_arg_operand.l0" >/tmp/l0_bad11.out 2>/tmp/l0_bad11.err; then
+  echo "FAIL: invalid_arg_operand unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_binary_operands.l0" >/tmp/l0_bad12.out 2>/tmp/l0_bad12.err; then
+  echo "FAIL: invalid_binary_operands unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

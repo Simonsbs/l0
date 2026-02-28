@@ -31,6 +31,9 @@ Current verifier also enforces a structural subset inside `fns`:
 - non-terminator instruction lines must match canonical value form:
   - `vN = <opcode> <args> : tN`
   - opcode token is limited to `[a-z.]` in the bootstrap verifier
+  - opcode-specific bootstrap checks now include:
+    - `arg` requires numeric index operand
+    - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 
 ## Current build artifact subset
 
