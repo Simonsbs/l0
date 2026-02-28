@@ -25,6 +25,7 @@ Current bootstrap status:
 - I enforce bootstrap `call` argument shape (`fN` then optional `vN...`) and def-before-use for call operands.
 - I enforce that every `call fN` target references a declared function in the module.
 - I enforce bootstrap `call` arity matching against the declared callee signature.
+- I enforce that `call` result type suffix matches the declared callee return type.
 - I enforce type compatibility for bootstrap `arg` and `ret vN` operations.
 - I parse `types` in bootstrap form and enforce contiguous canonical type IDs (`t0`, `t1`, `t2`, ...).
 - I enforce that every referenced `tN` in function signatures and value result suffixes exists.

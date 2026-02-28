@@ -17,6 +17,7 @@
 .lcomm vfp_last_block_id, 8
 .lcomm vfp_fn_arg_type_map, 8192
 .lcomm vfp_fn_arg_count_map, 32768
+.lcomm vfp_fn_ret_type_map, 32768
 .lcomm vfp_block_seen_map, 2048
 .lcomm vfp_value_seen_map, 8192
 .lcomm vfp_value_type_map, 524288
@@ -738,6 +739,7 @@ verify_fns_payload:
     mov qword ptr [rip+vfp_last_fn_id], -1
     mov qword ptr [rip+vfp_last_block_id], -1
     call clear_fn_arg_count_map
+    call clear_fn_ret_type_map
 
 .vfp_next_line:
     cmp r15, 0
@@ -817,6 +819,10 @@ verify_fns_payload:
     lea r9, [rip+vfp_fn_arg_count_map]
     add r9, r8
     mov rax, qword ptr [rip+vfp_fn_arg_count]
+    mov qword ptr [r9], rax
+    lea r9, [rip+vfp_fn_ret_type_map]
+    add r9, r8
+    mov rax, qword ptr [rip+vfp_fn_ret_type]
     mov qword ptr [r9], rax
     mov qword ptr [rip+vfp_state_in_fn], 1
     mov qword ptr [rip+vfp_fn_seen], 1
@@ -1271,6 +1277,14 @@ clear_value_seen_map:
 # clear_fn_arg_count_map
 clear_fn_arg_count_map:
     lea rdi, [rip+vfp_fn_arg_count_map]
+    xor rax, rax
+    mov rcx, 4096
+    rep stosq
+    ret
+
+# clear_fn_ret_type_map
+clear_fn_ret_type_map:
+    lea rdi, [rip+vfp_fn_ret_type_map]
     xor rax, rax
     mov rcx, 4096
     rep stosq
@@ -2294,6 +2308,25 @@ verify_call_targets_in_module:
 .vctm_fid_check:
     cmp r9, rbx
     jae .vctm_bad
+    push rcx
+    push r9
+    # call result type must match callee return type
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_result_type_id
+    cmp rax, 0
+    jl .vctm_fid_check_badpop
+    mov r8, qword ptr [rsp]       # saved target function id
+    cmp r8, 4096
+    jae .vctm_fid_check_badpop
+    shl r8, 3
+    lea rcx, [rip+vfp_fn_ret_type_map]
+    add rcx, r8
+    cmp rax, qword ptr [rcx]
+    jne .vctm_fid_check_badpop
+    pop r9
+    pop rcx
+
     # count call operands in args tail and enforce exact callee arity
     mov r8, rcx                   # cursor after callee fN
     xor r10, r10                  # call_arg_count
@@ -2370,6 +2403,11 @@ verify_call_targets_in_module:
     cmp r10, rax
     jne .vctm_bad
     jmp .vctm_next_line
+
+.vctm_fid_check_badpop:
+    pop r9
+    pop rcx
+    jmp .vctm_bad
 
 .vctm_bad:
     xor rax, rax

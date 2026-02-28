@@ -199,5 +199,9 @@ if "$BIN" verify "$ROOT/tests/invalid_ret_value_type_mismatch.l0" >/tmp/l0_bad33
   echo "FAIL: invalid_ret_value_type_mismatch unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_call_return_type_mismatch.l0" >/tmp/l0_bad34.out 2>/tmp/l0_bad34.err; then
+  echo "FAIL: invalid_call_return_type_mismatch unexpectedly passed"
+  exit 1
+fi
 
 echo "PASS"

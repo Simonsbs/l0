@@ -47,6 +47,7 @@ I also enforce a structural subset inside `fns`:
   - `arg` result type must match the declared type of function argument index `N`
   - `call` requires args in canonical shape: `fN` followed by zero-or-more `vN` operands
   - `call` target `fN` must exist in the module function table
+  - `call` result type suffix must match callee return type
   - `call` argument count must match callee function signature arity
   - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - SSA bootstrap check:
