@@ -137,6 +137,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c verify <input.l0>`
 - `l0c build <input.l0> <out.l0img>`
 - `l0c imgcheck <out.l0img>`
+- `l0c run <out.l0img> [u64_a] [u64_b]`
 
 ### `imgcheck` bootstrap integrity rules
 
@@ -147,6 +148,15 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - flags `0` (reserved for future use)
 - source section bounds/size consistency
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
+
+### `run` bootstrap execution rules
+
+`run` currently executes the image code section with a minimal syscall-only loader path:
+- I validate core image header fields and code section bounds.
+- I allocate executable memory with `mmap` and copy code bytes into it.
+- I invoke code as `fn(u64,u64)->u64` using optional decimal CLI args (`u64_a`, `u64_b`) as inputs.
+- I print the returned value as unsigned decimal with a newline.
+- I reject invalid numeric arguments.
 
 Bootstrap build output currently also includes a compact debug semantic index section:
 - I currently emit one of two bootstrap code payloads:

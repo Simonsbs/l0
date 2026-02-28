@@ -98,6 +98,12 @@ I also enforce a structural subset inside `fns`:
   - either both offset/size are zero
   - or both are non-zero and within file bounds
 
+`l0c run <file.l0img> [u64_a] [u64_b]` currently:
+- I validate image magic/version/header and code section bounds.
+- I `mmap` an executable buffer, copy the image code section, and invoke it as `fn(u64,u64)->u64`.
+- I pass optional unsigned decimal CLI args as `rdi` and `rsi` (default `0,0`) and print the returned `u64`.
+- I reject non-decimal run arguments with a deterministic error.
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy

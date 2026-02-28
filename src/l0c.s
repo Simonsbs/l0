@@ -3,6 +3,9 @@
 .section .bss
 .lcomm file_buf, 1048576
 .lcomm out_path_ptr, 8
+.lcomm run_arg1_ptr, 8
+.lcomm run_arg2_ptr, 8
+.lcomm num_buf, 32
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 32
 .lcomm vfp_state_in_fn, 8
@@ -26,7 +29,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b]\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -44,11 +47,16 @@ err_build_msg: .ascii "error: cannot write output image\n"
 err_build_len = . - err_build_msg
 err_img_msg: .ascii "error: invalid or corrupt L0IMG\n"
 err_img_len = . - err_img_msg
+err_run_msg: .ascii "error: cannot execute image\n"
+err_run_len = . - err_run_msg
+err_run_arg_msg: .ascii "error: invalid run argument (expected unsigned decimal)\n"
+err_run_arg_len = . - err_run_arg_msg
 
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
 cmd_imgcheck: .ascii "imgcheck\0"
+cmd_run: .ascii "run\0"
 img_header_len = 80
 
 kw_ver: .ascii "ver "
@@ -140,10 +148,33 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne usage
+    jne .check_run
     cmp r13, 3
     jne usage
     jmp do_imgcheck
+
+.check_run:
+    lea rsi, [rip+cmd_run]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne usage
+    cmp r13, 3
+    jb usage
+    cmp r13, 5
+    ja usage
+    mov qword ptr [rip+run_arg1_ptr], 0
+    mov qword ptr [rip+run_arg2_ptr], 0
+    cmp r13, 4
+    jb .run_dispatch_done
+    mov r11, [r12+32]
+    mov qword ptr [rip+run_arg1_ptr], r11
+    cmp r13, 5
+    jb .run_dispatch_done
+    mov r11, [r12+40]
+    mov qword ptr [rip+run_arg2_ptr], r11
+.run_dispatch_done:
+    jmp do_run
 
 usage:
     lea rsi, [rip+usage_msg]
@@ -401,6 +432,95 @@ do_imgcheck:
     mov rdi, 0
     call exit
 
+do_run:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    cmp rbx, img_header_len
+    jb fail_img
+
+    lea r8, [rip+file_buf]
+    mov rax, qword ptr [r8+0]
+    mov r9, 0x000000004d49304c
+    cmp rax, r9
+    jne fail_img
+    mov rax, qword ptr [r8+8]     # version
+    cmp rax, 1
+    jne fail_img
+    mov rax, qword ptr [r8+16]    # header_size
+    cmp rax, img_header_len
+    jne fail_img
+
+    mov r10, qword ptr [r8+16]    # header_size
+    mov r12, qword ptr [r8+48]    # code_off
+    mov r13, qword ptr [r8+56]    # code_size
+    cmp r12, 0
+    je fail_img
+    cmp r13, 0
+    je fail_img
+    cmp r12, r10
+    jb fail_img
+    cmp r12, rbx
+    ja fail_img
+    mov rax, r12
+    add rax, r13
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+    # mmap executable code buffer
+    mov rax, 9                    # sys_mmap
+    xor rdi, rdi                  # addr = NULL
+    mov rsi, r13                  # len = code_size
+    mov rdx, 7                    # PROT_READ|PROT_WRITE|PROT_EXEC
+    mov r10, 34                   # MAP_PRIVATE|MAP_ANONYMOUS
+    mov r8, -1                    # fd
+    xor r9, r9                    # offset
+    syscall
+    test rax, rax
+    js fail_run
+    mov r11, rax                  # exec buffer
+    mov rbx, r11
+
+    # copy image code section into executable buffer
+    lea rsi, [rip+file_buf]
+    add rsi, r12
+    mov rdi, r11
+    mov rcx, r13
+    rep movsb
+
+    xor r14, r14                  # run arg a default
+    xor r15, r15                  # run arg b default
+
+    mov rdi, qword ptr [rip+run_arg1_ptr]
+    cmp rdi, 0
+    je .run_arg2
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov r14, rax
+
+.run_arg2:
+    mov rdi, qword ptr [rip+run_arg2_ptr]
+    cmp rdi, 0
+    je .run_call
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov r15, rax
+
+.run_call:
+    mov rdi, r14
+    mov rsi, r15
+    call rbx
+
+    mov rdi, rax
+    call print_u64_nl
+    mov rdi, 0
+    call exit
+
 fail_io:
     cmp rax, -2
     je fail_read
@@ -441,6 +561,22 @@ fail_img:
     mov rdi, 2
     call write_fd
     mov rdi, 7
+    call exit
+
+fail_run:
+    lea rsi, [rip+err_run_msg]
+    mov rdx, err_run_len
+    mov rdi, 2
+    call write_fd
+    mov rdi, 8
+    call exit
+
+fail_run_arg:
+    lea rsi, [rip+err_run_arg_msg]
+    mov rdx, err_run_arg_len
+    mov rdi, 2
+    call write_fd
+    mov rdi, 9
     call exit
 
 # rdi=path ; returns rax=size or negative code
@@ -3544,6 +3680,66 @@ find_substr:
     ret
 .fs_no:
     xor rax, rax
+    ret
+
+# parse_u64_cstr
+# rdi = NUL-terminated string
+# out: rax=value, rdx=1 valid; rdx=0 invalid
+parse_u64_cstr:
+    xor rax, rax
+    xor rcx, rcx
+.puc_loop:
+    mov r8b, byte ptr [rdi+rcx]
+    cmp r8b, 0
+    je .puc_done
+    cmp r8b, '0'
+    jb .puc_bad
+    cmp r8b, '9'
+    ja .puc_bad
+    imul rax, rax, 10
+    movzx r9, r8b
+    sub r9, '0'
+    add rax, r9
+    inc rcx
+    jmp .puc_loop
+.puc_done:
+    cmp rcx, 0
+    je .puc_bad
+    mov rdx, 1
+    ret
+.puc_bad:
+    xor rax, rax
+    xor rdx, rdx
+    ret
+
+# print_u64_nl
+# rdi = value
+print_u64_nl:
+    lea rsi, [rip+num_buf+31]
+    mov byte ptr [rsi], 10
+    mov rcx, 1
+    cmp rdi, 0
+    jne .pun_loop
+    dec rsi
+    mov byte ptr [rsi], '0'
+    inc rcx
+    jmp .pun_write
+.pun_loop:
+    mov rax, rdi
+    xor rdx, rdx
+    mov r10, 10
+    div r10
+    dec rsi
+    add dl, '0'
+    mov byte ptr [rsi], dl
+    inc rcx
+    mov rdi, rax
+    test rdi, rdi
+    jne .pun_loop
+.pun_write:
+    mov rdi, 1
+    mov rdx, rcx
+    call write_fd
     ret
 
 # rdi=fd rsi=buf rdx=len

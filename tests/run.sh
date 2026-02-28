@@ -78,6 +78,11 @@ if ! grep -q '^ok$' /tmp/l0_imgcheck.out; then
   echo "FAIL: imgcheck valid image"
   exit 1
 fi
+"$BIN" run /tmp/l0_test.img 7 5 >/tmp/l0_run_add2.out
+if [ "$(tr -d '\n' < /tmp/l0_run_add2.out)" != "12" ]; then
+  echo "FAIL: run add2 image result"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
@@ -93,6 +98,10 @@ if [ "$branch_code_off" != "$((80 + branch_in_size))" ] || [ "$branch_code_size"
 fi
 if [ "$(od -An -t x1 -j "$branch_code_off" -N 1 /tmp/l0_test_branch.img | tr -d ' \n')" != "c3" ]; then
   echo "FAIL: build valid_branch fallback code bytes"
+  exit 1
+fi
+if "$BIN" run /tmp/l0_test.img X 5 >/tmp/l0_run_badarg.out 2>/tmp/l0_run_badarg.err; then
+  echo "FAIL: run accepted invalid numeric argument"
   exit 1
 fi
 cp /tmp/l0_test.img /tmp/l0_badver.img

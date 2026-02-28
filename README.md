@@ -13,6 +13,7 @@ Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
 - I currently lower one canonical arithmetic kernel shape to a concrete x86-64 payload (`mov rax,rdi; add rax,rsi; ret`) and use a `ret` fallback stub for other verified inputs.
+- I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
 - I enforce canonical entry block (`b0`) per function.
@@ -57,6 +58,7 @@ make
 ./bin/l0c verify <module.l0>
 ./bin/l0c build <module.l0> <out.l0img>
 ./bin/l0c imgcheck <out.l0img>
+./bin/l0c run <out.l0img> [u64_a] [u64_b]
 ```
 
 ## Notes
