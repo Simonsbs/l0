@@ -15,7 +15,13 @@ Exact section order is mandatory:
 ## Current parser subset
 
 The bootstrap parser currently validates module-level section order and required braces/newlines.
-Function-level grammar is staged next.
+Current verifier also enforces a structural subset inside `fns`:
+- at least one function
+- function headers must match canonical `fn fN ... {` shape
+- block labels must be `bN:`
+- instruction lines must be indented
+- every block must end with a terminator before next block/function close
+- accepted terminators in bootstrap verifier: `ret`, `ret vN`, `br bN`, `cbr vN bN bN`
 
 ## Current build artifact subset
 

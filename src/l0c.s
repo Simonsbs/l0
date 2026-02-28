@@ -434,22 +434,11 @@ validate_module:
     add r12, kw_fns_len
     sub r13, kw_fns_len
 
-    # fns payload may contain inner braces; only enforce module tail:
-    # final non-newline byte must be '}'
-    cmp r13, 1
-    jb .bad
-    mov rcx, r13
-    dec rcx
-.trim_tail_nl:
-    mov al, byte ptr [r12+rcx]
-    cmp al, 10
-    jne .tail_found
-    cmp rcx, 0
-    je .bad
-    dec rcx
-    jmp .trim_tail_nl
-.tail_found:
-    cmp al, '}'
+    # verify function/body structure in fns payload
+    mov rdi, r12
+    mov rsi, r13
+    call verify_fns_payload
+    cmp rax, 1
     jne .bad
 
 .good:
@@ -490,6 +479,418 @@ skip_until_close_brace_newline:
     dec r13
     jmp .loop
 .fail:
+    xor rax, rax
+    ret
+
+# verify_fns_payload
+# rdi=ptr (immediately after "fns {"), rsi=len
+# returns rax=1 valid, 0 invalid
+verify_fns_payload:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r14, rdi                # cursor
+    mov r15, rsi                # remaining
+
+    # require newline after "fns {"
+    cmp r15, 1
+    jb .vfp_bad
+    mov al, byte ptr [r14]
+    cmp al, 10
+    jne .vfp_bad
+    inc r14
+    dec r15
+
+    xor r8, r8                  # state: 0=top-level, 1=in-function
+    xor r9, r9                  # fn_seen
+    xor r10, r10                # block_seen in current fn
+    xor r11, r11                # terminator_seen in current block
+
+.vfp_next_line:
+    cmp r15, 0
+    je .vfp_bad
+
+    # find newline in remaining bytes
+    xor rcx, rcx
+.vfp_find_nl:
+    cmp rcx, r15
+    jae .vfp_bad
+    mov al, byte ptr [r14+rcx]
+    cmp al, 10
+    je .vfp_line_ready
+    inc rcx
+    jmp .vfp_find_nl
+
+.vfp_line_ready:
+    # line: [r14, rcx)
+    cmp rcx, 0
+    je .vfp_bad                 # no blank lines in canonical form
+    mov r12, r14                # line_ptr
+    mov r13, rcx                # line_len
+
+    # advance cursor past line + newline
+    lea r14, [r14+rcx+1]
+    sub r15, rcx
+    dec r15
+
+    cmp r8, 0
+    je .vfp_top_level
+    jmp .vfp_in_fn
+
+.vfp_top_level:
+    # top-level expects either:
+    # - closing "}" of fns section (must be final line)
+    # - function header
+    cmp r13, 1
+    jne .vfp_try_fn_header
+    mov al, byte ptr [r12]
+    cmp al, '}'
+    jne .vfp_try_fn_header
+    cmp r9, 1
+    jne .vfp_bad
+    cmp r15, 0
+    jne .vfp_bad
+    mov rax, 1
+    jmp .vfp_done
+
+.vfp_try_fn_header:
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_fn_header
+    cmp rax, 1
+    jne .vfp_bad
+    mov r8, 1
+    mov r9, 1
+    xor r10, r10
+    xor r11, r11
+    jmp .vfp_next_line
+
+.vfp_in_fn:
+    # function close line
+    cmp r13, 1
+    jne .vfp_try_block
+    mov al, byte ptr [r12]
+    cmp al, '}'
+    jne .vfp_try_block
+    cmp r10, 1                 # must have at least one block
+    jne .vfp_bad
+    cmp r11, 1                 # current block must end in terminator
+    jne .vfp_bad
+    xor r8, r8                 # back to top-level
+    jmp .vfp_next_line
+
+.vfp_try_block:
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_block_label
+    cmp rax, 1
+    jne .vfp_try_instr
+    cmp r10, 0
+    je .vfp_first_block
+    cmp r11, 1                 # previous block must already terminate
+    jne .vfp_bad
+.vfp_first_block:
+    mov r10, 1
+    xor r11, r11
+    jmp .vfp_next_line
+
+.vfp_try_instr:
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_instruction
+    cmp rax, 1
+    jne .vfp_bad
+    cmp r10, 1                 # instruction must be inside a block
+    jne .vfp_bad
+    mov rdi, r12
+    mov rsi, r13
+    call line_is_terminator
+    cmp rax, 1
+    jne .vfp_next_line
+    mov r11, 1
+    jmp .vfp_next_line
+
+.vfp_bad:
+    xor rax, rax
+
+.vfp_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if line starts with "fn f" and ends with " {"
+line_is_fn_header:
+    cmp rsi, 8
+    jb .lfh_no
+    mov al, byte ptr [rdi]
+    cmp al, 'f'
+    jne .lfh_no
+    mov al, byte ptr [rdi+1]
+    cmp al, 'n'
+    jne .lfh_no
+    mov al, byte ptr [rdi+2]
+    cmp al, ' '
+    jne .lfh_no
+    mov al, byte ptr [rdi+3]
+    cmp al, 'f'
+    jne .lfh_no
+    mov rcx, 4
+    call parse_digits
+    cmp rax, 1
+    jne .lfh_no
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lfh_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lfh_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '('
+    jne .lfh_no
+    # line must end in " {"
+    cmp rsi, 2
+    jb .lfh_no
+    mov rdx, rsi
+    sub rdx, 2
+    mov al, byte ptr [rdi+rdx]
+    cmp al, ' '
+    jne .lfh_no
+    inc rdx
+    mov al, byte ptr [rdi+rdx]
+    cmp al, '{'
+    jne .lfh_no
+    mov rax, 1
+    ret
+.lfh_no:
+    xor rax, rax
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if "b<digits>:"
+line_is_block_label:
+    cmp rsi, 3
+    jb .lbl_no
+    mov al, byte ptr [rdi]
+    cmp al, 'b'
+    jne .lbl_no
+    mov rcx, 1
+    call parse_digits
+    cmp rax, 1
+    jne .lbl_no
+    cmp rcx, rsi
+    jae .lbl_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ':'
+    jne .lbl_no
+    inc rcx
+    cmp rcx, rsi
+    jne .lbl_no
+    mov rax, 1
+    ret
+.lbl_no:
+    xor rax, rax
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if starts with "  "
+line_is_instruction:
+    cmp rsi, 3
+    jb .lin_no
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lin_no
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lin_no
+    mov rax, 1
+    ret
+.lin_no:
+    xor rax, rax
+    ret
+
+# rdi=line_ptr, rsi=line_len -> rax=1 if terminator
+# accepted:
+# "  ret"
+# "  ret vN"
+# "  br bN"
+# "  cbr vN bN bN"
+line_is_terminator:
+    cmp rsi, 5
+    jb .lterm_try_retv
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lterm_try_retv
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lterm_try_retv
+    mov al, byte ptr [rdi+2]
+    cmp al, 'r'
+    jne .lterm_try_retv
+    mov al, byte ptr [rdi+3]
+    cmp al, 'e'
+    jne .lterm_try_retv
+    mov al, byte ptr [rdi+4]
+    cmp al, 't'
+    jne .lterm_try_retv
+    cmp rsi, 5
+    je .lterm_yes
+
+.lterm_try_retv:
+    cmp rsi, 8
+    jb .lterm_try_br
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+2]
+    cmp al, 'r'
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+3]
+    cmp al, 'e'
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+4]
+    cmp al, 't'
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+5]
+    cmp al, ' '
+    jne .lterm_try_br
+    mov al, byte ptr [rdi+6]
+    cmp al, 'v'
+    jne .lterm_try_br
+    mov rcx, 7
+    call parse_digits
+    cmp rax, 1
+    jne .lterm_try_br
+    cmp rcx, rsi
+    je .lterm_yes
+
+.lterm_try_br:
+    cmp rsi, 7
+    jb .lterm_try_cbr
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lterm_try_cbr
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lterm_try_cbr
+    mov al, byte ptr [rdi+2]
+    cmp al, 'b'
+    jne .lterm_try_cbr
+    mov al, byte ptr [rdi+3]
+    cmp al, 'r'
+    jne .lterm_try_cbr
+    mov al, byte ptr [rdi+4]
+    cmp al, ' '
+    jne .lterm_try_cbr
+    mov al, byte ptr [rdi+5]
+    cmp al, 'b'
+    jne .lterm_try_cbr
+    mov rcx, 6
+    call parse_digits
+    cmp rax, 1
+    jne .lterm_try_cbr
+    cmp rcx, rsi
+    je .lterm_yes
+
+.lterm_try_cbr:
+    cmp rsi, 12
+    jb .lterm_no
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lterm_no
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lterm_no
+    mov al, byte ptr [rdi+2]
+    cmp al, 'c'
+    jne .lterm_no
+    mov al, byte ptr [rdi+3]
+    cmp al, 'b'
+    jne .lterm_no
+    mov al, byte ptr [rdi+4]
+    cmp al, 'r'
+    jne .lterm_no
+    mov al, byte ptr [rdi+5]
+    cmp al, ' '
+    jne .lterm_no
+    mov al, byte ptr [rdi+6]
+    cmp al, 'v'
+    jne .lterm_no
+    mov rcx, 7
+    call parse_digits
+    cmp rax, 1
+    jne .lterm_no
+    cmp rcx, rsi
+    jae .lterm_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lterm_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lterm_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'b'
+    jne .lterm_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lterm_no
+    cmp rcx, rsi
+    jae .lterm_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lterm_no
+    inc rcx
+    cmp rcx, rsi
+    jae .lterm_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'b'
+    jne .lterm_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lterm_no
+    cmp rcx, rsi
+    je .lterm_yes
+
+.lterm_no:
+    xor rax, rax
+    ret
+.lterm_yes:
+    mov rax, 1
+    ret
+
+# parse one-or-more digits at line index rcx
+# in: rdi=line_ptr, rsi=line_len, rcx=index
+# out: rax=1 if any digits parsed, rcx advanced
+parse_digits:
+    cmp rcx, rsi
+    jae .pd_no
+    mov rdx, rcx
+.pd_loop:
+    cmp rcx, rsi
+    jae .pd_done
+    mov al, byte ptr [rdi+rcx]
+    cmp al, '0'
+    jb .pd_done
+    cmp al, '9'
+    ja .pd_done
+    inc rcx
+    jmp .pd_loop
+.pd_done:
+    cmp rcx, rdx
+    je .pd_no
+    mov rax, 1
+    ret
+.pd_no:
     xor rax, rax
     ret
 

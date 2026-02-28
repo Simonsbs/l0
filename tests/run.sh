@@ -9,6 +9,11 @@ if ! grep -q '^ok$' /tmp/l0_ok.out; then
   echo "FAIL: verify valid_min"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_branch.l0" >/tmp/l0_ok_branch.out
+if ! grep -q '^ok$' /tmp/l0_ok_branch.out; then
+  echo "FAIL: verify valid_branch"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -51,6 +56,14 @@ fi
 
 if "$BIN" verify "$ROOT/tests/invalid_order.l0" >/tmp/l0_bad.out 2>/tmp/l0_bad.err; then
   echo "FAIL: invalid_order unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_no_terminator.l0" >/tmp/l0_bad2.out 2>/tmp/l0_bad2.err; then
+  echo "FAIL: invalid_no_terminator unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_instr_before_block.l0" >/tmp/l0_bad3.out 2>/tmp/l0_bad3.err; then
+  echo "FAIL: invalid_instr_before_block unexpectedly passed"
   exit 1
 fi
 
