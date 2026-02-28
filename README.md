@@ -25,6 +25,7 @@ Current bootstrap status:
 - I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).
 - I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
 - I enforce bootstrap opcode-operand checks for `arg`, `const`, and common binary ops.
+- I enforce bootstrap memory-op checks for `ld`, `gep`, and `alloca`, plus non-value `st`.
 - I reject unknown opcode tokens in the bootstrap subset.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.
@@ -35,6 +36,7 @@ Current bootstrap status:
 - I enforce bootstrap `call` arity matching against the declared callee signature.
 - I enforce that `call` result type suffix matches the declared callee return type.
 - I enforce type compatibility for bootstrap `arg`, `ret vN`, and binary `vN vN` operations.
+- I enforce pointer-type compatibility (`p0<i8>`) for bootstrap `ld`, `st`, `gep`, and `alloca` checks.
 - I enforce that `cbr` condition values are typed as `i1`.
 - I parse `types` in bootstrap form and enforce contiguous canonical type IDs (`t0`, `t1`, `t2`, ...).
 - I restrict bootstrap `types` RHS tokens to the current primitive set (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `p0<i8>`).

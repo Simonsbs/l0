@@ -115,6 +115,10 @@ Current bootstrap opcode-aware checks:
 - `call` result type suffix must match the declared return type of target `fN`
 - `call` argument count must match the declared arity of target `fN`
 - `icmp.eq` requires `vN vN` operands, an `i1` result type suffix, and matching operand value types
+- `ld` requires `vN` operand shape and enforces `p0<i8>` pointer typing on the operand
+- `gep` requires `vN <signed_decimal>` operand shape and enforces `p0<i8>` pointer typing on operand and result
+- `alloca` requires `tN, N` operand shape and enforces `p0<i8>` result typing
+- `st` is accepted as a canonical non-value instruction (`st vPtr vVal`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
 - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 
@@ -124,6 +128,7 @@ Current bootstrap SSA check:
   - `ret vN` (with return-type compatibility check)
   - `cbr vN bT bF` condition value
   - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
+  - `ld`, `gep`, and `st` value operands
   - bootstrap binary operands (`vN vN`)
 
 Note: full opcode semantics/type-checking are still being added incrementally.
@@ -167,6 +172,7 @@ Bootstrap build output currently also includes a compact debug semantic index se
     - `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
+  - I currently verify `ld/st/gep/alloca` but still route those modules through the fallback code stub until their lowering path is added.
   - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`

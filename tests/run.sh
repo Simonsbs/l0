@@ -74,6 +74,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq.out; then
   echo "FAIL: verify valid_icmp_eq"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
+if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
+  echo "FAIL: verify valid_memory_ops"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -443,6 +448,30 @@ if "$BIN" verify "$ROOT/tests/invalid_icmp_operand_type_mismatch.l0" >/tmp/l0_ba
 fi
 if "$BIN" verify "$ROOT/tests/invalid_unknown_opcode.l0" >/tmp/l0_bad38.out 2>/tmp/l0_bad38.err; then
   echo "FAIL: invalid_unknown_opcode unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then
+  echo "FAIL: invalid_ld_ptr_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_gep_result_not_pointer.l0" >/tmp/l0_bad40.out 2>/tmp/l0_bad40.err; then
+  echo "FAIL: invalid_gep_result_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_gep_ptr_not_pointer.l0" >/tmp/l0_bad41.out 2>/tmp/l0_bad41.err; then
+  echo "FAIL: invalid_gep_ptr_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_alloca_result_not_pointer.l0" >/tmp/l0_bad42.out 2>/tmp/l0_bad42.err; then
+  echo "FAIL: invalid_alloca_result_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_alloca_bad_shape.l0" >/tmp/l0_bad43.out 2>/tmp/l0_bad43.err; then
+  echo "FAIL: invalid_alloca_bad_shape unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_st_ptr_not_pointer.l0" >/tmp/l0_bad44.out 2>/tmp/l0_bad44.err; then
+  echo "FAIL: invalid_st_ptr_not_pointer unexpectedly passed"
   exit 1
 fi
 

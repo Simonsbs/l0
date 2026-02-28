@@ -58,14 +58,19 @@ I also enforce a structural subset inside `fns`:
   - `call` argument count must match callee function signature arity
   - `icmp.eq` requires `vN vN` operands and an `i1` result type suffix
   - `icmp.eq` requires both operand value types to match
+  - `ld` requires a single `vN` operand and that operand must be typed as `p0<i8>`
+  - `gep` requires `vN <signed_decimal>` and both operand/result pointer typing must be `p0<i8>`
+  - `alloca` requires `tN, N` operands and a `p0<i8>` result type
   - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
   - binary ops require operand value types to match the explicit result type suffix
+  - non-value instruction `st vPtr vVal` is accepted and requires `vPtr` to be `p0<i8>` and both operands to be defined
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:
     - `ret vN` (and `vN` type must match function return type)
     - `cbr vN bT bF` condition value
     - `call fN vA vB ...` value operands (`vA`, `vB`, ...)
+    - `ld vN`, `gep vN off`, and `st vPtr vVal` value operands
     - bootstrap binary op operands (`vN vN`)
 
 ## Current build artifact subset
