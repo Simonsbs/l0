@@ -41,9 +41,12 @@ Current verifier also enforces a structural subset inside `fns`:
 
 `l0c imgcheck <file.l0img>` validates bootstrap container integrity:
 - magic match
+- version match (`1`)
 - header size match
-- source offset match
-- image size consistency (`src_off + src_size == file_size`)
+- source range consistency (`src_off >= header_size`, exact payload-end check)
+- code/debug section pair validity:
+  - either both offset/size are zero
+  - or both are non-zero and within file bounds
 
 This is an interim image format to validate end-to-end native build flow.
 

@@ -234,16 +234,67 @@ do_imgcheck:
     mov r9, 0x000000004d49304c
     cmp rax, r9
     jne fail_img
+    mov rax, qword ptr [r8+8]     # version
+    cmp rax, 1
+    jne fail_img
     mov rax, qword ptr [r8+16]    # header_size
     cmp rax, img_header_len
     jne fail_img
-    mov rax, qword ptr [r8+32]    # src_off
-    cmp rax, img_header_len
-    jne fail_img
+    mov r10, qword ptr [r8+16]    # header_size
+    mov r11, qword ptr [r8+32]    # src_off
+    cmp r11, r10
+    jb fail_img
+    cmp r11, rbx
+    ja fail_img
     mov rax, qword ptr [r8+40]    # src_size
-    add rax, img_header_len
+    add rax, r11
+    jc fail_img
     cmp rax, rbx
     jne fail_img
+
+    # code section (allow zero/zero in bootstrap)
+    mov r12, qword ptr [r8+48]    # code_off
+    mov r13, qword ptr [r8+56]    # code_size
+    cmp r12, 0
+    jne .img_chk_code_nonzero
+    cmp r13, 0
+    jne fail_img
+    jmp .img_chk_debug
+.img_chk_code_nonzero:
+    cmp r13, 0
+    je fail_img
+    cmp r12, r10
+    jb fail_img
+    cmp r12, rbx
+    ja fail_img
+    mov rax, r12
+    add rax, r13
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+.img_chk_debug:
+    mov r12, qword ptr [r8+64]    # debug_off
+    mov r13, qword ptr [r8+72]    # debug_size
+    cmp r12, 0
+    jne .img_chk_debug_nonzero
+    cmp r13, 0
+    jne fail_img
+    jmp .img_ok
+.img_chk_debug_nonzero:
+    cmp r13, 0
+    je fail_img
+    cmp r12, r10
+    jb fail_img
+    cmp r12, rbx
+    ja fail_img
+    mov rax, r12
+    add rax, r13
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+.img_ok:
 
     lea rsi, [rip+ok_msg]
     mov rdx, ok_len
