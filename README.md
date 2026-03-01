@@ -24,6 +24,7 @@ Current bootstrap status:
 - I keep `imgcheck` tamper coverage broad in tests (header-size/offset corruption and code/debug section-pair consistency failures).
 - I include overflow-style `imgcheck` tamper tests where `code_off`/`debug_off` are forced to max `u64`.
 - I also tamper-test `src_size`/`code_size` overflow and `debug_size != 64` rejection in `imgcheck`.
+- I enforce `imgmeta` schema checks (kernel-kind range, debug code-size match, trace schema constants) and test tampered-image rejection for them.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - two-arg compare kernel (`icmp.eq`) returning `i1`

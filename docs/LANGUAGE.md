@@ -189,6 +189,11 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `trace_schema_ver`
 - `trace_record_size`
 
+Before printing, `imgmeta` now also rejects bootstrap debug-index schema mismatches:
+- out-of-range kernel kind ids
+- debug `code_size` mismatch vs image header
+- unexpected trace schema/version constants
+
 ### `run` bootstrap execution rules
 
 `run` currently executes the image code section with a minimal syscall-only loader path:

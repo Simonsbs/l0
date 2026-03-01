@@ -1503,6 +1503,18 @@ do_imgmeta:
     mov rax, qword ptr [r8+r9+8]
     cmp rax, 1
     jne fail_img
+    mov rax, qword ptr [r8+r9+32]  # kernel kind
+    cmp rax, 24
+    ja fail_img
+    mov rax, qword ptr [r8+r9+40]  # debug code_size
+    cmp rax, qword ptr [r8+56]
+    jne fail_img
+    mov rax, qword ptr [r8+r9+48]  # trace schema ver
+    cmp rax, 1
+    jne fail_img
+    mov rax, qword ptr [r8+r9+56]  # trace record size
+    cmp rax, 16
+    jne fail_img
 
     mov rdi, 1
     lea rsi, [rip+img_version_prefix]

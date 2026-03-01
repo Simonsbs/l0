@@ -59,6 +59,7 @@ Last updated: 2026-03-01
   - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
   - overflow-style image tamper checks for `imgcheck` (`src_size`/`code_size`/`code_off`/`debug_off` set to max u64 values)
   - explicit `debug_size != 64` tamper rejection checks
+  - `imgmeta` schema-hardening parity with `imgcheck` plus negative tamper tests
   - negative-path tests for malformed artifacts
 - Remaining:
   - broader malformed-image fuzz-style tests (randomized/automated generation)

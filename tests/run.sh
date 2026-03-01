@@ -392,6 +392,30 @@ if [ "$(cat /tmp/l0_imgmeta.out)" != $'version 1\nsrc_size '"$in_size"$'\ncode_s
   echo "FAIL: imgmeta decoded output"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_imgmeta_kernel_kind.img
+printf '\xff\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_imgmeta_kernel_kind.img bs=1 seek="$((dbg_off + 32))" conv=notrunc status=none
+if "$BIN" imgmeta /tmp/l0_bad_imgmeta_kernel_kind.img >/tmp/l0_bad_imgmeta_kernel_kind.out 2>/tmp/l0_bad_imgmeta_kernel_kind.err; then
+  echo "FAIL: imgmeta accepted out-of-range kernel kind"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_imgmeta_codesz.img
+printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_imgmeta_codesz.img bs=1 seek="$((dbg_off + 40))" conv=notrunc status=none
+if "$BIN" imgmeta /tmp/l0_bad_imgmeta_codesz.img >/tmp/l0_bad_imgmeta_codesz.out 2>/tmp/l0_bad_imgmeta_codesz.err; then
+  echo "FAIL: imgmeta accepted mismatched debug code_size"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_imgmeta_trace_schema_ver.img
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_imgmeta_trace_schema_ver.img bs=1 seek="$((dbg_off + 48))" conv=notrunc status=none
+if "$BIN" imgmeta /tmp/l0_bad_imgmeta_trace_schema_ver.img >/tmp/l0_bad_imgmeta_trace_schema_ver.out 2>/tmp/l0_bad_imgmeta_trace_schema_ver.err; then
+  echo "FAIL: imgmeta accepted bad trace schema version"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_imgmeta_trace_record_size.img
+printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_imgmeta_trace_record_size.img bs=1 seek="$((dbg_off + 56))" conv=notrunc status=none
+if "$BIN" imgmeta /tmp/l0_bad_imgmeta_trace_record_size.img >/tmp/l0_bad_imgmeta_trace_record_size.out 2>/tmp/l0_bad_imgmeta_trace_record_size.err; then
+  echo "FAIL: imgmeta accepted bad trace record size"
+  exit 1
+fi
 "$BIN" run /tmp/l0_test.img 7 5 >/tmp/l0_run_add2.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add2.out)" != "12" ]; then
   echo "FAIL: run add2 image result"

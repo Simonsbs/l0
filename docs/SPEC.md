@@ -207,6 +207,10 @@ I also enforce a structural subset inside `fns`:
 
 `l0c imgmeta <file.l0img>` currently:
 - I validate core header and debug-section bounds for bootstrap images.
+- I enforce debug-index schema constraints before printing metadata:
+  - kernel kind id in bootstrap range (`<= 24`)
+  - debug `code_size` equals header `code_size`
+  - trace schema/version constants match bootstrap (`1`, `16`)
 - I print deterministic metadata lines:
   - `version <n>`
   - `src_size <bytes>`
