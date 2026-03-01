@@ -118,11 +118,11 @@ Current bootstrap opcode-aware checks:
 - `ld` requires `vN` operand shape and enforces `p0<i8>` pointer typing on the operand
 - `gep` requires `vN <signed_decimal>` operand shape and enforces `p0<i8>` pointer typing on operand and result
 - `alloca` requires `tN, N` operand shape and enforces `p0<i8>` result typing
-- `malloc` requires `vN` operand shape and enforces `p0<i8>` result typing
+- `malloc` requires `vN` operand shape, enforces non-pointer typing on `vN`, and enforces `p0<i8>` result typing
 - `st` is accepted as a canonical non-value instruction (`st vPtr vVal`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
 - `free` is accepted as a canonical non-value instruction (`free vPtr`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
-- `exit` is accepted as a canonical non-value instruction (`exit vCode`) with def-before-use checks on `vCode`
-- `write` is accepted as a canonical non-value instruction (`write vPtr vLen`) with def-before-use checks and `p0<i8>` pointer typing on `vPtr`
+- `exit` is accepted as a canonical non-value instruction (`exit vCode`) with def-before-use checks and non-pointer typing checks on `vCode`
+- `write` is accepted as a canonical non-value instruction (`write vPtr vLen`) with def-before-use checks, `p0<i8>` pointer typing on `vPtr`, and non-pointer typing checks on `vLen`
 - binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 

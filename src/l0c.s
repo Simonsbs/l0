@@ -2249,6 +2249,19 @@ validate_nonvalue_uses_defined:
     call value_seen_exists
     cmp rax, 1
     jne .vnud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vnud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    je .vnud_bad
     mov rax, 1
     jmp .vnud_done
 
@@ -2302,6 +2315,19 @@ validate_nonvalue_uses_defined:
     call value_seen_exists
     cmp rax, 1
     jne .vnud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vnud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    je .vnud_bad
     mov rax, 1
     jmp .vnud_done
 
@@ -3084,6 +3110,19 @@ validate_value_uses_defined:
     call value_seen_exists
     cmp rax, 1
     jne .vvud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vvud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    je .vvud_bad
     jmp .vvud_ok
 
 .vvud_malloc_type_bad:

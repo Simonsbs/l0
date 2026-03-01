@@ -29,11 +29,9 @@ Current bootstrap status:
 - I enforce canonical entry block (`b0`) per function.
 - I reject duplicate `b0` and duplicate block labels in a function.
 - I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).
-- I enforce bootstrap opcode-operand checks for `arg` and common binary ops.
 - I enforce bootstrap opcode-operand checks for `arg`, `const`, and common binary ops.
 - I enforce bootstrap memory-op checks for `ld`, `gep`, and `alloca`, plus non-value `st`.
-- I enforce bootstrap intrinsic checks for `malloc` (value op) and `free` (non-value op).
-- I enforce bootstrap intrinsic checks for `malloc` (value op), `free`/`exit`/`write` (non-value ops).
+- I enforce bootstrap intrinsic checks for `malloc` (value op), `free`/`exit`/`write` (non-value ops), including non-pointer operand constraints for intrinsic size/code/length values.
 - I reject unknown opcode tokens in the bootstrap subset.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.

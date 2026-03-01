@@ -61,13 +61,13 @@ I also enforce a structural subset inside `fns`:
   - `ld` requires a single `vN` operand and that operand must be typed as `p0<i8>`
   - `gep` requires `vN <signed_decimal>` and both operand/result pointer typing must be `p0<i8>`
   - `alloca` requires `tN, N` operands and a `p0<i8>` result type
-  - `malloc` requires `vN` operand and a `p0<i8>` result type
+  - `malloc` requires `vN` operand, a non-pointer `vN` value type, and a `p0<i8>` result type
   - binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
   - binary ops require operand value types to match the explicit result type suffix
   - non-value instruction `st vPtr vVal` is accepted and requires `vPtr` to be `p0<i8>` and both operands to be defined
   - non-value instruction `free vPtr` is accepted and requires `vPtr` to be `p0<i8>` and defined
-  - non-value instruction `exit vCode` is accepted and requires `vCode` to be defined
-  - non-value instruction `write vPtr vLen` is accepted and requires both operands defined and `vPtr` typed as `p0<i8>`
+  - non-value instruction `exit vCode` is accepted and requires `vCode` to be defined and non-pointer typed
+  - non-value instruction `write vPtr vLen` is accepted and requires both operands defined, `vPtr` typed as `p0<i8>`, and `vLen` non-pointer typed
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:

@@ -138,6 +138,7 @@ digit       = "0".."9" ;
 - `malloc`:
   - shape: `malloc vSize`
   - `vSize` must be defined before use
+  - `vSize` must not be pointer-typed
   - explicit result type suffix must be `p0<i8>`
 - `st` (non-value):
   - shape: `st vPtr vVal`
@@ -150,10 +151,12 @@ digit       = "0".."9" ;
 - `exit` (non-value):
   - shape: `exit vCode`
   - operand must be defined before use
+  - `vCode` must not be pointer-typed
 - `write` (non-value):
   - shape: `write vPtr vLen`
   - both operands must be defined before use
   - `vPtr` must be typed `p0<i8>`
+  - `vLen` must not be pointer-typed
 
 ## 4) Core Semantics (Bootstrap Contract)
 
