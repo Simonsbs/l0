@@ -15,6 +15,7 @@ Current bootstrap status:
 - I emit debug index metadata with function/type counts, kernel kind id, emitted code size, and trace schema metadata.
 - I emit deterministic kernel-kind-specific debug-map instruction ranges when I build with `--debug-map`.
 - I keep the bootstrap trace-kernel debug-map split stable (`inst_id 1` trace bytes, `inst_id 2` return-path bytes) for deterministic `tracejoin`.
+- I lock debug-map layouts for multiple kernel families in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`) to catch map drift early.
 - I validate debug-map entry integrity (`inst_id != 0`, `start <= end <= code_size`) in `mapcat` and `tracejoin`.
 - I enforce strict debug-map ordering in `mapcat` and `tracejoin` (`inst_id` strictly increasing and monotonic non-overlapping ranges).
 - I require `tracejoin` to resolve every trace record `id` against the debug map; unknown ids are rejected.

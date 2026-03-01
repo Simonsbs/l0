@@ -480,6 +480,16 @@ if ! grep -q '^ok$' /tmp/l0_build_add_trap.out; then
   echo "FAIL: build valid_add_trap"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_add_trap.l0" /tmp/l0_test_add_trap_map.img --debug-map /tmp/l0_add_trap_debug_map.bin >/tmp/l0_build_add_trap_map.out
+if ! grep -q '^ok$' /tmp/l0_build_add_trap_map.out; then
+  echo "FAIL: build valid_add_trap with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_add_trap_debug_map.bin >/tmp/l0_add_trap_mapcat.out
+if [ "$(cat /tmp/l0_add_trap_mapcat.out)" != $'entries 4\ncode_size 11\ninst_id 1\nstart 0\nend 3\ninst_id 2\nstart 3\nend 6\ninst_id 3\nstart 6\nend 9\ninst_id 4\nstart 9\nend 11' ]; then
+  echo "FAIL: add.trap debug-map layout"
+  exit 1
+fi
 add_trap_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_add_trap.img | tr -d ' ')
 add_trap_kernel_kind=$(od -An -t u8 -j "$((add_trap_dbg_off + 32))" -N 8 /tmp/l0_test_add_trap.img | tr -d ' ')
 if [ "$add_trap_kernel_kind" != "2" ]; then
@@ -540,6 +550,16 @@ fi
 "$BIN" build "$ROOT/tests/valid_mul_trap.l0" /tmp/l0_test_mul_trap.img >/tmp/l0_build_mul_trap.out
 if ! grep -q '^ok$' /tmp/l0_build_mul_trap.out; then
   echo "FAIL: build valid_mul_trap"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mul_trap.l0" /tmp/l0_test_mul_trap_map.img --debug-map /tmp/l0_mul_trap_debug_map.bin >/tmp/l0_build_mul_trap_map.out
+if ! grep -q '^ok$' /tmp/l0_build_mul_trap_map.out; then
+  echo "FAIL: build valid_mul_trap with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_mul_trap_debug_map.bin >/tmp/l0_mul_trap_mapcat.out
+if [ "$(cat /tmp/l0_mul_trap_mapcat.out)" != $'entries 4\ncode_size 12\ninst_id 1\nstart 0\nend 3\ninst_id 2\nstart 3\nend 7\ninst_id 3\nstart 7\nend 10\ninst_id 4\nstart 10\nend 12' ]; then
+  echo "FAIL: mul.trap debug-map layout"
   exit 1
 fi
 "$BIN" run /tmp/l0_test_mul_trap.img 7 6 >/tmp/l0_run_mul_trap.out
@@ -615,6 +635,16 @@ if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select.out; then
   echo "FAIL: build valid_cbr_eq_select"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select.l0" /tmp/l0_test_cbr_eq_select_map.img --debug-map /tmp/l0_cbr_eq_select_debug_map.bin >/tmp/l0_build_cbr_eq_select_map.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_map.out; then
+  echo "FAIL: build valid_cbr_eq_select with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_cbr_eq_select_debug_map.bin >/tmp/l0_cbr_eq_select_mapcat.out
+if [ "$(cat /tmp/l0_cbr_eq_select_mapcat.out)" != $'entries 4\ncode_size 11\ninst_id 1\nstart 0\nend 3\ninst_id 2\nstart 3\nend 6\ninst_id 3\nstart 6\nend 10\ninst_id 4\nstart 10\nend 11' ]; then
+  echo "FAIL: cbr eq-select debug-map layout"
+  exit 1
+fi
 "$BIN" run /tmp/l0_test_cbr_eq_select.img 9 9 >/tmp/l0_run_cbr_eq_select_t.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_t.out)" != "9" ]; then
   echo "FAIL: run cbr eq-select true result"
@@ -660,6 +690,16 @@ fi
 "$BIN" build "$ROOT/tests/valid_malloc.l0" /tmp/l0_test_malloc.img >/tmp/l0_build_malloc.out
 if ! grep -q '^ok$' /tmp/l0_build_malloc.out; then
   echo "FAIL: build valid_malloc"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_malloc.l0" /tmp/l0_test_malloc_map.img --debug-map /tmp/l0_malloc_debug_map.bin >/tmp/l0_build_malloc_map.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_map.out; then
+  echo "FAIL: build valid_malloc with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_malloc_debug_map.bin >/tmp/l0_malloc_mapcat.out
+if [ "$(cat /tmp/l0_malloc_mapcat.out)" != $'entries 4\ncode_size 40\ninst_id 1\nstart 0\nend 6\ninst_id 2\nstart 6\nend 20\ninst_id 3\nstart 20\nend 34\ninst_id 4\nstart 34\nend 40' ]; then
+  echo "FAIL: malloc debug-map layout"
   exit 1
 fi
 malloc_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_malloc.img | tr -d ' ')
@@ -712,6 +752,16 @@ fi
 "$BIN" build "$ROOT/tests/valid_write_newline.l0" /tmp/l0_test_write_newline.img >/tmp/l0_build_write_newline.out
 if ! grep -q '^ok$' /tmp/l0_build_write_newline.out; then
   echo "FAIL: build valid_write_newline"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline.l0" /tmp/l0_test_write_newline_map.img --debug-map /tmp/l0_write_newline_debug_map.bin >/tmp/l0_build_write_newline_map.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_map.out; then
+  echo "FAIL: build valid_write_newline with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_write_newline_debug_map.bin >/tmp/l0_write_newline_mapcat.out
+if [ "$(cat /tmp/l0_write_newline_mapcat.out)" != $'entries 4\ncode_size 46\ninst_id 1\nstart 0\nend 12\ninst_id 2\nstart 12\nend 38\ninst_id 3\nstart 38\nend 45\ninst_id 4\nstart 45\nend 46' ]; then
+  echo "FAIL: write newline debug-map layout"
   exit 1
 fi
 write_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline.img | tr -d ' ')

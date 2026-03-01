@@ -54,10 +54,12 @@ Last updated: 2026-03-01
   - duplicate optional flag rejection in `build`
   - debug-map entry bounds validation and clamping
   - ordered/non-overlapping map validation
+  - strict `tracejoin` id resolution (unknown ids rejected)
+  - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
   - negative-path tests for malformed artifacts
 - Remaining:
   - broader malformed-image fuzz-style tests
-  - additional cross-kernel debug-map contract assertions
+  - more malformed trace payload cases (multi-record corruption patterns)
 
 ### M5: Full language/general codegen
 
