@@ -491,6 +491,12 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_debug_map_versio
   echo "FAIL: mapcat accepted bad map version"
   exit 1
 fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_count.bin
+printf '\x04\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_count.bin bs=1 seek=16 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_debug_map_count.bin >/tmp/l0_bad_debug_map_count.out 2>/tmp/l0_bad_debug_map_count.err; then
+  echo "FAIL: mapcat accepted mismatched debug-map entry count header"
+  exit 1
+fi
 cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_range.bin
 printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_debug_map_range.bin bs=1 seek=40 conv=notrunc status=none
 if "$BIN" mapcat /tmp/l0_bad_debug_map_range.bin >/tmp/l0_bad_debug_map_range.out 2>/tmp/l0_bad_debug_map_range.err; then
@@ -517,6 +523,10 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_truncated.bin >/tmp/l0_bad_debug_map_trun
 fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
   echo "FAIL: tracejoin accepted invalid map file"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_count.bin >/tmp/l0_bad_tracejoin_count.out 2>/tmp/l0_bad_tracejoin_count.err; then
+  echo "FAIL: tracejoin accepted mismatched debug-map entry count header"
   exit 1
 fi
 cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_inst_id.bin

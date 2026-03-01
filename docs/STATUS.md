@@ -57,6 +57,7 @@ Last updated: 2026-03-01
   - strict `tracejoin` id resolution (unknown ids rejected)
   - explicit `tracejoin` rejection test for non-increasing debug-map `inst_id` ordering
   - explicit malformed debug-map payload-size tests: `mapcat` and `tracejoin` both reject misaligned/truncated map payloads
+  - explicit debug-map header consistency tests: `mapcat` and `tracejoin` reject mismatched `entry_count` header vs payload size
   - explicit malformed trace-schema tests: `schemacat` rejects bad schema version and truncated payload size
   - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
   - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
