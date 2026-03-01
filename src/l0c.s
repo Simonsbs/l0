@@ -856,6 +856,14 @@ do_build:
     mov rsi, rbx
     call try_select_write_newline_kernel_code
     cmp rax, 1
+    jne .build_try_general_exit
+    jmp .build_code_selected
+
+.build_try_general_exit:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_exit_kernel_code
+    cmp rax, 1
     jne .build_try_exit
     jmp .build_code_selected
 
@@ -863,6 +871,14 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_exit_kernel_code
+    cmp rax, 1
+    jne .build_try_general_malloc
+    jmp .build_code_selected
+
+.build_try_general_malloc:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_malloc_kernel_code
     cmp rax, 1
     jne .build_try_malloc
     jmp .build_code_selected
@@ -902,12 +918,28 @@ do_build:
 .build_try_mem_gep_roundtrip:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
+    call try_select_general_mem_gep_roundtrip_kernel_code
+    cmp rax, 1
+    jne .build_try_mem_gep_roundtrip_legacy
+    jmp .build_code_selected
+
+.build_try_mem_gep_roundtrip_legacy:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
     call try_select_mem_gep_roundtrip_kernel_code
     cmp rax, 1
     jne .build_try_mem_roundtrip
     jmp .build_code_selected
 
 .build_try_mem_roundtrip:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_mem_roundtrip_kernel_code
+    cmp rax, 1
+    jne .build_try_mem_roundtrip_legacy
+    jmp .build_code_selected
+
+.build_try_mem_roundtrip_legacy:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_mem_roundtrip_kernel_code
@@ -10572,6 +10604,186 @@ try_select_general_call_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgcall_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_exit_kernel_code
+# generalized pre-lowering normalization for exit kernel:
+# - removes canonical dead const value lines
+# - reuses the existing exit selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_exit_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgexit_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_exit_kernel_code
+    cmp rax, 1
+    jne .tsgexit_no
+    mov rax, 1
+    jmp .tsgexit_done
+
+.tsgexit_no:
+    xor rax, rax
+.tsgexit_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgexit_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgexit_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_malloc_kernel_code
+# generalized pre-lowering normalization for malloc kernel:
+# - removes canonical dead const value lines
+# - reuses the existing malloc selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_malloc_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgmalloc_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_malloc_kernel_code
+    cmp rax, 1
+    jne .tsgmalloc_no
+    mov rax, 1
+    jmp .tsgmalloc_done
+
+.tsgmalloc_no:
+    xor rax, rax
+.tsgmalloc_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgmalloc_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgmalloc_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_mem_gep_roundtrip_kernel_code
+# generalized pre-lowering normalization for memory-gep roundtrip kernel:
+# - removes canonical dead const value lines
+# - reuses the existing memory-gep roundtrip selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_mem_gep_roundtrip_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgmemgep_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_mem_gep_roundtrip_kernel_code
+    cmp rax, 1
+    jne .tsgmemgep_no
+    mov rax, 1
+    jmp .tsgmemgep_done
+
+.tsgmemgep_no:
+    xor rax, rax
+.tsgmemgep_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgmemgep_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgmemgep_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_mem_roundtrip_kernel_code
+# generalized pre-lowering normalization for memory roundtrip kernel:
+# - removes canonical dead const value lines
+# - reuses the existing memory roundtrip selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_mem_roundtrip_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgmem_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_mem_roundtrip_kernel_code
+    cmp rax, 1
+    jne .tsgmem_no
+    mov rax, 1
+    jmp .tsgmem_done
+
+.tsgmem_no:
+    xor rax, rax
+.tsgmem_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgmem_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgmem_keep_out:
     pop r13
     pop r12
     pop rbx

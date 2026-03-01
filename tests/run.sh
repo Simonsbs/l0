@@ -2968,6 +2968,125 @@ if "$BIN" imgcheck /tmp/l0_bad.img >/tmp/l0_badimg.out 2>/tmp/l0_badimg.err; the
   exit 1
 fi
 
+for f in \
+  valid_mem_roundtrip_with_dead_const_general_lowered.l0 \
+  valid_mem_roundtrip_mismatch_with_dead_const_unlowered.l0 \
+  valid_mem_gep_roundtrip_with_dead_const_general_lowered.l0 \
+  valid_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.l0 \
+  valid_malloc_with_dead_const_general_lowered.l0 \
+  valid_malloc_mismatch_with_dead_const_unlowered.l0 \
+  valid_exit_with_dead_const_general_lowered.l0 \
+  valid_exit_mismatch_with_dead_const_unlowered.l0
+do
+  "$BIN" verify "$ROOT/tests/$f" >/tmp/l0_ok_m16_"$f".out
+  if ! grep -q '^ok$' /tmp/l0_ok_m16_"$f".out; then
+    echo "FAIL: verify $f"
+    exit 1
+  fi
+done
+
+get_kernel_kind() {
+  local img="$1"
+  local dbg_off
+  dbg_off=$(od -An -t u8 -j 64 -N 8 "$img" | tr -d ' ')
+  od -An -t u8 -j "$((dbg_off + 32))" -N 8 "$img" | tr -d ' '
+}
+
+get_code_size() {
+  local img="$1"
+  od -An -t u8 -j 56 -N 8 "$img" | tr -d ' '
+}
+
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip_with_dead_const_general_lowered.l0" /tmp/l0_test_mem_roundtrip_with_dead_const_general_lowered.img >/tmp/l0_build_mem_roundtrip_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_mem_roundtrip_with_dead_const_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_mem_roundtrip_with_dead_const_general_lowered.img)" != "14" ]; then
+  echo "FAIL: mem roundtrip dead-const generalized kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_roundtrip_with_dead_const_general_lowered.img 42 >/tmp/l0_run_mem_roundtrip_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip_with_dead_const_general_lowered.out)" != "42" ]; then
+  echo "FAIL: run mem roundtrip dead-const generalized result"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip_mismatch_with_dead_const_unlowered.l0" /tmp/l0_test_mem_roundtrip_mismatch_with_dead_const_unlowered.img >/tmp/l0_build_mem_roundtrip_mismatch_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_mismatch_with_dead_const_unlowered.out; then
+  echo "FAIL: build valid_mem_roundtrip_mismatch_with_dead_const_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_mem_roundtrip_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_mem_roundtrip_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
+  echo "FAIL: mem roundtrip mismatch dead-const unexpectedly lowered"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip_with_dead_const_general_lowered.l0" /tmp/l0_test_mem_gep_roundtrip_with_dead_const_general_lowered.img >/tmp/l0_build_mem_gep_roundtrip_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_gep_roundtrip_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_mem_gep_roundtrip_with_dead_const_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_mem_gep_roundtrip_with_dead_const_general_lowered.img)" != "19" ]; then
+  echo "FAIL: mem gep roundtrip dead-const generalized kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_gep_roundtrip_with_dead_const_general_lowered.img 42 >/tmp/l0_run_mem_gep_roundtrip_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_gep_roundtrip_with_dead_const_general_lowered.out)" != "42" ]; then
+  echo "FAIL: run mem gep roundtrip dead-const generalized result"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.l0" /tmp/l0_test_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.img >/tmp/l0_build_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.out; then
+  echo "FAIL: build valid_mem_gep_roundtrip_mismatch_with_dead_const_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_mem_gep_roundtrip_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
+  echo "FAIL: mem gep roundtrip mismatch dead-const unexpectedly lowered"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_malloc_with_dead_const_general_lowered.l0" /tmp/l0_test_malloc_with_dead_const_general_lowered.img >/tmp/l0_build_malloc_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_malloc_with_dead_const_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_malloc_with_dead_const_general_lowered.img)" != "20" ]; then
+  echo "FAIL: malloc dead-const generalized kernel kind"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_malloc_mismatch_with_dead_const_unlowered.l0" /tmp/l0_test_malloc_mismatch_with_dead_const_unlowered.img >/tmp/l0_build_malloc_mismatch_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_mismatch_with_dead_const_unlowered.out; then
+  echo "FAIL: build valid_malloc_mismatch_with_dead_const_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_malloc_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_malloc_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
+  echo "FAIL: malloc mismatch dead-const unexpectedly lowered"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_exit_with_dead_const_general_lowered.l0" /tmp/l0_test_exit_with_dead_const_general_lowered.img >/tmp/l0_build_exit_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_exit_with_dead_const_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_exit_with_dead_const_general_lowered.img)" != "23" ]; then
+  echo "FAIL: exit dead-const generalized kernel kind"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_exit_mismatch_with_dead_const_unlowered.l0" /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img >/tmp/l0_build_exit_mismatch_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_mismatch_with_dead_const_unlowered.out; then
+  echo "FAIL: build valid_exit_mismatch_with_dead_const_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
+  echo "FAIL: exit mismatch dead-const unexpectedly lowered"
+  exit 1
+fi
+
 if "$BIN" verify "$ROOT/tests/invalid_order.l0" >/tmp/l0_bad.out 2>/tmp/l0_bad.err; then
   echo "FAIL: invalid_order unexpectedly passed"
   exit 1

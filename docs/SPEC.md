@@ -125,6 +125,7 @@ I also enforce a structural subset inside `fns`:
     - `st v1 v0`
     - `v2 = ld v1 : t0`
     - `ret v2`
+  - before memory-roundtrip kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - for memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/ld/ret when all uses reference the corresponding defs
   - for memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical `gep` memory roundtrip kernel shape:
@@ -133,6 +134,7 @@ I also enforce a structural subset inside `fns`:
     - `v2 = gep v1 0 : t1`
     - `v3 = ld v2 : t0`
     - `ret v3`
+  - before `gep` memory-roundtrip kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - for `gep` memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/gep/ld/ret when all uses reference the corresponding defs
   - for `gep` memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical two-function call kernel shapes:
@@ -148,16 +150,19 @@ I also enforce a structural subset inside `fns`:
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
+    - before `malloc` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering in this const-independent shape
     - for `malloc`, I also accept canonical nonzero arg/result ids when dataflow matches (`vN = arg 0`, `vM = malloc vN`, `ret vM`)
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - for `free`, I also accept canonical nonzero arg/const-ret ids when dataflow matches (`vN = arg 0`, `free vN`, `vM = const 0`, `ret vM`)
     - `exit` kernel (`exit v0`) via syscall `exit` stub
+    - before `exit` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering in this const-independent shape
     - for `exit`, I also accept canonical nonzero arg/return ids when dataflow matches (`vN = arg 0`, `exit vN`, `ret vN`)
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
     - for bootstrap newline `write`, I also accept canonical nonzero ids across alloca/const/store/write/return when all value-id uses match their corresponding defs
     - for bootstrap newline `write`, I also accept canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
+    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I still require exact canonical templates today; dataflow-aware dead-const normalization for these is tracked in my next milestone
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

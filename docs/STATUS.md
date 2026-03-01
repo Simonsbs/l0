@@ -208,7 +208,18 @@ Last updated: 2026-03-01
     - lowered call->add kernel with injected dead `const` value lines
     - intentionally unlowered call->sub (swapped in `f1`) with injected dead `const` value lines
 
-### M16: Non-template backend and full general codegen
+### M16: Generalized Memory/Malloc/Exit Normalization Path
+
+- Status: complete
+- Scope completed:
+  - added generalized pre-lowering normalization path for memory roundtrip kernels in `build`
+  - added generalized pre-lowering normalization path for memory-gep roundtrip kernels in `build`
+  - added generalized pre-lowering normalization path for `malloc` and `exit` intrinsic kernels in `build`
+  - reused shared dead-const normalization so canonical interleaved dead `const` value lines do not block these const-independent kernel families
+  - preserved existing mismatch guardrails by delegating final lowering decisions to existing selectors
+  - added regression coverage for lowered and intentionally unlowered dead-const-injected variants of memory roundtrip, memory-gep roundtrip, `malloc`, and `exit`
+
+### M17: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:
@@ -216,6 +227,7 @@ Last updated: 2026-03-01
   - integrate a generalized instruction-selection pipeline instead of template matching
   - integrate register allocation across generalized function bodies
   - widen type/memory ABI coverage toward the full MVP language spec
+  - extend dead-const normalization to const-dependent kernel families (`write`, `free`, `trace`) by preserving semantically-used const defs
 
 ## Documentation status
 

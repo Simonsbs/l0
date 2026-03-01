@@ -92,7 +92,8 @@ Current bootstrap status:
 - I now consider my M13 generalized binary-lowering milestone complete: before binary selection, I run a normalization pass that strips canonical dead `const` value lines and then lower from the normalized function shape, while preserving existing non-commutative guardrails.
 - I now consider my M14 generalized compare/select normalization milestone complete: I reuse the same dead-const normalization path for `icmp.eq` and `icmp.eq + cbr` lowering, and I regression-test both lowered and intentional unlowered guardrail outcomes.
 - I now consider my M15 generalized call normalization milestone complete: I reuse the same dead-const normalization path for call-kernel lowering across `f0` and `f1`, and I regression-test both lowered and intentional unlowered non-commutative guardrail outcomes.
-- I track broader non-template multi-block backend/codegen work as my next milestone (M16).
+- I now consider my M16 generalized memory/malloc/exit normalization milestone complete: I run the same dead-const normalization path before memory roundtrip, memory-gep roundtrip, `malloc`, and `exit` kernel selection, and I regression-test both lowered and intentionally unlowered mismatch outcomes.
+- I track the broader non-template multi-block backend/codegen work (and const-preserving dead-const normalization for const-dependent kernels like `write`/`free`/`trace`) as my next milestone (M17).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

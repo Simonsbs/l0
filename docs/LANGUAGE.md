@@ -275,20 +275,24 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
     - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
+    - before memory-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match
     - memory-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - memory-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
+    - before memory-gep-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-gep-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret when ids/dataflow match
     - memory-gep-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - memory-gep-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
+    - before `malloc` and `exit` kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering for those const-independent intrinsic shapes
     - `malloc` intrinsic kernel also accepts canonical nonzero arg/result ids when ids/dataflow match (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
     - `free` intrinsic kernel also accepts canonical nonzero arg/const-ret ids when ids/dataflow match (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
     - `exit` intrinsic kernel also accepts canonical nonzero arg/return ids when ids/dataflow match (`vN = arg ...`, `exit vN`, `ret vN`)
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero ids across alloca/const/store/write/ret when ids/dataflow match
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
+    - for const-dependent kernels (`free`, `write`, `trace`), I still require exact canonical template shape today; I track dataflow-aware dead-const normalization for those in my next milestone
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
