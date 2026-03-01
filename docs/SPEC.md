@@ -152,6 +152,10 @@ I also enforce a structural subset inside `fns`:
 - code/debug section pair validity:
   - either both offset/size are zero
   - or both are non-zero and within file bounds
+- for non-zero debug section, bootstrap schema checks:
+  - debug size must be `48`
+  - `L0IX` magic/version must match
+  - debug `code_size` field must match header `code_size`
 
 `l0c run <file.l0img> [u64_a] [u64_b]` currently:
 - I validate image magic/version/header and code section bounds.

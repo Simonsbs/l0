@@ -662,6 +662,8 @@ do_imgcheck:
 .img_chk_debug_nonzero:
     cmp r13, 0
     je fail_img
+    cmp r13, 48
+    jne fail_img
     cmp r12, r10
     jb fail_img
     cmp r12, rbx
@@ -671,6 +673,22 @@ do_imgcheck:
     jc fail_img
     cmp rax, rbx
     ja fail_img
+    # validate debug payload qwords for bootstrap schema
+    mov rax, qword ptr [r8+72]    # debug_size
+    cmp rax, 48
+    jne fail_img
+    mov r9, qword ptr [r8+64]     # debug_off
+    mov rax, qword ptr [r8+r9+0]  # L0IX magic
+    mov r11, 0x000000005849304c
+    cmp rax, r11
+    jne fail_img
+    mov rax, qword ptr [r8+r9+8]  # L0IX version
+    cmp rax, 1
+    jne fail_img
+    # L0IX code_size must match header code_size
+    mov rax, qword ptr [r8+r9+40]
+    cmp rax, qword ptr [r8+56]
+    jne fail_img
 
 .img_ok:
 

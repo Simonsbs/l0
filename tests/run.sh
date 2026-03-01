@@ -570,6 +570,19 @@ if "$BIN" imgcheck /tmp/l0_badflags.img >/tmp/l0_badflags.out 2>/tmp/l0_badflags
   echo "FAIL: imgcheck accepted nonzero flags"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_dbg_magic.img
+dbg_off_main=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
+printf 'BAD!' | dd of=/tmp/l0_bad_dbg_magic.img bs=1 seek="$dbg_off_main" conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_dbg_magic.img >/tmp/l0_bad_dbg_magic.out 2>/tmp/l0_bad_dbg_magic.err; then
+  echo "FAIL: imgcheck accepted bad debug magic"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_dbg_codesz.img
+printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_codesz.img bs=1 seek="$((dbg_off_main + 40))" conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_dbg_codesz.img >/tmp/l0_bad_dbg_codesz.out 2>/tmp/l0_bad_dbg_codesz.err; then
+  echo "FAIL: imgcheck accepted mismatched debug code size"
+  exit 1
+fi
 printf 'BADIMG' >/tmp/l0_bad.img
 if "$BIN" imgcheck /tmp/l0_bad.img >/tmp/l0_badimg.out 2>/tmp/l0_badimg.err; then
   echo "FAIL: imgcheck accepted invalid image"

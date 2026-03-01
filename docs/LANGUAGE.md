@@ -163,6 +163,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - flags `0` (reserved for future use)
 - source section bounds/size consistency
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
+- debug schema consistency for non-zero debug section (`L0IX` magic/version and code-size match)
 
 ### `run` bootstrap execution rules
 
