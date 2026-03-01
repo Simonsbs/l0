@@ -256,7 +256,18 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these shapes remain intentionally unlowered under active generalized hook staging (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M21: Non-template backend and full general codegen completion
+### M21: Staged Intrinsic Fallback Matrix Expansion
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for multi-dead-const injected const-dependent intrinsic shapes:
+    - `write`
+    - `free`
+    - `trace`
+  - added deterministic build assertions proving these heavier staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M22: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
