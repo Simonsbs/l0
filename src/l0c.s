@@ -139,6 +139,10 @@ pat_mem_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = allo
 pat_mem_roundtrip_len = . - pat_mem_roundtrip
 pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_add_len = . - pat_call_add
+pat_call_sub: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = sub.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_call_sub_len = . - pat_call_sub
+pat_call_mul: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = mul.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_call_mul_len = . - pat_call_mul
 pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
 pat_const_prefix_len = . - pat_const_prefix
 pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
@@ -302,7 +306,7 @@ do_build:
 
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
-    # - canonical call->add.wrap two-function kernel lowering
+    # - canonical call->{add,sub,mul}.wrap two-function kernel lowering
     # - canonical alloca+st+ld memory roundtrip kernel lowering
     # - canonical icmp.eq + cbr select kernel lowering
     # - canonical icmp.eq kernel lowering
@@ -311,6 +315,32 @@ do_build:
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
     mov qword ptr [rip+build_kernel_kind], 0
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_call_sub]
+    mov rcx, pat_call_sub_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_call_mul
+    lea r14, [rip+code_stub_sub]
+    mov r15, code_stub_sub_len
+    mov qword ptr [rip+build_kernel_kind], 17
+    jmp .build_code_selected
+
+.build_try_call_mul:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_call_mul]
+    mov rcx, pat_call_mul_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_call_add
+    lea r14, [rip+code_stub_mul]
+    mov r15, code_stub_mul_len
+    mov qword ptr [rip+build_kernel_kind], 18
+    jmp .build_code_selected
+
+.build_try_call_add:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_call_add]

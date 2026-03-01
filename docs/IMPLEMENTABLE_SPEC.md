@@ -152,6 +152,8 @@ I currently lower deterministic canonical kernels:
   - `icmp.eq` returning `i1`
 - Control-flow select kernel:
   - `icmp.eq` + `cbr` selecting `ret v0` or `ret v1`
+- Two-function call kernels:
+  - `f0` calls `f1` where `f1` is canonical `add.wrap` / `sub.wrap` / `mul.wrap`
 - Const-return kernel:
   - `const N` / `const -N` then `ret`
 
@@ -207,6 +209,8 @@ Current bootstrap `kernel kind id` mapping:
 - `14`: memory roundtrip kernel (`alloca/st/ld`)
 - `15`: `mul.trap`
 - `16`: canonical call->add two-function kernel
+- `17`: canonical call->sub two-function kernel
+- `18`: canonical call->mul two-function kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 
