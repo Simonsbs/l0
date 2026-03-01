@@ -33,7 +33,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c build <input.l0> -o <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> | l0c build <input.l0> -o <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -216,8 +216,17 @@ _start:
     cmp rax, 1
     jne .check_verify
     cmp r13, 3
+    je do_canon
+    cmp r13, 5
     jne usage
-    jmp do_canon
+    mov rdi, [r12+32]         # argv[3] should be "-o"
+    lea rsi, [rip+flag_o]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+40]         # argv[4] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    jmp do_canon_out
 
 .check_verify:
     lea rsi, [rip+cmd_verify]
@@ -321,6 +330,49 @@ do_canon:
     call write_fd
     mov rdi, 0
     call exit
+
+do_canon_out:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax               # size
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call validate_module
+    cmp rax, 1
+    jne fail_parse
+
+    mov rdi, qword ptr [rip+out_path_ptr]
+    mov rax, 2                 # sys_open
+    mov rsi, 577               # O_WRONLY|O_CREAT|O_TRUNC
+    mov rdx, 420               # 0644
+    syscall
+    test rax, rax
+    js fail_build
+    mov r10, rax               # out fd
+
+    mov rdi, r10
+    lea rsi, [rip+file_buf]
+    mov rdx, rbx
+    call write_all
+    cmp rax, 0
+    jne .canon_out_fail
+
+    mov rdi, r10
+    mov rax, 3                 # sys_close
+    syscall
+    lea rsi, [rip+ok_msg]
+    mov rdx, ok_len
+    mov rdi, 1
+    call write_fd
+    mov rdi, 0
+    call exit
+.canon_out_fail:
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp fail_build
 
 do_verify:
     mov rdi, r15

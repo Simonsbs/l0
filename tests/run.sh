@@ -14,6 +14,15 @@ if ! grep -q '^ok$' /tmp/l0_ok_branch.out; then
   echo "FAIL: verify valid_branch"
   exit 1
 fi
+"$BIN" canon "$ROOT/tests/valid_min.l0" -o /tmp/l0_canon_min.l0 >/tmp/l0_canon_min_cmd.out
+if ! grep -q '^ok$' /tmp/l0_canon_min_cmd.out; then
+  echo "FAIL: canon -o valid_min"
+  exit 1
+fi
+if ! cmp -s "$ROOT/tests/valid_min.l0" /tmp/l0_canon_min.l0; then
+  echo "FAIL: canon -o output mismatch"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call.l0" >/tmp/l0_ok_call.out
 if ! grep -q '^ok$' /tmp/l0_ok_call.out; then
   echo "FAIL: verify valid_call"

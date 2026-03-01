@@ -151,6 +151,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 ## Implemented CLI behavior
 
 - `l0c canon <input.l0>`
+- `l0c canon <input.l0> -o <out.l0>`
 - `l0c verify <input.l0>`
 - `l0c build <input.l0> <out.l0img>`
 - `l0c build <input.l0> -o <out.l0img>`
