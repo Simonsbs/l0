@@ -119,13 +119,20 @@ Last updated: 2026-03-01
   - memory-gep selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
   - expanded multi-digit SSA id regression coverage (`v77`/`v123`) for intrinsic selectors (`malloc`, `free`, `exit`) plus `write`, `trace`, `mem_roundtrip`, and `mem_gep_roundtrip` selector paths to lock digit-parse stability
 
-### M6: Non-template backend and full general codegen
+### M6: Selector-Decoupling Generalization
 
-- Status: in progress
-- Current incremental step completed:
-  - binary selector now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`) and normalizes dataflow by arg index
+- Status: complete
+- Scope completed:
+  - binary selector accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`) and normalizes dataflow by arg index
   - commutative binary lowering remains valid under swapped arg-definition order
   - non-commutative guardrail maintained under swapped arg-definition order (`sub.wrap` swapped operands remains intentionally unlowered)
+  - `icmp.eq` selector accepts either canonical arg-definition order in `f0` and normalizes compare operand binding by arg index
+  - `icmp.eq + cbr` selector accepts either canonical arg-definition order in `f0`, preserves compare-result consistency checks, and preserves strict branch-return mapping checks
+  - regression matrix added for arg-definition-order variants (lowered and intentional unlowered guardrail shapes) across binary/icmp/cbr selector families
+
+### M7: Non-template backend and full general codegen
+
+- Status: planned
 - Planned:
   - lower general multi-block SSA modules beyond canonical kernel templates
   - integrate a generalized instruction-selection pipeline instead of template matching

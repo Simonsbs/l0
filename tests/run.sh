@@ -258,6 +258,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq_argids_v7_v9_swapped_lowered.out; then
   echo "FAIL: verify valid_icmp_eq_argids_v7_v9_swapped_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_icmp_eq_argdef_order_swapped_lowered.l0" >/tmp/l0_ok_icmp_eq_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq_argdef_order_swapped_lowered.out; then
+  echo "FAIL: verify valid_icmp_eq_argdef_order_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.l0" >/tmp/l0_ok_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.out; then
+  echo "FAIL: verify valid_icmp_eq_argdef_order_swapped_cmp_swapped_lowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_cbr_eq_select.l0" >/tmp/l0_ok_cbr_eq_select.out
 if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select.out; then
   echo "FAIL: verify valid_cbr_eq_select"
@@ -296,6 +306,21 @@ fi
 "$BIN" verify "$ROOT/tests/valid_cbr_eq_select_argids_ret_mismatch_unlowered.l0" >/tmp/l0_ok_cbr_eq_select_argids_ret_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_argids_ret_mismatch_unlowered.out; then
   echo "FAIL: verify valid_cbr_eq_select_argids_ret_mismatch_unlowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_lowered.l0" >/tmp/l0_ok_cbr_eq_select_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_argdef_order_swapped_lowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_argdef_order_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.l0" >/tmp/l0_ok_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.l0" >/tmp/l0_ok_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
@@ -1502,6 +1527,48 @@ if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_argids_v7_v9_swapped_f.out)" != "0" ]; 
   echo "FAIL: run icmp.eq argids v7/v9 swapped false result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_icmp_eq_argdef_order_swapped_lowered.l0" /tmp/l0_test_icmp_eq_argdef_order_swapped_lowered.img >/tmp/l0_build_icmp_eq_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_icmp_eq_argdef_order_swapped_lowered.out; then
+  echo "FAIL: build valid_icmp_eq_argdef_order_swapped_lowered"
+  exit 1
+fi
+icmp_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_icmp_eq_argdef_order_swapped_lowered.img | tr -d ' ')
+icmp_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((icmp_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_icmp_eq_argdef_order_swapped_lowered.img | tr -d ' ')
+if [ "$icmp_argdef_order_swapped_kernel_kind" != "11" ]; then
+  echo "FAIL: icmp.eq argdef-order-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_argdef_order_swapped_lowered.img 9 9 >/tmp/l0_run_icmp_eq_argdef_order_swapped_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_argdef_order_swapped_t.out)" != "1" ]; then
+  echo "FAIL: run icmp.eq argdef-order-swapped true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_argdef_order_swapped_lowered.img 9 8 >/tmp/l0_run_icmp_eq_argdef_order_swapped_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_argdef_order_swapped_f.out)" != "0" ]; then
+  echo "FAIL: run icmp.eq argdef-order-swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.l0" /tmp/l0_test_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.img >/tmp/l0_build_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.out; then
+  echo "FAIL: build valid_icmp_eq_argdef_order_swapped_cmp_swapped_lowered"
+  exit 1
+fi
+icmp_argdef_order_swapped_cmp_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.img | tr -d ' ')
+icmp_argdef_order_swapped_cmp_swapped_kernel_kind=$(od -An -t u8 -j "$((icmp_argdef_order_swapped_cmp_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.img | tr -d ' ')
+if [ "$icmp_argdef_order_swapped_cmp_swapped_kernel_kind" != "11" ]; then
+  echo "FAIL: icmp.eq argdef-order-swapped cmp-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.img 9 9 >/tmp/l0_run_icmp_eq_argdef_order_swapped_cmp_swapped_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_argdef_order_swapped_cmp_swapped_t.out)" != "1" ]; then
+  echo "FAIL: run icmp.eq argdef-order-swapped cmp-swapped true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_argdef_order_swapped_cmp_swapped_lowered.img 9 8 >/tmp/l0_run_icmp_eq_argdef_order_swapped_cmp_swapped_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_argdef_order_swapped_cmp_swapped_f.out)" != "0" ]; then
+  echo "FAIL: run icmp.eq argdef-order-swapped cmp-swapped false result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select.l0" /tmp/l0_test_cbr_eq_select.img >/tmp/l0_build_cbr_eq_select.out
 if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select.out; then
   echo "FAIL: build valid_cbr_eq_select"
@@ -1654,6 +1721,60 @@ cbr_argids_ret_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_argids_ret_mismatc
 cbr_argids_ret_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_argids_ret_mismatch_unlowered.img | tr -d ' ')
 if [ "$cbr_argids_ret_mismatch_kernel_kind" != "0" ] || [ "$cbr_argids_ret_mismatch_code_size" != "1" ]; then
   echo "FAIL: cbr eq-select argids ret mismatch unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_lowered.l0" /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img >/tmp/l0_build_cbr_eq_select_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_argdef_order_swapped_lowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_argdef_order_swapped_lowered"
+  exit 1
+fi
+cbr_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img | tr -d ' ')
+cbr_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((cbr_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img | tr -d ' ')
+if [ "$cbr_argdef_order_swapped_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select argdef-order-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img 9 9 >/tmp/l0_run_cbr_eq_select_argdef_order_swapped_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argdef_order_swapped_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select argdef-order-swapped true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img 9 8 >/tmp/l0_run_cbr_eq_select_argdef_order_swapped_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argdef_order_swapped_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select argdef-order-swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.l0" /tmp/l0_test_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.img >/tmp/l0_build_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered"
+  exit 1
+fi
+cbr_argdef_order_swapped_cmp_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.img | tr -d ' ')
+cbr_argdef_order_swapped_cmp_swapped_kernel_kind=$(od -An -t u8 -j "$((cbr_argdef_order_swapped_cmp_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.img | tr -d ' ')
+if [ "$cbr_argdef_order_swapped_cmp_swapped_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select argdef-order-swapped cmp-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.img 9 9 >/tmp/l0_run_cbr_eq_select_argdef_order_swapped_cmp_swapped_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argdef_order_swapped_cmp_swapped_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select argdef-order-swapped cmp-swapped true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argdef_order_swapped_cmp_swapped_lowered.img 9 8 >/tmp/l0_run_cbr_eq_select_argdef_order_swapped_cmp_swapped_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argdef_order_swapped_cmp_swapped_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select argdef-order-swapped cmp-swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.l0" /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img >/tmp/l0_build_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered"
+  exit 1
+fi
+cbr_argdef_order_swapped_ret_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
+cbr_argdef_order_swapped_ret_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_argdef_order_swapped_ret_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
+cbr_argdef_order_swapped_ret_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
+if [ "$cbr_argdef_order_swapped_ret_mismatch_kernel_kind" != "0" ] || [ "$cbr_argdef_order_swapped_ret_mismatch_code_size" != "1" ]; then
+  echo "FAIL: cbr eq-select argdef-order-swapped ret mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out

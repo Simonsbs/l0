@@ -218,8 +218,12 @@ pat_icmp_head: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v"
 pat_icmp_head_len = . - pat_icmp_head
 pat_icmp_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_icmp_mid_a_len = . - pat_icmp_mid_a
+pat_icmp_mid_a_alt: .ascii " = arg 1 : t0\n  v"
+pat_icmp_mid_a_alt_len = . - pat_icmp_mid_a_alt
 pat_icmp_mid_b: .ascii " = arg 1 : t0\n  v"
 pat_icmp_mid_b_len = . - pat_icmp_mid_b
+pat_icmp_mid_b_alt: .ascii " = arg 0 : t0\n  v"
+pat_icmp_mid_b_alt_len = . - pat_icmp_mid_b_alt
 pat_icmp_mid: .ascii " = icmp.eq "
 pat_icmp_mid_len = . - pat_icmp_mid
 pat_icmp_tail_mid: .ascii " : t1\n  ret v"
@@ -230,8 +234,12 @@ pat_cbr_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v"
 pat_cbr_head_len = . - pat_cbr_head
 pat_cbr_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_cbr_mid_a_len = . - pat_cbr_mid_a
+pat_cbr_mid_a_alt: .ascii " = arg 1 : t0\n  v"
+pat_cbr_mid_a_alt_len = . - pat_cbr_mid_a_alt
 pat_cbr_mid_b: .ascii " = arg 1 : t0\n  v"
 pat_cbr_mid_b_len = . - pat_cbr_mid_b
+pat_cbr_mid_b_alt: .ascii " = arg 0 : t0\n  v"
+pat_cbr_mid_b_alt_len = . - pat_cbr_mid_b_alt
 pat_cbr_mid: .ascii " = icmp.eq "
 pat_cbr_mid_len = . - pat_cbr_mid
 pat_cbr_tail_mid: .ascii " : t1\n  cbr v"
@@ -9124,8 +9132,25 @@ try_select_cbr_eq_select_kernel_code:
     mov rdx, pat_cbr_mid_a_len
     call mem_eq
     cmp rax, 1
+    je .tscs_arg_first_ok
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_cbr_mid_a_alt_len
+    jb .tscs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_mid_a_alt]
+    mov rdx, pat_cbr_mid_a_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tscs_no
-    add r10, pat_cbr_mid_a_len      # arg1-id start
+    mov qword ptr [rsp+136], 1
+    add r10, pat_cbr_mid_a_alt_len    # second arg-id start
+    jmp .tscs_arg_first_done
+.tscs_arg_first_ok:
+    mov qword ptr [rsp+136], 0
+    add r10, pat_cbr_mid_a_len        # second arg-id start
+.tscs_arg_first_done:
     cmp r10, r13
     jae .tscs_no
     mov r8, r10
@@ -9151,6 +9176,8 @@ try_select_cbr_eq_select_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
+    cmp qword ptr [rsp+136], 0
+    jne .tscs_second_expect_arg0
     cmp rax, pat_cbr_mid_b_len
     jb .tscs_no
     mov rdi, r12
@@ -9160,7 +9187,33 @@ try_select_cbr_eq_select_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-    add r10, pat_cbr_mid_b_len      # cmp-result id start
+    add r10, pat_cbr_mid_b_len
+    jmp .tscs_second_line_done
+.tscs_second_expect_arg0:
+    cmp rax, pat_cbr_mid_b_alt_len
+    jb .tscs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_mid_b_alt]
+    mov rdx, pat_cbr_mid_b_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, pat_cbr_mid_b_alt_len
+.tscs_second_line_done:
+    # Normalize slots: [rsp+0]/[rsp+8] = arg0 id, [rsp+16]/[rsp+24] = arg1 id.
+    cmp qword ptr [rsp+136], 0
+    je .tscs_args_norm_done
+    mov rax, qword ptr [rsp+0]
+    mov rbx, qword ptr [rsp+8]
+    mov rcx, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    mov qword ptr [rsp+0], rcx
+    mov qword ptr [rsp+8], rdx
+    mov qword ptr [rsp+16], rax
+    mov qword ptr [rsp+24], rbx
+.tscs_args_norm_done:
+    # cmp-result id start
     cmp r10, r13
     jae .tscs_no
     mov r8, r10
@@ -9448,8 +9501,25 @@ try_select_icmp_eq_kernel_code:
     mov rdx, pat_icmp_mid_a_len
     call mem_eq
     cmp rax, 1
+    je .tsik_arg_first_ok
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_icmp_mid_a_alt_len
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_mid_a_alt]
+    mov rdx, pat_icmp_mid_a_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsik_no
-    add r10, pat_icmp_mid_a_len     # arg1-id start
+    mov qword ptr [rsp+88], 1
+    add r10, pat_icmp_mid_a_alt_len   # second arg-id start
+    jmp .tsik_arg_first_done
+.tsik_arg_first_ok:
+    mov qword ptr [rsp+88], 0
+    add r10, pat_icmp_mid_a_len       # second arg-id start
+.tsik_arg_first_done:
     cmp r10, r13
     jae .tsik_no
     mov r8, r10
@@ -9475,6 +9545,8 @@ try_select_icmp_eq_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
+    cmp qword ptr [rsp+88], 0
+    jne .tsik_second_expect_arg0
     cmp rax, pat_icmp_mid_b_len
     jb .tsik_no
     mov rdi, r12
@@ -9484,7 +9556,33 @@ try_select_icmp_eq_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsik_no
-    add r10, pat_icmp_mid_b_len     # result-id start
+    add r10, pat_icmp_mid_b_len
+    jmp .tsik_second_line_done
+.tsik_second_expect_arg0:
+    cmp rax, pat_icmp_mid_b_alt_len
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_mid_b_alt]
+    mov rdx, pat_icmp_mid_b_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    add r10, pat_icmp_mid_b_alt_len
+.tsik_second_line_done:
+    # Normalize slots: [rsp+0]/[rsp+8] = arg0 id, [rsp+16]/[rsp+24] = arg1 id.
+    cmp qword ptr [rsp+88], 0
+    je .tsik_args_norm_done
+    mov rax, qword ptr [rsp+0]
+    mov rbx, qword ptr [rsp+8]
+    mov rcx, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    mov qword ptr [rsp+0], rcx
+    mov qword ptr [rsp+8], rdx
+    mov qword ptr [rsp+16], rax
+    mov qword ptr [rsp+24], rbx
+.tsik_args_norm_done:
+    # result-id start
     cmp r10, r13
     jae .tsik_no
     mov r8, r10
