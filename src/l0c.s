@@ -848,14 +848,6 @@ do_build:
     mov rsi, rbx
     call try_select_general_trace_noop_kernel_code
     cmp rax, 1
-    jne .build_try_trace_noop
-    jmp .build_code_selected
-
-.build_try_trace_noop:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_trace_noop_kernel_code
-    cmp rax, 1
     jne .build_try_write_newline
     jmp .build_code_selected
 
@@ -863,14 +855,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_write_newline_kernel_code
-    cmp rax, 1
-    jne .build_try_write_newline_legacy
-    jmp .build_code_selected
-
-.build_try_write_newline_legacy:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_write_newline_kernel_code
     cmp rax, 1
     jne .build_try_general_exit
     jmp .build_code_selected
@@ -911,14 +895,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_free_noop_kernel_code
-    cmp rax, 1
-    jne .build_try_free_noop_legacy
-    jmp .build_code_selected
-
-.build_try_free_noop_legacy:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_free_noop_kernel_code
     cmp rax, 1
     jne .build_try_general_call
     jmp .build_code_selected

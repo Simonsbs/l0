@@ -332,7 +332,18 @@ Last updated: 2026-03-01
   - preserved intentional write guardrail fallback behavior for `alloca ... , 0` variants (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M28: Non-template backend and full general codegen completion
+### M28: Generalized Intrinsic-Selector Pipeline Cutoff
+
+- Status: complete
+- Scope completed:
+  - removed legacy direct selector fallback stages for const-dependent intrinsic families in `build`:
+    - `trace`
+    - `write`
+    - `free`
+  - kept these families routed through generalized normalization+selector paths only
+  - validated deterministic behavior and full regression-suite stability under the generalized-only routing
+
+### M29: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
