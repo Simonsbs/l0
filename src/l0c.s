@@ -137,6 +137,8 @@ pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = a
 pat_cbr_eq_select_len = . - pat_cbr_eq_select
 pat_mem_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = ld v1 : t0\n  ret v2\n}\n"
 pat_mem_roundtrip_len = . - pat_mem_roundtrip
+pat_mem_gep_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = gep v1 0 : t1\n  v3 = ld v2 : t0\n  ret v3\n}\n"
+pat_mem_gep_roundtrip_len = . - pat_mem_gep_roundtrip
 pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_add_len = . - pat_call_add
 pat_call_sub: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = sub.wrap v0 v1 : t0\n  ret v2\n}\n"
@@ -347,10 +349,23 @@ do_build:
     mov rcx, pat_call_add_len
     call find_substr
     cmp rax, 1
-    jne .build_try_mem_roundtrip
+    jne .build_try_mem_gep_roundtrip
     lea r14, [rip+code_stub_add]
     mov r15, code_stub_add_len
     mov qword ptr [rip+build_kernel_kind], 16
+    jmp .build_code_selected
+
+.build_try_mem_gep_roundtrip:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_mem_gep_roundtrip]
+    mov rcx, pat_mem_gep_roundtrip_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_mem_roundtrip
+    lea r14, [rip+code_stub_mem_roundtrip]
+    mov r15, code_stub_mem_roundtrip_len
+    mov qword ptr [rip+build_kernel_kind], 19
     jmp .build_code_selected
 
 .build_try_mem_roundtrip:

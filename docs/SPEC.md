@@ -107,6 +107,12 @@ I also enforce a structural subset inside `fns`:
     - `st v1 v0`
     - `v2 = ld v1 : t0`
     - `ret v2`
+  - I lower canonical `gep` memory roundtrip kernel shape:
+    - `v1 = alloca t0, 1 : t1`
+    - `st v1 v0`
+    - `v2 = gep v1 0 : t1`
+    - `v3 = ld v2 : t0`
+    - `ret v3`
   - I lower canonical two-function call kernel shapes:
     - `f0` computes args and calls `f1`
     - `f1` is canonical `add.wrap`, `sub.wrap`, or `mul.wrap` kernel
