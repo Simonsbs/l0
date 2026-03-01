@@ -134,6 +134,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_free_noop.out; then
   echo "FAIL: verify valid_free_noop"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_exit.l0" >/tmp/l0_ok_exit.out
+if ! grep -q '^ok$' /tmp/l0_ok_exit.out; then
+  echo "FAIL: verify valid_exit"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -492,6 +497,25 @@ if [ "$(tr -d '\n' < /tmp/l0_run_free_noop.out)" != "0" ]; then
   echo "FAIL: run free noop image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_exit.l0" /tmp/l0_test_exit.img >/tmp/l0_build_exit.out
+if ! grep -q '^ok$' /tmp/l0_build_exit.out; then
+  echo "FAIL: build valid_exit"
+  exit 1
+fi
+exit_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_exit.img | tr -d ' ')
+exit_kernel_kind=$(od -An -t u8 -j "$((exit_dbg_off + 32))" -N 8 /tmp/l0_test_exit.img | tr -d ' ')
+if [ "$exit_kernel_kind" != "23" ]; then
+  echo "FAIL: exit debug kernel kind id"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit.img 7 >/tmp/l0_run_exit.out 2>/tmp/l0_run_exit.err
+exit_rc=$?
+set -e
+if [ "$exit_rc" -ne 7 ]; then
+  echo "FAIL: run exit image status"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
@@ -705,6 +729,10 @@ if "$BIN" verify "$ROOT/tests/invalid_malloc_result_not_pointer.l0" >/tmp/l0_bad
 fi
 if "$BIN" verify "$ROOT/tests/invalid_free_ptr_not_pointer.l0" >/tmp/l0_bad38b.out 2>/tmp/l0_bad38b.err; then
   echo "FAIL: invalid_free_ptr_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_exit_undefined.l0" >/tmp/l0_bad38d.out 2>/tmp/l0_bad38d.err; then
+  echo "FAIL: invalid_exit_undefined unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then

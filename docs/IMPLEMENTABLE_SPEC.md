@@ -40,7 +40,8 @@ term_instr  = IND "ret"
 
 value_instr = IND value_id SP "=" SP opcode SP args SP ":" SP type_id ;
 nonvalue_instr = (IND "st" SP value_id SP value_id)
-              | (IND "free" SP value_id) ;
+              | (IND "free" SP value_id)
+              | (IND "exit" SP value_id) ;
 
 opcode      = "arg" | "const" | "call"
             | "add.wrap" | "add.trap" | "sub.wrap" | "sub.trap" | "mul.wrap" | "mul.trap"
@@ -145,6 +146,9 @@ digit       = "0".."9" ;
   - shape: `free vPtr`
   - operand must be defined before use
   - `vPtr` must be typed `p0<i8>`
+- `exit` (non-value):
+  - shape: `exit vCode`
+  - operand must be defined before use
 
 ## 4) Core Semantics (Bootstrap Contract)
 
@@ -171,6 +175,7 @@ I currently lower deterministic canonical kernels:
 - Intrinsic kernels:
   - canonical `malloc` kernel (syscall-backed `mmap` allocator path)
   - canonical `free` kernel (defined no-op returning zero in current slice)
+  - canonical `exit` kernel (syscall-backed process exit path)
 - Const-return kernel:
   - `const N` / `const -N` then `ret`
 
@@ -231,6 +236,8 @@ Current bootstrap `kernel kind id` mapping:
 - `19`: canonical `gep` memory roundtrip kernel
 - `20`: canonical `malloc` kernel
 - `21`: canonical `free` no-op kernel
+- `22`: reserved (unused in current bootstrap)
+- `23`: canonical `exit` kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 
@@ -245,6 +252,6 @@ Current bootstrap `kernel kind id` mapping:
 
 To complete the M1 scope, I still need to finish:
 - lowering for verified `ld/st/gep/alloca` modules (not only verify)
-- intrinsic/runtime surface for `write` and `exit` plus non-kernel generalization of `malloc`/`free`
+- intrinsic/runtime surface for `write` plus non-kernel generalization of `malloc`/`free`/`exit`
 - richer debug map (`inst_id -> code range`) and trace record emission
 - broader canonical rewrite mode (optional `--fix` path)
