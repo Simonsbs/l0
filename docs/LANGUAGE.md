@@ -276,6 +276,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
+    - call-kernel templates also accept nonzero call-result ids in `f0` when `ret` references the same value id
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
     - const-return kernels also accept nonzero const-def value ids when the same id is returned (`vN = const ...`, `ret vN`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)

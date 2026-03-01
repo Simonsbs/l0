@@ -133,6 +133,7 @@ I also enforce a structural subset inside `fns`:
     - `f1` is canonical `add.wrap`, `sub.wrap`, or `mul.wrap` kernel
     - current bootstrap lowering maps these shapes to corresponding direct arithmetic payloads
     - for `f1` in `add.wrap`/`mul.wrap`, I also accept swapped call-arg order in `f0` (`call f1 v1 v0`)
+    - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
