@@ -189,11 +189,14 @@ I also enforce a structural subset inside `fns`:
 - `qword[2]`: trace record size (`16`)
 - `qword[3]`: field count (`2`)
 
-`l0c build ... --debug-map <out.bin>` currently writes a 32-byte bootstrap map payload:
+`l0c build ... --debug-map <out.bin>` currently writes a 56-byte bootstrap map payload:
 - `qword[0]`: magic (`L0DM`)
 - `qword[1]`: version (`1`)
 - `qword[2]`: instruction-entry count (`1`)
 - `qword[3]`: code size (`code_size` from emitted image)
+- `qword[4]`: instruction id (`1` in current bootstrap)
+- `qword[5]`: code start offset (`0`)
+- `qword[6]`: code end offset (`code_size`)
 
 Current bootstrap parser accepts either side artifact independently or both together in one build command.
 

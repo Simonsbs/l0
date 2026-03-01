@@ -13,7 +13,7 @@
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
 .lcomm trace_schema_buf, 32
-.lcomm debug_map_buf, 32
+.lcomm debug_map_buf, 56
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -79,6 +79,12 @@ map_entries_prefix: .ascii "entries "
 map_entries_prefix_len = . - map_entries_prefix
 map_code_size_prefix: .ascii "code_size "
 map_code_size_prefix_len = . - map_code_size_prefix
+map_inst_id_prefix: .ascii "inst_id "
+map_inst_id_prefix_len = . - map_inst_id_prefix
+map_start_prefix: .ascii "start "
+map_start_prefix_len = . - map_start_prefix
+map_end_prefix: .ascii "end "
+map_end_prefix_len = . - map_end_prefix
 schema_version_prefix: .ascii "version "
 schema_version_prefix_len = . - schema_version_prefix
 schema_record_size_prefix: .ascii "record_size "
@@ -907,9 +913,12 @@ do_build:
     mov qword ptr [r11+8], 1
     mov qword ptr [r11+16], 1
     mov qword ptr [r11+24], r15
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], r15
     mov rdi, r10
     lea rsi, [rip+debug_map_buf]
-    mov rdx, 32
+    mov rdx, 56
     call write_all
     cmp rax, 0
     jne .build_write_debug_map_fail
@@ -1186,7 +1195,7 @@ do_mapcat:
     cmp rax, 0
     jl fail_io
     mov rbx, rax
-    cmp rbx, 32
+    cmp rbx, 56
     jne fail_parse
     lea r8, [rip+file_buf]
     mov rax, qword ptr [r8+0]
@@ -1207,6 +1216,24 @@ do_mapcat:
     mov rdx, map_code_size_prefix_len
     call write_fd
     mov rdi, qword ptr [r8+24]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+map_inst_id_prefix]
+    mov rdx, map_inst_id_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+32]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+map_start_prefix]
+    mov rdx, map_start_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+40]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+map_end_prefix]
+    mov rdx, map_end_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+48]
     call print_u64_nl
     mov rdi, 0
     call exit
