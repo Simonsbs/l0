@@ -96,8 +96,11 @@ Last updated: 2026-03-01
   - binary selector guardrail added: swapped non-commutative `sub.wrap` with nonzero arg ids remains intentionally unlowered
   - binary dynamic-arg selector path is regression-covered for multi-digit ids (`v77`, `v123`)
   - `icmp.eq` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `ret vN`)
+  - `icmp.eq` selector now accepts canonical nonzero argument value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when compare operands reference those exact defs
   - `icmp.eq + cbr` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `cbr vN ...`)
+  - `icmp.eq + cbr` selector now accepts canonical nonzero argument value ids in `f0` and checks that `b1`/`b2` return the corresponding arg defs
   - guardrail added: `icmp.eq + cbr` path with mismatched compare-id/dataflow shape remains intentionally unlowered in bootstrap selector
+  - `icmp.eq + cbr` guardrail added: mismatched branch-return mapping (`b1`/`b2` not returning arg0/arg1 respectively) remains intentionally unlowered
   - call-kernel selector now accepts canonical nonzero call-result ids in `f0` (`vN = call ...`, `ret vN`)
   - call-kernel guardrail added: mismatch between call result id and returned id in `f0` remains intentionally unlowered
   - call-kernel selector now accepts canonical nonzero internal result ids in `f1` for `add.wrap`/`sub.wrap`/`mul.wrap` (`vN = <op> ...`, `ret vN`)

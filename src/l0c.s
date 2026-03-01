@@ -210,26 +210,34 @@ pat_bin_tail_mid: .ascii " : t0\n  ret v"
 pat_bin_tail_mid_len = . - pat_bin_tail_mid
 pat_bin_tail_b: .ascii "\n}\n"
 pat_bin_tail_b_len = . - pat_bin_tail_b
-pat_icmp_head: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
+pat_icmp_head: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v"
 pat_icmp_head_len = . - pat_icmp_head
+pat_icmp_mid_a: .ascii " = arg 0 : t0\n  v"
+pat_icmp_mid_a_len = . - pat_icmp_mid_a
+pat_icmp_mid_b: .ascii " = arg 1 : t0\n  v"
+pat_icmp_mid_b_len = . - pat_icmp_mid_b
 pat_icmp_mid: .ascii " = icmp.eq "
 pat_icmp_mid_len = . - pat_icmp_mid
-pat_icmp_tail_a: .ascii "v0 v1 : t1\n  ret v"
-pat_icmp_tail_a_len = . - pat_icmp_tail_a
-pat_icmp_tail_a_swapped: .ascii "v1 v0 : t1\n  ret v"
-pat_icmp_tail_a_swapped_len = . - pat_icmp_tail_a_swapped
+pat_icmp_tail_mid: .ascii " : t1\n  ret v"
+pat_icmp_tail_mid_len = . - pat_icmp_tail_mid
 pat_icmp_tail_b: .ascii "\n}\n"
 pat_icmp_tail_b_len = . - pat_icmp_tail_b
-pat_cbr_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
+pat_cbr_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v"
 pat_cbr_head_len = . - pat_cbr_head
+pat_cbr_mid_a: .ascii " = arg 0 : t0\n  v"
+pat_cbr_mid_a_len = . - pat_cbr_mid_a
+pat_cbr_mid_b: .ascii " = arg 1 : t0\n  v"
+pat_cbr_mid_b_len = . - pat_cbr_mid_b
 pat_cbr_mid: .ascii " = icmp.eq "
 pat_cbr_mid_len = . - pat_cbr_mid
-pat_cbr_tail_a: .ascii "v0 v1 : t1\n  cbr v"
-pat_cbr_tail_a_len = . - pat_cbr_tail_a
-pat_cbr_tail_a_swapped: .ascii "v1 v0 : t1\n  cbr v"
-pat_cbr_tail_a_swapped_len = . - pat_cbr_tail_a_swapped
-pat_cbr_tail_b: .ascii " b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
+pat_cbr_tail_mid: .ascii " : t1\n  cbr v"
+pat_cbr_tail_mid_len = . - pat_cbr_tail_mid
+pat_cbr_tail_b: .ascii " b1 b2\nb1:\n  ret v"
 pat_cbr_tail_b_len = . - pat_cbr_tail_b
+pat_cbr_tail_c: .ascii "\nb2:\n  ret v"
+pat_cbr_tail_c_len = . - pat_cbr_tail_c
+pat_cbr_tail_d: .ascii "\n}\n"
+pat_cbr_tail_d_len = . - pat_cbr_tail_d
 pat_mem_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_mem_head_len = . - pat_mem_head
 pat_mem_mid_a: .ascii " = arg 0 : t0\n  v"
@@ -9066,6 +9074,7 @@ try_select_cbr_eq_select_kernel_code:
     push r13
     push r14
     push r15
+    sub rsp, 144
 
     mov r12, rdi
     mov r13, rsi
@@ -9078,26 +9087,97 @@ try_select_cbr_eq_select_kernel_code:
     je .tscs_no
 
     mov r8, rax
-    add r8, pat_cbr_head_len        # result-id start
+    add r8, pat_cbr_head_len        # arg0-id start
     cmp r8, r13
     jae .tscs_no
     mov r9, r8
-.tscs_find_vid_end:
+.tscs_find_arg0_end:
     cmp r9, r13
     jae .tscs_no
     mov al, byte ptr [r12+r9]
     cmp al, '0'
-    jb .tscs_vid_done
+    jb .tscs_arg0_done
     cmp al, '9'
-    ja .tscs_vid_done
+    ja .tscs_arg0_done
     inc r9
-    jmp .tscs_find_vid_end
-.tscs_vid_done:
+    jmp .tscs_find_arg0_end
+.tscs_arg0_done:
     cmp r9, r8
     je .tscs_no
-    mov rbx, r8
-    mov r11, r9
-    sub r11, r8                     # result-id len
+    mov qword ptr [rsp+0], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+8], rax
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_cbr_mid_a_len
+    jb .tscs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_mid_a]
+    mov rdx, pat_cbr_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, pat_cbr_mid_a_len      # arg1-id start
+    cmp r10, r13
+    jae .tscs_no
+    mov r8, r10
+    mov r9, r8
+.tscs_find_arg1_end:
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tscs_arg1_done
+    cmp al, '9'
+    ja .tscs_arg1_done
+    inc r9
+    jmp .tscs_find_arg1_end
+.tscs_arg1_done:
+    cmp r9, r8
+    je .tscs_no
+    mov qword ptr [rsp+16], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+24], rax
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_cbr_mid_b_len
+    jb .tscs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_mid_b]
+    mov rdx, pat_cbr_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, pat_cbr_mid_b_len      # cmp-result id start
+    cmp r10, r13
+    jae .tscs_no
+    mov r8, r10
+    mov r9, r8
+.tscs_find_cmp_end:
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tscs_cmp_done
+    cmp al, '9'
+    ja .tscs_cmp_done
+    inc r9
+    jmp .tscs_find_cmp_end
+.tscs_cmp_done:
+    cmp r9, r8
+    je .tscs_no
+    mov qword ptr [rsp+32], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+40], rax
 
     mov r10, r9
     mov rax, r13
@@ -9111,43 +9191,178 @@ try_select_cbr_eq_select_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-    add r10, pat_cbr_mid_len
+    add r10, pat_cbr_mid_len        # icmp operand list start
+    cmp r10, r13
+    jae .tscs_no
+
+    mov al, byte ptr [r12+r10]
+    cmp al, 'v'
+    jne .tscs_no
+    inc r10
+    mov r8, r10
+    mov r9, r8
+.tscs_find_op1_end:
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tscs_op1_done
+    cmp al, '9'
+    ja .tscs_op1_done
+    inc r9
+    jmp .tscs_find_op1_end
+.tscs_op1_done:
+    cmp r9, r8
+    je .tscs_no
+    mov qword ptr [rsp+48], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+56], rax
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, ' '
+    jne .tscs_no
+    inc r9
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, 'v'
+    jne .tscs_no
+    inc r9
+    mov r8, r9
+.tscs_find_op2_end:
+    cmp r9, r13
+    jae .tscs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tscs_op2_done
+    cmp al, '9'
+    ja .tscs_op2_done
+    inc r9
+    jmp .tscs_find_op2_end
+.tscs_op2_done:
+    cmp r9, r8
+    je .tscs_no
+    mov qword ptr [rsp+64], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+72], rax
+
+    mov rax, qword ptr [rsp+56]
+    cmp rax, qword ptr [rsp+8]
+    jne .tscs_try_swapped_cmp_ops
+    mov rdi, r12
+    add rdi, qword ptr [rsp+48]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_swapped_cmp_ops
+    mov rax, qword ptr [rsp+72]
+    cmp rax, qword ptr [rsp+24]
+    jne .tscs_try_swapped_cmp_ops
+    mov rdi, r12
+    add rdi, qword ptr [rsp+64]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    je .tscs_cmp_ops_ok
+.tscs_try_swapped_cmp_ops:
+    mov rax, qword ptr [rsp+56]
+    cmp rax, qword ptr [rsp+24]
+    jne .tscs_no
+    mov rdi, r12
+    add rdi, qword ptr [rsp+48]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    mov rax, qword ptr [rsp+72]
+    cmp rax, qword ptr [rsp+8]
+    jne .tscs_no
+    mov rdi, r12
+    add rdi, qword ptr [rsp+64]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+.tscs_cmp_ops_ok:
+
+    mov r10, r9
     mov rax, r13
     sub rax, r10
-    mov rcx, pat_cbr_tail_a_len
-    add rcx, r11
+    mov rcx, pat_cbr_tail_mid_len
+    add rcx, qword ptr [rsp+40]
     add rcx, pat_cbr_tail_b_len
+    add rcx, qword ptr [rsp+8]
+    add rcx, pat_cbr_tail_c_len
+    add rcx, qword ptr [rsp+24]
+    add rcx, pat_cbr_tail_d_len
     cmp rax, rcx
     jb .tscs_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_cbr_tail_a]
-    mov rdx, pat_cbr_tail_a_len
-    call mem_eq
-    cmp rax, 1
-    je .tscs_tail_a_ok
-    mov rdi, r12
-    add rdi, r10
-    lea rsi, [rip+pat_cbr_tail_a_swapped]
-    mov rdx, pat_cbr_tail_a_swapped_len
+    lea rsi, [rip+pat_cbr_tail_mid]
+    mov rdx, pat_cbr_tail_mid_len
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-.tscs_tail_a_ok:
-    add r10, pat_cbr_tail_a_len
+    add r10, pat_cbr_tail_mid_len
     mov rdi, r12
     add rdi, r10
     mov rsi, r12
-    add rsi, rbx
-    mov rdx, r11
+    add rsi, qword ptr [rsp+32]
+    mov rdx, qword ptr [rsp+40]
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-    add r10, r11
+    add r10, qword ptr [rsp+40]
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_cbr_tail_b]
     mov rdx, pat_cbr_tail_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, pat_cbr_tail_b_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, qword ptr [rsp+8]
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_c]
+    mov rdx, pat_cbr_tail_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, pat_cbr_tail_c_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_no
+    add r10, qword ptr [rsp+24]
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_d]
+    mov rdx, pat_cbr_tail_d_len
     call mem_eq
     cmp rax, 1
     jne .tscs_no
@@ -9161,6 +9376,7 @@ try_select_cbr_eq_select_kernel_code:
 .tscs_no:
     xor rax, rax
 .tscs_done:
+    add rsp, 144
     pop rcx
     pop rdx
     cmp rax, 1
@@ -9182,6 +9398,7 @@ try_select_icmp_eq_kernel_code:
     push r13
     push r14
     push r15
+    sub rsp, 96
 
     mov r12, rdi
     mov r13, rsi
@@ -9194,26 +9411,97 @@ try_select_icmp_eq_kernel_code:
     je .tsik_no
 
     mov r8, rax
-    add r8, pat_icmp_head_len       # result-id start
+    add r8, pat_icmp_head_len       # arg0-id start
     cmp r8, r13
     jae .tsik_no
     mov r9, r8
-.tsik_find_vid_end:
+.tsik_find_arg0_end:
     cmp r9, r13
     jae .tsik_no
     mov al, byte ptr [r12+r9]
     cmp al, '0'
-    jb .tsik_vid_done
+    jb .tsik_arg0_done
     cmp al, '9'
-    ja .tsik_vid_done
+    ja .tsik_arg0_done
     inc r9
-    jmp .tsik_find_vid_end
-.tsik_vid_done:
+    jmp .tsik_find_arg0_end
+.tsik_arg0_done:
     cmp r9, r8
     je .tsik_no
-    mov rbx, r8
-    mov r11, r9
-    sub r11, r8                     # result-id len
+    mov qword ptr [rsp+0], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+8], rax
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_icmp_mid_a_len
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_mid_a]
+    mov rdx, pat_icmp_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    add r10, pat_icmp_mid_a_len     # arg1-id start
+    cmp r10, r13
+    jae .tsik_no
+    mov r8, r10
+    mov r9, r8
+.tsik_find_arg1_end:
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsik_arg1_done
+    cmp al, '9'
+    ja .tsik_arg1_done
+    inc r9
+    jmp .tsik_find_arg1_end
+.tsik_arg1_done:
+    cmp r9, r8
+    je .tsik_no
+    mov qword ptr [rsp+16], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+24], rax
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_icmp_mid_b_len
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_mid_b]
+    mov rdx, pat_icmp_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    add r10, pat_icmp_mid_b_len     # result-id start
+    cmp r10, r13
+    jae .tsik_no
+    mov r8, r10
+    mov r9, r8
+.tsik_find_res_end:
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsik_res_done
+    cmp al, '9'
+    ja .tsik_res_done
+    inc r9
+    jmp .tsik_find_res_end
+.tsik_res_done:
+    cmp r9, r8
+    je .tsik_no
+    mov qword ptr [rsp+32], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+40], rax
 
     mov r10, r9
     mov rax, r13
@@ -9227,39 +9515,136 @@ try_select_icmp_eq_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsik_no
-    add r10, pat_icmp_mid_len       # suffix start
+    add r10, pat_icmp_mid_len       # operand list start
+    cmp r10, r13
+    jae .tsik_no
+
+    mov al, byte ptr [r12+r10]
+    cmp al, 'v'
+    jne .tsik_no
+    inc r10
+    mov r8, r10
+    mov r9, r8
+.tsik_find_op1_end:
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsik_op1_done
+    cmp al, '9'
+    ja .tsik_op1_done
+    inc r9
+    jmp .tsik_find_op1_end
+.tsik_op1_done:
+    cmp r9, r8
+    je .tsik_no
+    mov qword ptr [rsp+48], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+56], rax
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, ' '
+    jne .tsik_no
+    inc r9
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, 'v'
+    jne .tsik_no
+    inc r9
+    mov r8, r9
+.tsik_find_op2_end:
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsik_op2_done
+    cmp al, '9'
+    ja .tsik_op2_done
+    inc r9
+    jmp .tsik_find_op2_end
+.tsik_op2_done:
+    cmp r9, r8
+    je .tsik_no
+    mov qword ptr [rsp+64], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+72], rax
+
+    mov rax, qword ptr [rsp+56]
+    cmp rax, qword ptr [rsp+8]
+    jne .tsik_try_swapped_cmp_ops
+    mov rdi, r12
+    add rdi, qword ptr [rsp+48]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_try_swapped_cmp_ops
+    mov rax, qword ptr [rsp+72]
+    cmp rax, qword ptr [rsp+24]
+    jne .tsik_try_swapped_cmp_ops
+    mov rdi, r12
+    add rdi, qword ptr [rsp+64]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    je .tsik_cmp_ops_ok
+.tsik_try_swapped_cmp_ops:
+    mov rax, qword ptr [rsp+56]
+    cmp rax, qword ptr [rsp+24]
+    jne .tsik_no
+    mov rdi, r12
+    add rdi, qword ptr [rsp+48]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    mov rax, qword ptr [rsp+72]
+    cmp rax, qword ptr [rsp+8]
+    jne .tsik_no
+    mov rdi, r12
+    add rdi, qword ptr [rsp+64]
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+.tsik_cmp_ops_ok:
+
+    mov r10, r9
     mov rax, r13
     sub rax, r10
-    mov rcx, pat_icmp_tail_a_len
-    add rcx, r11
+    mov rcx, pat_icmp_tail_mid_len
+    add rcx, qword ptr [rsp+40]
     add rcx, pat_icmp_tail_b_len
     cmp rax, rcx
     jb .tsik_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_icmp_tail_a]
-    mov rdx, pat_icmp_tail_a_len
-    call mem_eq
-    cmp rax, 1
-    je .tsik_tail_a_ok
-    mov rdi, r12
-    add rdi, r10
-    lea rsi, [rip+pat_icmp_tail_a_swapped]
-    mov rdx, pat_icmp_tail_a_swapped_len
+    lea rsi, [rip+pat_icmp_tail_mid]
+    mov rdx, pat_icmp_tail_mid_len
     call mem_eq
     cmp rax, 1
     jne .tsik_no
-.tsik_tail_a_ok:
-    add r10, pat_icmp_tail_a_len
+    add r10, pat_icmp_tail_mid_len
     mov rdi, r12
     add rdi, r10
     mov rsi, r12
-    add rsi, rbx
-    mov rdx, r11
+    add rsi, qword ptr [rsp+32]
+    mov rdx, qword ptr [rsp+40]
     call mem_eq
     cmp rax, 1
     jne .tsik_no
-    add r10, r11
+    add r10, qword ptr [rsp+40]
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_icmp_tail_b]
@@ -9277,6 +9662,7 @@ try_select_icmp_eq_kernel_code:
 .tsik_no:
     xor rax, rax
 .tsik_done:
+    add rsp, 96
     pop rcx
     pop rdx
     cmp rax, 1
