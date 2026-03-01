@@ -153,6 +153,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq_swapped.out; then
   echo "FAIL: verify valid_icmp_eq_swapped"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_icmp_eq_v7.l0" >/tmp/l0_ok_icmp_eq_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_icmp_eq_v7.out; then
+  echo "FAIL: verify valid_icmp_eq_v7"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_cbr_eq_select.l0" >/tmp/l0_ok_cbr_eq_select.out
 if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select.out; then
   echo "FAIL: verify valid_cbr_eq_select"
@@ -826,6 +831,27 @@ fi
 "$BIN" run /tmp/l0_test_icmp_eq_swapped.img 9 8 >/tmp/l0_run_icmp_eq_swapped_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_swapped_f.out)" != "0" ]; then
   echo "FAIL: run icmp.eq swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_icmp_eq_v7.l0" /tmp/l0_test_icmp_eq_v7.img >/tmp/l0_build_icmp_eq_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_icmp_eq_v7.out; then
+  echo "FAIL: build valid_icmp_eq_v7"
+  exit 1
+fi
+icmp_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_icmp_eq_v7.img | tr -d ' ')
+icmp_v7_kernel_kind=$(od -An -t u8 -j "$((icmp_v7_dbg_off + 32))" -N 8 /tmp/l0_test_icmp_eq_v7.img | tr -d ' ')
+if [ "$icmp_v7_kernel_kind" != "11" ]; then
+  echo "FAIL: icmp.eq v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_v7.img 9 9 >/tmp/l0_run_icmp_eq_v7_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_v7_t.out)" != "1" ]; then
+  echo "FAIL: run icmp.eq v7 true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_icmp_eq_v7.img 9 8 >/tmp/l0_run_icmp_eq_v7_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_v7_f.out)" != "0" ]; then
+  echo "FAIL: run icmp.eq v7 false result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select.l0" /tmp/l0_test_cbr_eq_select.img >/tmp/l0_build_cbr_eq_select.out

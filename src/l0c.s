@@ -208,10 +208,16 @@ pat_bin_tail_a_swapped: .ascii "v1 v0 : t0\n  ret v"
 pat_bin_tail_a_swapped_len = . - pat_bin_tail_a_swapped
 pat_bin_tail_b: .ascii "\n}\n"
 pat_bin_tail_b_len = . - pat_bin_tail_b
-pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
-pat_icmp_eq_len = . - pat_icmp_eq
-pat_icmp_eq_swapped: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v1 v0 : t1\n  ret v2\n}\n"
-pat_icmp_eq_swapped_len = . - pat_icmp_eq_swapped
+pat_icmp_head: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
+pat_icmp_head_len = . - pat_icmp_head
+pat_icmp_mid: .ascii " = icmp.eq "
+pat_icmp_mid_len = . - pat_icmp_mid
+pat_icmp_tail_a: .ascii "v0 v1 : t1\n  ret v"
+pat_icmp_tail_a_len = . - pat_icmp_tail_a
+pat_icmp_tail_a_swapped: .ascii "v1 v0 : t1\n  ret v"
+pat_icmp_tail_a_swapped_len = . - pat_icmp_tail_a_swapped
+pat_icmp_tail_b: .ascii "\n}\n"
+pat_icmp_tail_b_len = . - pat_icmp_tail_b
 pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
 pat_cbr_eq_select_len = . - pat_cbr_eq_select
 pat_cbr_eq_select_swapped: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v1 v0 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
@@ -872,27 +878,9 @@ do_build:
 .build_try_icmp_eq:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
-    lea rdx, [rip+pat_icmp_eq]
-    mov rcx, pat_icmp_eq_len
-    call find_substr
-    cmp rax, 1
-    jne .build_try_icmp_eq_swapped
-    lea r14, [rip+code_stub_icmp_eq]
-    mov r15, code_stub_icmp_eq_len
-    mov qword ptr [rip+build_kernel_kind], 11
-    jmp .build_code_selected
-
-.build_try_icmp_eq_swapped:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    lea rdx, [rip+pat_icmp_eq_swapped]
-    mov rcx, pat_icmp_eq_swapped_len
-    call find_substr
+    call try_select_icmp_eq_kernel_code
     cmp rax, 1
     jne .build_try_bin_kernel
-    lea r14, [rip+code_stub_icmp_eq]
-    mov r15, code_stub_icmp_eq_len
-    mov qword ptr [rip+build_kernel_kind], 11
     jmp .build_code_selected
 
 .build_try_bin_kernel:
@@ -7021,6 +7009,122 @@ find_substr_pos:
     ret
 .fsp_no:
     mov rax, -1
+    ret
+
+# try_select_icmp_eq_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_icmp_eq_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_icmp_head]
+    mov rcx, pat_icmp_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsik_no
+
+    mov r8, rax
+    add r8, pat_icmp_head_len       # result-id start
+    cmp r8, r13
+    jae .tsik_no
+    mov r9, r8
+.tsik_find_vid_end:
+    cmp r9, r13
+    jae .tsik_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsik_vid_done
+    cmp al, '9'
+    ja .tsik_vid_done
+    inc r9
+    jmp .tsik_find_vid_end
+.tsik_vid_done:
+    cmp r9, r8
+    je .tsik_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                     # result-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_icmp_mid_len
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_mid]
+    mov rdx, pat_icmp_mid_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    add r10, pat_icmp_mid_len       # suffix start
+    mov rax, r13
+    sub rax, r10
+    mov rcx, pat_icmp_tail_a_len
+    add rcx, r11
+    add rcx, pat_icmp_tail_b_len
+    cmp rax, rcx
+    jb .tsik_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_tail_a]
+    mov rdx, pat_icmp_tail_a_len
+    call mem_eq
+    cmp rax, 1
+    je .tsik_tail_a_ok
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_tail_a_swapped]
+    mov rdx, pat_icmp_tail_a_swapped_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+.tsik_tail_a_ok:
+    add r10, pat_icmp_tail_a_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+    add r10, r11
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_icmp_tail_b]
+    mov rdx, pat_icmp_tail_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsik_no
+
+    lea r14, [rip+code_stub_icmp_eq]
+    mov r15, code_stub_icmp_eq_len
+    mov qword ptr [rip+build_kernel_kind], 11
+    mov rax, 1
+    jmp .tsik_done
+
+.tsik_no:
+    xor rax, rax
+.tsik_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsik_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsik_keep_out:
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # try_select_bin_kernel_code
