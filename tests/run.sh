@@ -717,6 +717,11 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_map.out; then
   echo "FAIL: build valid_trace_noop with --debug-map"
   exit 1
 fi
+"$BIN" mapcat /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_trace_noop_mapcat.out
+if [ "$(cat /tmp/l0_trace_noop_mapcat.out)" != $'entries 2\ncode_size 51\ninst_id 1\nstart 0\nend 17\ninst_id 2\nstart 17\nend 51' ]; then
+  echo "FAIL: trace noop debug-map layout"
+  exit 1
+fi
 trace_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
 trace_kernel_kind=$(od -An -t u8 -j "$((trace_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
 if [ "$trace_kernel_kind" != "24" ]; then

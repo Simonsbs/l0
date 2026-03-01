@@ -14,6 +14,7 @@ Current bootstrap status:
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
 - I emit debug index metadata with function/type counts, kernel kind id, emitted code size, and trace schema metadata.
 - I emit deterministic kernel-kind-specific debug-map instruction ranges when I build with `--debug-map`.
+- I keep the bootstrap trace-kernel debug-map split stable (`inst_id 1` trace bytes, `inst_id 2` return-path bytes) for deterministic `tracejoin`.
 - I validate debug-map entry integrity (`inst_id != 0`, `start <= end <= code_size`) in `mapcat` and `tracejoin`.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)

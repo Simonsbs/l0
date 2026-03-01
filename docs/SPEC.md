@@ -230,6 +230,7 @@ I also enforce a structural subset inside `fns`:
   - fallback/const kernels: single full-range entry
   - arithmetic/bitwise/call-kernel families: fixed opcode-boundary splits
   - memory/intrinsic kernels (`malloc`, `free`, `write`, `exit`, `trace`): fixed per-kernel splits
+  - current `trace` kernel map is fixed to two entries: `id 1 -> [0,17)`, `id 2 -> [17,code_size)`
   - unknown future kernel kinds still fall back to deterministic contiguous synthetic partitions
 
 Current bootstrap parser accepts either side artifact independently or both together in one build command, and rejects duplicate optional side-artifact flags.

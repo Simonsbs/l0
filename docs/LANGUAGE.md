@@ -224,6 +224,7 @@ Current bootstrap debug map payload is variable-size:
 - current bootstrap emits kernel-kind-specific deterministic ranges:
   - fallback/const kernels use one full-range entry
   - canonical lowered kernels use fixed opcode-boundary splits per kernel family
+  - current `trace` kernel emits two entries: `inst_id 1` for trace record emission bytes and `inst_id 2` for trailing return path bytes
   - unknown future kernel kinds fall back to deterministic synthetic partitions
 
 `mapcat` decodes this bootstrap debug map format and prints:
