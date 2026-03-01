@@ -215,7 +215,11 @@ if [ "$(tr -d '\n' < /tmp/l0_run_add_trap.out)" != "12" ]; then
   echo "FAIL: run add.trap image result"
   exit 1
 fi
-if "$BIN" run /tmp/l0_test_add_trap.img 9223372036854775807 1 >/tmp/l0_run_add_trap_ovf.out 2>/tmp/l0_run_add_trap_ovf.err; then
+set +e
+"$BIN" run /tmp/l0_test_add_trap.img 9223372036854775807 1 >/tmp/l0_run_add_trap_ovf.out 2>/tmp/l0_run_add_trap_ovf.err
+add_trap_ovf_rc=$?
+set -e
+if [ "$add_trap_ovf_rc" -eq 0 ]; then
   echo "FAIL: run add.trap overflow unexpectedly returned"
   exit 1
 fi
@@ -229,7 +233,11 @@ if [ "$(tr -d '\n' < /tmp/l0_run_sub_trap.out)" != "7" ]; then
   echo "FAIL: run sub.trap image result"
   exit 1
 fi
-if "$BIN" run /tmp/l0_test_sub_trap.img 9223372036854775808 1 >/tmp/l0_run_sub_trap_ovf.out 2>/tmp/l0_run_sub_trap_ovf.err; then
+set +e
+"$BIN" run /tmp/l0_test_sub_trap.img 9223372036854775808 1 >/tmp/l0_run_sub_trap_ovf.out 2>/tmp/l0_run_sub_trap_ovf.err
+sub_trap_ovf_rc=$?
+set -e
+if [ "$sub_trap_ovf_rc" -eq 0 ]; then
   echo "FAIL: run sub.trap overflow unexpectedly returned"
   exit 1
 fi
@@ -263,7 +271,11 @@ if [ "$(tr -d '\n' < /tmp/l0_run_mul_trap.out)" != "42" ]; then
   echo "FAIL: run mul.trap image result"
   exit 1
 fi
-if "$BIN" run /tmp/l0_test_mul_trap.img 9223372036854775807 2 >/tmp/l0_run_mul_trap_ovf.out 2>/tmp/l0_run_mul_trap_ovf.err; then
+set +e
+"$BIN" run /tmp/l0_test_mul_trap.img 9223372036854775807 2 >/tmp/l0_run_mul_trap_ovf.out 2>/tmp/l0_run_mul_trap_ovf.err
+mul_trap_ovf_rc=$?
+set -e
+if [ "$mul_trap_ovf_rc" -eq 0 ]; then
   echo "FAIL: run mul.trap overflow unexpectedly returned"
   exit 1
 fi
