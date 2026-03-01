@@ -118,13 +118,13 @@ I also enforce a structural subset inside `fns`:
   - I also accept swapped compare form in that select kernel (`v2 = icmp.eq v1 v0 : t1`)
   - I also accept canonical nonzero compare-result ids in that select kernel when `cbr` references the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
   - I lower canonical memory roundtrip kernel shape:
-    - `v1 = alloca t0, 1 : t1`
+    - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)
     - `st v1 v0`
     - `v2 = ld v1 : t0`
     - `ret v2`
   - for memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/ld/ret when all uses reference the corresponding defs
   - I lower canonical `gep` memory roundtrip kernel shape:
-    - `v1 = alloca t0, 1 : t1`
+    - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)
     - `st v1 v0`
     - `v2 = gep v1 0 : t1`
     - `v3 = ld v2 : t0`

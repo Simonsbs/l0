@@ -148,7 +148,16 @@ Last updated: 2026-03-01
   - non-commutative guardrail is preserved for call->`sub.wrap` under `f1` arg-definition-order variants by requiring semantic arg0->arg1 mapping
   - regression matrix added for `f1` arg-definition-order variants (lowered and intentional unlowered guardrail shapes)
 
-### M9: Non-template backend and full general codegen
+### M10: Selector-Decoupling Completion (Memory Alloca-Count Family)
+
+- Status: complete
+- Scope completed:
+  - memory roundtrip selector accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`) instead of only `alloca t0, 1`
+  - memory-gep roundtrip selector accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`) instead of only `alloca t0, 1`
+  - strict guardrails preserved: `alloca t0, 0` shapes remain intentionally unlowered
+  - regression matrix added for memory alloca-count variants (lowered and intentional unlowered guardrail shapes)
+
+### M11: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

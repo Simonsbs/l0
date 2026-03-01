@@ -46,9 +46,11 @@ Current bootstrap status:
   - I keep mismatched `icmp.eq + cbr` branch-return mappings outside current lowering and regression-test them as intentionally unlowered
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
   - memory-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/load/return dataflow when each use references matching defs
+  - memory-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - I keep mismatched memory-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - memory-gep-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/gep/load/return dataflow when each use references matching defs
+  - memory-gep-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - I keep mismatched memory-gep-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
@@ -81,7 +83,8 @@ Current bootstrap status:
 - I now consider my M6 selector-decoupling milestone complete: I lower binary, `icmp.eq`, and `icmp.eq + cbr` kernels independent of arg-definition line order in `f0`, with guardrails preserved.
 - I now consider my M7 selector-decoupling completion milestone complete: I lower call kernels independent of arg-definition line order in `f0` while preserving non-commutative `sub.wrap` guardrails.
 - I now consider my M8 selector-decoupling completion milestone complete: I lower call kernels correctly across canonical arg-definition-order variants in both `f0` and `f1`, with non-commutative `sub.wrap` semantics preserved.
-- I track true non-template generalized backend/codegen work as my next milestone (M9).
+- I now consider my M10 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
+- I track true non-template generalized backend/codegen work as my next milestone (M11).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

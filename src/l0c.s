@@ -254,8 +254,10 @@ pat_mem_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_mem_head_len = . - pat_mem_head
 pat_mem_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_mem_mid_a_len = . - pat_mem_mid_a
-pat_mem_mid_b: .ascii " = alloca t0, 1 : t1\n  st v"
-pat_mem_mid_b_len = . - pat_mem_mid_b
+pat_mem_mid_b_head: .ascii " = alloca t0, "
+pat_mem_mid_b_head_len = . - pat_mem_mid_b_head
+pat_mem_mid_b_tail: .ascii " : t1\n  st v"
+pat_mem_mid_b_tail_len = . - pat_mem_mid_b_tail
 pat_mem_mid_c: .ascii " v"
 pat_mem_mid_c_len = . - pat_mem_mid_c
 pat_mem_mid_d: .ascii "\n  v"
@@ -270,8 +272,10 @@ pat_gep_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_gep_head_len = . - pat_gep_head
 pat_gep_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_gep_mid_a_len = . - pat_gep_mid_a
-pat_gep_mid_b: .ascii " = alloca t0, 1 : t1\n  st v"
-pat_gep_mid_b_len = . - pat_gep_mid_b
+pat_gep_mid_b_head: .ascii " = alloca t0, "
+pat_gep_mid_b_head_len = . - pat_gep_mid_b_head
+pat_gep_mid_b_tail: .ascii " : t1\n  st v"
+pat_gep_mid_b_tail_len = . - pat_gep_mid_b_tail
 pat_gep_mid_c: .ascii " v"
 pat_gep_mid_c_len = . - pat_gep_mid_c
 pat_gep_mid_d: .ascii "\n  v"
@@ -7422,16 +7426,61 @@ try_select_mem_gep_roundtrip_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
-    cmp rax, pat_gep_mid_b_len
+    cmp rax, pat_gep_mid_b_head_len
     jb .tsgr_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_gep_mid_b]
-    mov rdx, pat_gep_mid_b_len
+    lea rsi, [rip+pat_gep_mid_b_head]
+    mov rdx, pat_gep_mid_b_head_len
     call mem_eq
     cmp rax, 1
     jne .tsgr_no
-    add r10, pat_gep_mid_b_len
+    add r10, pat_gep_mid_b_head_len
+    cmp r10, r13
+    jae .tsgr_no
+    mov r8, r10
+    mov r9, r8
+.tsgr_alloca_count_loop:
+    cmp r9, r13
+    jae .tsgr_alloca_count_done
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsgr_alloca_count_done
+    cmp al, '9'
+    ja .tsgr_alloca_count_done
+    inc r9
+    jmp .tsgr_alloca_count_loop
+.tsgr_alloca_count_done:
+    cmp r9, r8
+    je .tsgr_no
+    xor rcx, rcx
+    mov rax, r8
+.tsgr_alloca_count_nz_loop:
+    cmp rax, r9
+    jae .tsgr_alloca_count_nz_done
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jne .tsgr_alloca_count_nz_yes
+    inc rax
+    jmp .tsgr_alloca_count_nz_loop
+.tsgr_alloca_count_nz_yes:
+    mov rcx, 1
+.tsgr_alloca_count_nz_done:
+    cmp rcx, 1
+    jne .tsgr_no
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_gep_mid_b_tail_len
+    jb .tsgr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_gep_mid_b_tail]
+    mov rdx, pat_gep_mid_b_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgr_no
+    add r10, pat_gep_mid_b_tail_len
 
     mov rdi, r12
     add rdi, r10
@@ -7724,16 +7773,61 @@ try_select_mem_roundtrip_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
-    cmp rax, pat_mem_mid_b_len
+    cmp rax, pat_mem_mid_b_head_len
     jb .tsmr_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_mem_mid_b]
-    mov rdx, pat_mem_mid_b_len
+    lea rsi, [rip+pat_mem_mid_b_head]
+    mov rdx, pat_mem_mid_b_head_len
     call mem_eq
     cmp rax, 1
     jne .tsmr_no
-    add r10, pat_mem_mid_b_len
+    add r10, pat_mem_mid_b_head_len
+    cmp r10, r13
+    jae .tsmr_no
+    mov r8, r10
+    mov r9, r8
+.tsmr_alloca_count_loop:
+    cmp r9, r13
+    jae .tsmr_alloca_count_done
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmr_alloca_count_done
+    cmp al, '9'
+    ja .tsmr_alloca_count_done
+    inc r9
+    jmp .tsmr_alloca_count_loop
+.tsmr_alloca_count_done:
+    cmp r9, r8
+    je .tsmr_no
+    xor rcx, rcx
+    mov rax, r8
+.tsmr_alloca_count_nz_loop:
+    cmp rax, r9
+    jae .tsmr_alloca_count_nz_done
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jne .tsmr_alloca_count_nz_yes
+    inc rax
+    jmp .tsmr_alloca_count_nz_loop
+.tsmr_alloca_count_nz_yes:
+    mov rcx, 1
+.tsmr_alloca_count_nz_done:
+    cmp rcx, 1
+    jne .tsmr_no
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_mem_mid_b_tail_len
+    jb .tsmr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_mem_mid_b_tail]
+    mov rdx, pat_mem_mid_b_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmr_no
+    add r10, pat_mem_mid_b_tail_len
 
     mov rdi, r12
     add rdi, r10
