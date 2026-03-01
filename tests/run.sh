@@ -218,6 +218,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip_v7.out; then
   echo "FAIL: verify valid_mem_roundtrip_v7"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_mem_roundtrip_v123.l0" >/tmp/l0_ok_mem_roundtrip_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip_v123.out; then
+  echo "FAIL: verify valid_mem_roundtrip_v123"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_mem_roundtrip_mismatch_unlowered.l0" >/tmp/l0_ok_mem_roundtrip_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip_mismatch_unlowered.out; then
   echo "FAIL: verify valid_mem_roundtrip_mismatch_unlowered"
@@ -231,6 +236,11 @@ fi
 "$BIN" verify "$ROOT/tests/valid_mem_gep_roundtrip_v7.l0" >/tmp/l0_ok_mem_gep_roundtrip_v7.out
 if ! grep -q '^ok$' /tmp/l0_ok_mem_gep_roundtrip_v7.out; then
   echo "FAIL: verify valid_mem_gep_roundtrip_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_mem_gep_roundtrip_v123.l0" >/tmp/l0_ok_mem_gep_roundtrip_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_mem_gep_roundtrip_v123.out; then
+  echo "FAIL: verify valid_mem_gep_roundtrip_v123"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_mem_gep_roundtrip_mismatch_unlowered.l0" >/tmp/l0_ok_mem_gep_roundtrip_mismatch_unlowered.out
@@ -308,6 +318,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_write_newline_v7.out; then
   echo "FAIL: verify valid_write_newline_v7"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_v123.l0" >/tmp/l0_ok_write_newline_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_v123.out; then
+  echo "FAIL: verify valid_write_newline_v123"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_write_newline_mismatch_unlowered.l0" >/tmp/l0_ok_write_newline_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_write_newline_mismatch_unlowered.out; then
   echo "FAIL: verify valid_write_newline_mismatch_unlowered"
@@ -321,6 +336,11 @@ fi
 "$BIN" verify "$ROOT/tests/valid_trace_noop_v7.l0" >/tmp/l0_ok_trace_noop_v7.out
 if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_v7.out; then
   echo "FAIL: verify valid_trace_noop_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop_v123.l0" >/tmp/l0_ok_trace_noop_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_v123.out; then
+  echo "FAIL: verify valid_trace_noop_v123"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_trace_noop_mismatch_unlowered.l0" >/tmp/l0_ok_trace_noop_mismatch_unlowered.out
@@ -1166,6 +1186,22 @@ if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip_v7.out)" != "123" ]; then
   echo "FAIL: run mem roundtrip v7 result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip_v123.l0" /tmp/l0_test_mem_roundtrip_v123.img >/tmp/l0_build_mem_roundtrip_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_v123.out; then
+  echo "FAIL: build valid_mem_roundtrip_v123"
+  exit 1
+fi
+mem_roundtrip_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_roundtrip_v123.img | tr -d ' ')
+mem_roundtrip_v123_kernel_kind=$(od -An -t u8 -j "$((mem_roundtrip_v123_dbg_off + 32))" -N 8 /tmp/l0_test_mem_roundtrip_v123.img | tr -d ' ')
+if [ "$mem_roundtrip_v123_kernel_kind" != "14" ]; then
+  echo "FAIL: mem roundtrip v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_roundtrip_v123.img 123 >/tmp/l0_run_mem_roundtrip_v123.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip_v123.out)" != "123" ]; then
+  echo "FAIL: run mem roundtrip v123 result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip_mismatch_unlowered.l0" /tmp/l0_test_mem_roundtrip_mismatch_unlowered.img >/tmp/l0_build_mem_roundtrip_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_mismatch_unlowered.out; then
   echo "FAIL: build valid_mem_roundtrip_mismatch_unlowered"
@@ -1208,6 +1244,22 @@ fi
 "$BIN" run /tmp/l0_test_mem_gep_roundtrip_v7.img 456 >/tmp/l0_run_mem_gep_roundtrip_v7.out
 if [ "$(tr -d '\n' < /tmp/l0_run_mem_gep_roundtrip_v7.out)" != "456" ]; then
   echo "FAIL: run mem gep roundtrip v7 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip_v123.l0" /tmp/l0_test_mem_gep_roundtrip_v123.img >/tmp/l0_build_mem_gep_roundtrip_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_gep_roundtrip_v123.out; then
+  echo "FAIL: build valid_mem_gep_roundtrip_v123"
+  exit 1
+fi
+mem_gep_roundtrip_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_gep_roundtrip_v123.img | tr -d ' ')
+mem_gep_roundtrip_v123_kernel_kind=$(od -An -t u8 -j "$((mem_gep_roundtrip_v123_dbg_off + 32))" -N 8 /tmp/l0_test_mem_gep_roundtrip_v123.img | tr -d ' ')
+if [ "$mem_gep_roundtrip_v123_kernel_kind" != "19" ]; then
+  echo "FAIL: mem gep roundtrip v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_gep_roundtrip_v123.img 456 >/tmp/l0_run_mem_gep_roundtrip_v123.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_gep_roundtrip_v123.out)" != "456" ]; then
+  echo "FAIL: run mem gep roundtrip v123 result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip_mismatch_unlowered.l0" /tmp/l0_test_mem_gep_roundtrip_mismatch_unlowered.img >/tmp/l0_build_mem_gep_roundtrip_mismatch_unlowered.out
@@ -1474,6 +1526,26 @@ if [ "$(od -An -t x1 /tmp/l0_run_write_newline_v7.out | tr -d ' \n')" != "0a300a
   echo "FAIL: run write newline v7 output bytes"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_write_newline_v123.l0" /tmp/l0_test_write_newline_v123.img >/tmp/l0_build_write_newline_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_v123.out; then
+  echo "FAIL: build valid_write_newline_v123"
+  exit 1
+fi
+write_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_v123.img | tr -d ' ')
+write_v123_kernel_kind=$(od -An -t u8 -j "$((write_v123_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_v123.img | tr -d ' ')
+if [ "$write_v123_kernel_kind" != "22" ]; then
+  echo "FAIL: write newline v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_write_newline_v123.img >/tmp/l0_run_write_newline_v123.out
+if [ "$(tr -d '\n' < /tmp/l0_run_write_newline_v123.out)" != "0" ]; then
+  echo "FAIL: run write newline v123 image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_write_newline_v123.out | tr -d ' \n')" != "0a300a" ]; then
+  echo "FAIL: run write newline v123 output bytes"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_write_newline_mismatch_unlowered.l0" /tmp/l0_test_write_newline_mismatch_unlowered.img >/tmp/l0_build_write_newline_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_build_write_newline_mismatch_unlowered.out; then
   echo "FAIL: build valid_write_newline_mismatch_unlowered"
@@ -1539,6 +1611,26 @@ if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_v7.out)" != "0" ]; then
 fi
 if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_v7.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
   echo "FAIL: run trace v7 emit bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_trace_noop_v123.l0" /tmp/l0_test_trace_noop_v123.img >/tmp/l0_build_trace_noop_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123.out; then
+  echo "FAIL: build valid_trace_noop_v123"
+  exit 1
+fi
+trace_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop_v123.img | tr -d ' ')
+trace_v123_kernel_kind=$(od -An -t u8 -j "$((trace_v123_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop_v123.img | tr -d ' ')
+if [ "$trace_v123_kernel_kind" != "24" ]; then
+  echo "FAIL: trace v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_trace_noop_v123.img 123 >/tmp/l0_run_trace_noop_v123.out 2>/tmp/l0_run_trace_noop_v123.err
+if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_v123.out)" != "0" ]; then
+  echo "FAIL: run trace v123 image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_v123.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
+  echo "FAIL: run trace v123 emit bytes"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_trace_noop_mismatch_unlowered.l0" /tmp/l0_test_trace_noop_mismatch_unlowered.img >/tmp/l0_build_trace_noop_mismatch_unlowered.out
