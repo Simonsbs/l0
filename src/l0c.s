@@ -14,7 +14,7 @@
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
 .lcomm trace_schema_buf, 32
-.lcomm debug_map_buf, 104
+.lcomm debug_map_buf, 256
 .lcomm debug_map_size, 8
 .lcomm debug_map_fd, 8
 .lcomm tracejoin_map_count, 8
@@ -978,17 +978,239 @@ do_build:
     mov rax, 0x000000004d44304c
     mov qword ptr [r11+0], rax
     mov qword ptr [r11+8], 2
-    mov r12, 3
     mov rax, qword ptr [rip+build_kernel_kind]
     cmp rax, 0
-    je .build_dbg_map_set_count
+    je .build_dbg_map_case_single_full
     cmp rax, 13
-    jne .build_dbg_map_count_done
-.build_dbg_map_set_count:
+    je .build_dbg_map_case_single_full
+    cmp rax, 1
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 3
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 6
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 7
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 8
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 16
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 17
+    je .build_dbg_map_case_three_3_6
+    cmp rax, 5
+    je .build_dbg_map_case_three_3_7
+    cmp rax, 18
+    je .build_dbg_map_case_three_3_7
+    cmp rax, 2
+    je .build_dbg_map_case_four_3_6_9
+    cmp rax, 4
+    je .build_dbg_map_case_four_3_6_9
+    cmp rax, 15
+    je .build_dbg_map_case_four_3_7_10
+    cmp rax, 9
+    je .build_dbg_map_case_four_3_6_9
+    cmp rax, 10
+    je .build_dbg_map_case_four_3_6_9
+    cmp rax, 11
+    je .build_dbg_map_case_four_2_5_8
+    cmp rax, 12
+    je .build_dbg_map_case_four_3_6_10
+    cmp rax, 14
+    je .build_dbg_map_case_five_4_8_12_16
+    cmp rax, 19
+    je .build_dbg_map_case_five_4_8_12_16
+    cmp rax, 20
+    je .build_dbg_map_case_four_6_20_34
+    cmp rax, 21
+    je .build_dbg_map_case_two_3
+    cmp rax, 22
+    je .build_dbg_map_case_four_12_38_45
+    cmp rax, 23
+    je .build_dbg_map_case_two_7
+    cmp rax, 24
+    je .build_dbg_map_case_two_17
+    jmp .build_dbg_map_case_synth
+
+.build_dbg_map_case_single_full:
     mov r12, 1
-.build_dbg_map_count_done:
-    mov qword ptr [r11+16], r12
-    mov qword ptr [r11+24], r15
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_two_3:
+    mov r12, 2
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_two_7:
+    mov r12, 2
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 7
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 7
+    mov qword ptr [r11+72], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_two_17:
+    mov r12, 2
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 17
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 17
+    mov qword ptr [r11+72], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_three_3_6:
+    mov r12, 3
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], 6
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 6
+    mov qword ptr [r11+96], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_three_3_7:
+    mov r12, 3
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], 7
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 7
+    mov qword ptr [r11+96], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_3_6_9:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], 6
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 6
+    mov qword ptr [r11+96], 9
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 9
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_3_7_10:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], 7
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 7
+    mov qword ptr [r11+96], 10
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 10
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_2_5_8:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 2
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 2
+    mov qword ptr [r11+72], 5
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 5
+    mov qword ptr [r11+96], 8
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 8
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_3_6_10:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 3
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 3
+    mov qword ptr [r11+72], 6
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 6
+    mov qword ptr [r11+96], 10
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 10
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_6_20_34:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 6
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 6
+    mov qword ptr [r11+72], 20
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 20
+    mov qword ptr [r11+96], 34
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 34
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_12_38_45:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 12
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 12
+    mov qword ptr [r11+72], 38
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 38
+    mov qword ptr [r11+96], 45
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 45
+    mov qword ptr [r11+120], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_five_4_8_12_16:
+    mov r12, 5
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 4
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 4
+    mov qword ptr [r11+72], 8
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 8
+    mov qword ptr [r11+96], 12
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 12
+    mov qword ptr [r11+120], 16
+    mov qword ptr [r11+128], 5
+    mov qword ptr [r11+136], 16
+    mov qword ptr [r11+144], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_synth:
+    mov r12, 3
     mov rax, r15
     xor rdx, rdx
     div r12
@@ -999,7 +1221,7 @@ do_build:
     xor rcx, rcx                # entry index
 .build_dbg_map_loop:
     cmp rcx, r12
-    jae .build_dbg_map_done
+    jae .build_dbg_map_finish
     mov rax, r13
     mov rbx, r12
     dec rbx
@@ -1019,7 +1241,10 @@ do_build:
     inc r9
     inc rcx
     jmp .build_dbg_map_loop
-.build_dbg_map_done:
+
+.build_dbg_map_finish:
+    mov qword ptr [r11+16], r12
+    mov qword ptr [r11+24], r15
     mov rax, r12
     imul rax, 24
     add rax, 32

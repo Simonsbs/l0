@@ -221,7 +221,10 @@ Current bootstrap debug map payload is variable-size:
   - `inst_id`
   - `start`
   - `end`
-- current bootstrap emits `N=1` for fallback/const kernels and `N=3` for other kernels.
+- current bootstrap emits kernel-kind-specific deterministic ranges:
+  - fallback/const kernels use one full-range entry
+  - canonical lowered kernels use fixed opcode-boundary splits per kernel family
+  - unknown future kernel kinds fall back to deterministic synthetic partitions
 
 `mapcat` decodes this bootstrap debug map format and prints:
 - `entries <count>`

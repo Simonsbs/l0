@@ -13,6 +13,7 @@ Current bootstrap status:
 - I have a working `l0c` CLI skeleton (`canon`, `verify`).
 - I can run `l0c build` to produce deterministic `.l0img` output with header, source payload, a bootstrap x86-64 code stub section, and a debug index section.
 - I emit debug index metadata with function/type counts, kernel kind id, emitted code size, and trace schema metadata.
+- I emit deterministic kernel-kind-specific debug-map instruction ranges when I build with `--debug-map`.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - two-arg compare kernel (`icmp.eq`) returning `i1`

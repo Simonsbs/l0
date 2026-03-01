@@ -285,5 +285,5 @@ Native bootstrap decode helpers:
 To complete the M1 scope, I still need to finish:
 - lowering for verified `ld/st/gep/alloca` modules (not only verify)
 - non-kernel generalization of intrinsic/runtime surface (`write`/`malloc`/`free`/`exit`)
-- richer debug map (`inst_id -> code range`) beyond current bootstrap single-entry map
+- extend debug-map coverage from kernel-template ranges to full per-L0-instruction lowering coverage for generalized codegen paths
 - broader canonical rewrite mode (optional `--fix` path)

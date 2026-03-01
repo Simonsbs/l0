@@ -223,9 +223,11 @@ I also enforce a structural subset inside `fns`:
   - `inst_id`
   - `start`
   - `end`
-- current bootstrap emits:
-  - fallback/const kernels: `N=1`
-  - other kernels: `N=3` with contiguous synthetic partitions across `code_size`
+- current bootstrap emits kernel-kind-specific deterministic ranges:
+  - fallback/const kernels: single full-range entry
+  - arithmetic/bitwise/call-kernel families: fixed opcode-boundary splits
+  - memory/intrinsic kernels (`malloc`, `free`, `write`, `exit`, `trace`): fixed per-kernel splits
+  - unknown future kernel kinds still fall back to deterministic contiguous synthetic partitions
 
 Current bootstrap parser accepts either side artifact independently or both together in one build command, and rejects duplicate optional side-artifact flags.
 
