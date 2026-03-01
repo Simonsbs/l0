@@ -1717,6 +1717,8 @@ do_mapcat:
     cmp rax, rbx
     jne fail_parse
     mov r13, qword ptr [r12+24]    # code_size
+    xor r9, r9                     # prev inst_id
+    xor r10, r10                   # prev end
     xor r14, r14
 .mapcat_validate_loop:
     cmp r14, r15
@@ -1727,6 +1729,9 @@ do_mapcat:
     mov rax, qword ptr [r12+r11+0] # inst_id
     cmp rax, 0
     je fail_parse
+    cmp rax, r9
+    jbe fail_parse
+    mov r9, rax
     mov rax, qword ptr [r12+r11+8] # start
     cmp rax, r13
     ja fail_parse
@@ -1735,6 +1740,9 @@ do_mapcat:
     ja fail_parse
     cmp rax, rcx
     ja fail_parse
+    cmp rax, r10
+    jb fail_parse
+    mov r10, rcx
     inc r14
     jmp .mapcat_validate_loop
 .mapcat_validate_done:
@@ -1857,6 +1865,8 @@ do_tracejoin:
     cmp rax, rbx
     jne fail_parse
     mov r13, qword ptr [r8+24]    # code_size
+    xor r12, r12                  # prev inst_id
+    xor rbx, rbx                  # prev end
     mov qword ptr [rip+tracejoin_map_count], r10
     xor r14, r14
 .tj_copy_map_loop:
@@ -1868,6 +1878,9 @@ do_tracejoin:
     mov rax, qword ptr [r8+r11+0]
     cmp rax, 0
     je fail_parse
+    cmp rax, r12
+    jbe fail_parse
+    mov r12, rax
     mov rcx, r14
     shl rcx, 3
     lea rdx, [rip+tracejoin_map_inst_id]
@@ -1884,6 +1897,9 @@ do_tracejoin:
     ja fail_parse
     cmp rax, r9
     ja fail_parse
+    cmp rax, rbx
+    jb fail_parse
+    mov rbx, r9
     lea rdx, [rip+tracejoin_map_end]
     add rdx, rcx
     mov qword ptr [rdx], r9

@@ -295,6 +295,18 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_range.bin >/tmp/l0_bad_debug_map_range.ou
   echo "FAIL: mapcat accepted out-of-bounds range entry"
   exit 1
 fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_overlap.bin
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_overlap.bin bs=1 seek=64 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_debug_map_overlap.bin >/tmp/l0_bad_debug_map_overlap.out 2>/tmp/l0_bad_debug_map_overlap.err; then
+  echo "FAIL: mapcat accepted overlapping map ranges"
+  exit 1
+fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_inst_order.bin
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_inst_order.bin bs=1 seek=56 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_debug_map_inst_order.bin >/tmp/l0_bad_debug_map_inst_order.out 2>/tmp/l0_bad_debug_map_inst_order.err; then
+  echo "FAIL: mapcat accepted non-increasing inst_id order"
+  exit 1
+fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
   echo "FAIL: tracejoin accepted invalid map file"
   exit 1
@@ -303,6 +315,10 @@ cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_inst_id.bin
 printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_inst_id.bin bs=1 seek=32 conv=notrunc status=none
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_inst_id.bin >/tmp/l0_bad_tracejoin_inst_id.out 2>/tmp/l0_bad_tracejoin_inst_id.err; then
   echo "FAIL: tracejoin accepted zero inst_id entry"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_overlap.bin >/tmp/l0_bad_tracejoin_overlap.out 2>/tmp/l0_bad_tracejoin_overlap.err; then
+  echo "FAIL: tracejoin accepted overlapping map ranges"
   exit 1
 fi
 if [ ! -s /tmp/l0_test.img ]; then
