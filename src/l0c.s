@@ -320,8 +320,10 @@ pat_exit_tail: .ascii "\n}\n"
 pat_exit_tail_len = . - pat_exit_tail
 pat_write_head: .ascii "fn f0 ()->t0 {\nb0:\n  v"
 pat_write_head_len = . - pat_write_head
-pat_write_mid_a: .ascii " = alloca t0, 1 : t1\n  v"
-pat_write_mid_a_len = . - pat_write_mid_a
+pat_write_mid_a_head: .ascii " = alloca t0, "
+pat_write_mid_a_head_len = . - pat_write_mid_a_head
+pat_write_mid_a_tail: .ascii " : t1\n  v"
+pat_write_mid_a_tail_len = . - pat_write_mid_a_tail
 pat_write_mid_b: .ascii " = const 10 : t0\n  st v"
 pat_write_mid_b_len = . - pat_write_mid_b
 pat_write_mid_c: .ascii " v"
@@ -7082,16 +7084,63 @@ try_select_write_newline_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
-    cmp rax, pat_write_mid_a_len
+    cmp rax, pat_write_mid_a_head_len
     jb .tswk_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_write_mid_a]
-    mov rdx, pat_write_mid_a_len
+    lea rsi, [rip+pat_write_mid_a_head]
+    mov rdx, pat_write_mid_a_head_len
     call mem_eq
     cmp rax, 1
     jne .tswk_no
-    add r10, pat_write_mid_a_len     # const10-id start
+    add r10, pat_write_mid_a_head_len
+    cmp r10, r13
+    jae .tswk_no
+    mov r8, r10
+    mov r9, r8
+.tswk_alloca_count_loop:
+    cmp r9, r13
+    jae .tswk_alloca_count_done
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tswk_alloca_count_done
+    cmp al, '9'
+    ja .tswk_alloca_count_done
+    inc r9
+    jmp .tswk_alloca_count_loop
+.tswk_alloca_count_done:
+    cmp r9, r8
+    je .tswk_no
+    xor rcx, rcx
+    mov rax, r8
+.tswk_alloca_count_nz_loop:
+    cmp rax, r9
+    jae .tswk_alloca_count_nz_done
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jne .tswk_alloca_count_nz_yes
+    inc rax
+    jmp .tswk_alloca_count_nz_loop
+.tswk_alloca_count_nz_yes:
+    mov rcx, 1
+.tswk_alloca_count_nz_done:
+    cmp rcx, 1
+    jne .tswk_no
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_a_tail_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_a_tail]
+    mov rdx, pat_write_mid_a_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, pat_write_mid_a_tail_len
+
+    # const10-id start
     cmp r10, r13
     jae .tswk_no
 

@@ -283,6 +283,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - `free` intrinsic kernel also accepts canonical nonzero arg/const-ret ids when ids/dataflow match (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
     - `exit` intrinsic kernel also accepts canonical nonzero arg/return ids when ids/dataflow match (`vN = arg ...`, `exit vN`, `ret vN`)
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero ids across alloca/const/store/write/ret when ids/dataflow match
+    - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering

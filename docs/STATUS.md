@@ -157,7 +157,15 @@ Last updated: 2026-03-01
   - strict guardrails preserved: `alloca t0, 0` shapes remain intentionally unlowered
   - regression matrix added for memory alloca-count variants (lowered and intentional unlowered guardrail shapes)
 
-### M11: Non-template backend and full general codegen
+### M11: Selector-Decoupling Completion (Write Alloca-Count Family)
+
+- Status: complete
+- Scope completed:
+  - write-newline selector accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`) instead of only `alloca t0, 1`
+  - strict guardrails preserved: write-newline shapes with `alloca t0, 0` remain intentionally unlowered
+  - regression matrix added for write-newline alloca-count variants (lowered and intentional unlowered guardrail shapes)
+
+### M12: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

@@ -73,6 +73,7 @@ Current bootstrap status:
   - exit-kernel lowering now accepts canonical nonzero arg/ret ids when `exit` and `ret` reference the same defined value id (`vN = arg ...`, `exit vN`, `ret vN`)
   - I keep mismatched exit arg/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - write-newline kernel lowering now accepts canonical nonzero ids across alloca/const/store/write/return dataflow when each use references its matching defined value id
+  - write-newline kernel lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - I keep mismatched write-newline const/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - trace-kernel lowering now accepts canonical nonzero trace/dataflow value ids when `trace` and `ret` both reference the corresponding defined ids (`vN = arg ...`, `trace 1 vN`, `vM = const 0`, `ret vM`)
   - I keep mismatched trace id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
@@ -84,7 +85,8 @@ Current bootstrap status:
 - I now consider my M7 selector-decoupling completion milestone complete: I lower call kernels independent of arg-definition line order in `f0` while preserving non-commutative `sub.wrap` guardrails.
 - I now consider my M8 selector-decoupling completion milestone complete: I lower call kernels correctly across canonical arg-definition-order variants in both `f0` and `f1`, with non-commutative `sub.wrap` semantics preserved.
 - I now consider my M10 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
-- I track true non-template generalized backend/codegen work as my next milestone (M11).
+- I now consider my M11 selector-decoupling completion milestone complete: I lower the write-newline kernel across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
+- I track true non-template generalized backend/codegen work as my next milestone (M12).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

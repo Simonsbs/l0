@@ -513,6 +513,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_write_newline_mismatch_unlowered.out; then
   echo "FAIL: verify valid_write_newline_mismatch_unlowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_alloca16_lowered.l0" >/tmp/l0_ok_write_newline_alloca16_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_alloca16_lowered.out; then
+  echo "FAIL: verify valid_write_newline_alloca16_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_alloca0_unlowered.l0" >/tmp/l0_ok_write_newline_alloca0_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_alloca0_unlowered.out; then
+  echo "FAIL: verify valid_write_newline_alloca0_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_trace_noop.l0" >/tmp/l0_ok_trace_noop.out
 if ! grep -q '^ok$' /tmp/l0_ok_trace_noop.out; then
   echo "FAIL: verify valid_trace_noop"
@@ -2436,6 +2446,38 @@ write_mismatch_kernel_kind=$(od -An -t u8 -j "$((write_mismatch_dbg_off + 32))" 
 write_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
 if [ "$write_mismatch_kernel_kind" != "0" ] || [ "$write_mismatch_code_size" != "1" ]; then
   echo "FAIL: write newline mismatch unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline_alloca16_lowered.l0" /tmp/l0_test_write_newline_alloca16_lowered.img >/tmp/l0_build_write_newline_alloca16_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca16_lowered.out; then
+  echo "FAIL: build valid_write_newline_alloca16_lowered"
+  exit 1
+fi
+write_alloca16_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_alloca16_lowered.img | tr -d ' ')
+write_alloca16_kernel_kind=$(od -An -t u8 -j "$((write_alloca16_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_alloca16_lowered.img | tr -d ' ')
+if [ "$write_alloca16_kernel_kind" != "22" ]; then
+  echo "FAIL: write newline alloca16 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_write_newline_alloca16_lowered.img >/tmp/l0_run_write_newline_alloca16_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_write_newline_alloca16_lowered.out)" != "0" ]; then
+  echo "FAIL: run write newline alloca16 image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_write_newline_alloca16_lowered.out | tr -d ' \n')" != "0a300a" ]; then
+  echo "FAIL: run write newline alloca16 output bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline_alloca0_unlowered.l0" /tmp/l0_test_write_newline_alloca0_unlowered.img >/tmp/l0_build_write_newline_alloca0_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca0_unlowered.out; then
+  echo "FAIL: build valid_write_newline_alloca0_unlowered"
+  exit 1
+fi
+write_alloca0_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_alloca0_unlowered.img | tr -d ' ')
+write_alloca0_kernel_kind=$(od -An -t u8 -j "$((write_alloca0_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_alloca0_unlowered.img | tr -d ' ')
+write_alloca0_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_write_newline_alloca0_unlowered.img | tr -d ' ')
+if [ "$write_alloca0_kernel_kind" != "0" ] || [ "$write_alloca0_code_size" != "1" ]; then
+  echo "FAIL: write newline alloca0 unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_trace_noop.l0" /tmp/l0_test_trace_noop.img >/tmp/l0_build_trace_noop.out
