@@ -308,7 +308,18 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these stress staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M26: Non-template backend and full general codegen completion
+### M26: Staged Intrinsic Cross-Function Fallback Matrix Expansion
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for cross-function mixed staged-hook fallback cases:
+    - `write` with `alloca 0` + nonzero/multi-digit ids + multi-dead-const injection in `f0` plus id reuse in `f1`
+    - `free` with nonzero/multi-digit ids + deeper dead-const stack in `f0` plus id reuse in `f1`
+    - `trace` with nonzero/multi-digit ids + deeper dead-const stack in `f0` plus id reuse in `f1`
+  - added deterministic build assertions proving these cross-function staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M27: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
