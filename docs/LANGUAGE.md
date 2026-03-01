@@ -156,6 +156,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> <out.l0img>`
 - `l0c build <input.l0> -o <out.l0img>`
 - `l0c build <input.l0> <out.l0img> --trace-schema <out.bin>`
+- `l0c build <input.l0> <out.l0img> --debug-map <out.bin>`
 - `l0c imgcheck <out.l0img>`
 - `l0c run <out.l0img> [u64_a] [u64_b]`
 - `l0c tracecat <trace.bin>`
@@ -192,6 +193,13 @@ Current bootstrap schema payload is 32 bytes:
 - version `1`
 - record size `16`
 - field count `2`
+
+I can emit a minimal debug map file during build with `--debug-map <out.bin>`.
+Current bootstrap debug map payload is 32 bytes:
+- magic `L0DM`
+- version `1`
+- instruction entry count `1`
+- code size (`code_size` from the built image)
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

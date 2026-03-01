@@ -181,6 +181,12 @@ I also enforce a structural subset inside `fns`:
 - `qword[2]`: trace record size (`16`)
 - `qword[3]`: field count (`2`)
 
+`l0c build ... --debug-map <out.bin>` currently writes a 32-byte bootstrap map payload:
+- `qword[0]`: magic (`L0DM`)
+- `qword[1]`: version (`1`)
+- `qword[2]`: instruction-entry count (`1`)
+- `qword[3]`: code size (`code_size` from emitted image)
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy

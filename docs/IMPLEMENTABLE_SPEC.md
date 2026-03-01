@@ -267,10 +267,16 @@ Current bootstrap `kernel kind id` mapping:
 - calls code as `fn(u64,u64)->u64`
 - prints returned value as unsigned decimal
 
+Optional build-side bootstrap artifacts:
+- `--trace-schema <out.bin>`:
+  - 32-byte payload: `L0TS`, version `1`, record size `16`, field count `2`
+- `--debug-map <out.bin>`:
+  - 32-byte payload: `L0DM`, version `1`, entry count `1`, code size
+
 ## 9) Near-Term Completion Steps
 
 To complete the M1 scope, I still need to finish:
 - lowering for verified `ld/st/gep/alloca` modules (not only verify)
 - non-kernel generalization of intrinsic/runtime surface (`write`/`malloc`/`free`/`exit`)
-- richer debug map (`inst_id -> code range`) and trace record emission
+- richer debug map (`inst_id -> code range`) beyond current bootstrap single-entry map
 - broader canonical rewrite mode (optional `--fix` path)

@@ -4,6 +4,7 @@
 .lcomm file_buf, 1048576
 .lcomm out_path_ptr, 8
 .lcomm trace_schema_out_path_ptr, 8
+.lcomm debug_map_out_path_ptr, 8
 .lcomm run_arg1_ptr, 8
 .lcomm run_arg2_ptr, 8
 .lcomm num_buf, 32
@@ -12,6 +13,7 @@
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
 .lcomm trace_schema_buf, 32
+.lcomm debug_map_buf, 32
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -35,7 +37,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>|--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>|--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -63,6 +65,7 @@ cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
 flag_o: .ascii "-o\0"
 flag_trace_schema: .ascii "--trace-schema\0"
+flag_debug_map: .ascii "--debug-map\0"
 cmd_imgcheck: .ascii "imgcheck\0"
 cmd_run: .ascii "run\0"
 cmd_tracecat: .ascii "tracecat\0"
@@ -248,16 +251,17 @@ _start:
     cmp rax, 1
     jne .check_imgcheck
     mov qword ptr [rip+trace_schema_out_path_ptr], 0
+    mov qword ptr [rip+debug_map_out_path_ptr], 0
     cmp r13, 4
     je .build_positional
     cmp r13, 5
-    je .build_flag_o_no_schema
+    je .build_flag_o_no_opt
     cmp r13, 6
-    je .build_positional_with_schema
+    je .build_positional_with_opt
     cmp r13, 7
-    je .build_flag_o_with_schema
+    je .build_flag_o_with_opt
     jne usage
-.build_flag_o_no_schema:
+.build_flag_o_no_opt:
     mov rdi, [r12+32]         # argv[3] should be "-o"
     lea rsi, [rip+flag_o]
     call str_eq
@@ -271,19 +275,28 @@ _start:
     mov qword ptr [rip+out_path_ptr], r11
     jmp do_build
 
-.build_positional_with_schema:
+.build_positional_with_opt:
     mov r11, [r12+32]         # argv[3] output path
     mov qword ptr [rip+out_path_ptr], r11
-    mov rdi, [r12+40]         # argv[4] should be --trace-schema
+    mov rdi, [r12+40]         # argv[4] optional flag
     lea rsi, [rip+flag_trace_schema]
     call str_eq
     cmp rax, 1
+    je .build_positional_set_schema
+    mov rdi, [r12+40]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
     jne usage
+    mov r11, [r12+48]         # argv[5] debug-map path
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp do_build
+.build_positional_set_schema:
     mov r11, [r12+48]         # argv[5] schema path
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
 
-.build_flag_o_with_schema:
+.build_flag_o_with_opt:
     mov rdi, [r12+32]         # argv[3] should be "-o"
     lea rsi, [rip+flag_o]
     call str_eq
@@ -291,11 +304,20 @@ _start:
     jne usage
     mov r11, [r12+40]         # argv[4] output path
     mov qword ptr [rip+out_path_ptr], r11
-    mov rdi, [r12+48]         # argv[5] should be --trace-schema
+    mov rdi, [r12+48]         # argv[5] optional flag
     lea rsi, [rip+flag_trace_schema]
     call str_eq
     cmp rax, 1
+    je .build_flag_o_set_schema
+    mov rdi, [r12+48]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
     jne usage
+    mov r11, [r12+56]         # argv[6] debug-map path
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp do_build
+.build_flag_o_set_schema:
     mov r11, [r12+56]         # argv[6] schema path
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
@@ -721,7 +743,7 @@ do_build:
 
     mov r11, qword ptr [rip+trace_schema_out_path_ptr]
     cmp r11, 0
-    je .build_emit_ok
+    je .build_try_debug_map
     mov rdi, r11
     mov rax, 2                 # sys_open
     mov rsi, 577               # O_WRONLY|O_CREAT|O_TRUNC
@@ -746,6 +768,34 @@ do_build:
     mov rax, 3
     syscall
 
+.build_try_debug_map:
+    mov r11, qword ptr [rip+debug_map_out_path_ptr]
+    cmp r11, 0
+    je .build_emit_ok
+    mov rdi, r11
+    mov rax, 2                 # sys_open
+    mov rsi, 577               # O_WRONLY|O_CREAT|O_TRUNC
+    mov rdx, 420               # 0644
+    syscall
+    test rax, rax
+    js fail_build
+    mov r10, rax
+    lea r11, [rip+debug_map_buf]
+    mov rax, 0x000000004d44304c
+    mov qword ptr [r11+0], rax
+    mov qword ptr [r11+8], 1
+    mov qword ptr [r11+16], 1
+    mov qword ptr [r11+24], r15
+    mov rdi, r10
+    lea rsi, [rip+debug_map_buf]
+    mov rdx, 32
+    call write_all
+    cmp rax, 0
+    jne .build_write_debug_map_fail
+    mov rdi, r10
+    mov rax, 3
+    syscall
+
 .build_emit_ok:
     lea rsi, [rip+ok_msg]
     mov rdx, ok_len
@@ -755,6 +805,12 @@ do_build:
     call exit
 
 .build_write_schema_fail:
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp fail_build
+
+.build_write_debug_map_fail:
     mov rdi, r10
     mov rax, 3
     syscall

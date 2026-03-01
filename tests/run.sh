@@ -188,6 +188,16 @@ if ! grep -q '^ok$' /tmp/l0_build_schema_flag_o.out; then
   echo "FAIL: build valid_min with -o --trace-schema"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test_debug_map.img --debug-map /tmp/l0_debug_map.bin >/tmp/l0_build_debug_map.out
+if ! grep -q '^ok$' /tmp/l0_build_debug_map.out; then
+  echo "FAIL: build valid_min with --debug-map"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_min.l0" -o /tmp/l0_test_debug_map_flag_o.img --debug-map /tmp/l0_debug_map_flag_o.bin >/tmp/l0_build_debug_map_flag_o.out
+if ! grep -q '^ok$' /tmp/l0_build_debug_map_flag_o.out; then
+  echo "FAIL: build valid_min with -o --debug-map"
+  exit 1
+fi
 if [ "$(wc -c < /tmp/l0_trace_schema.bin)" -ne 32 ]; then
   echo "FAIL: trace schema size"
   exit 1
@@ -196,8 +206,16 @@ if [ "$(wc -c < /tmp/l0_trace_schema_flag_o.bin)" -ne 32 ]; then
   echo "FAIL: trace schema size (-o form)"
   exit 1
 fi
+if [ "$(wc -c < /tmp/l0_debug_map.bin)" -ne 32 ] || [ "$(wc -c < /tmp/l0_debug_map_flag_o.bin)" -ne 32 ]; then
+  echo "FAIL: debug map size"
+  exit 1
+fi
 if [ "$(head -c 4 /tmp/l0_trace_schema.bin)" != "L0TS" ]; then
   echo "FAIL: trace schema magic"
+  exit 1
+fi
+if [ "$(head -c 4 /tmp/l0_debug_map.bin)" != "L0DM" ]; then
+  echo "FAIL: debug map magic"
   exit 1
 fi
 schema_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_trace_schema.bin | tr -d ' ')
@@ -205,6 +223,13 @@ schema_record_size=$(od -An -t u8 -j 16 -N 8 /tmp/l0_trace_schema.bin | tr -d ' 
 schema_field_count=$(od -An -t u8 -j 24 -N 8 /tmp/l0_trace_schema.bin | tr -d ' ')
 if [ "$schema_version" != "1" ] || [ "$schema_record_size" != "16" ] || [ "$schema_field_count" != "2" ]; then
   echo "FAIL: trace schema fields"
+  exit 1
+fi
+dbg_map_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst_count=$(od -An -t u8 -j 16 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_code_size=$(od -An -t u8 -j 24 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+if [ "$dbg_map_version" != "1" ] || [ "$dbg_map_inst_count" != "1" ] || [ "$dbg_map_code_size" != "7" ]; then
+  echo "FAIL: debug map fields"
   exit 1
 fi
 if [ ! -s /tmp/l0_test.img ]; then
