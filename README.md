@@ -22,6 +22,7 @@ Current bootstrap status:
 - I reject truncated/non-16-byte-aligned trace payloads in both `tracecat` and `tracejoin`.
 - I treat empty trace payloads as valid in `tracecat`/`tracejoin` and emit no output for them.
 - I keep `imgcheck` tamper coverage broad in tests (header-size/offset corruption and code/debug section-pair consistency failures).
+- I include overflow-style `imgcheck` tamper tests where `code_off`/`debug_off` are forced to max `u64`.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - two-arg compare kernel (`icmp.eq`) returning `i1`

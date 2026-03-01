@@ -905,6 +905,18 @@ if "$BIN" imgcheck /tmp/l0_bad_debug_pair.img >/tmp/l0_bad_debug_pair.out 2>/tmp
   echo "FAIL: imgcheck accepted inconsistent debug pair"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_code_off_overflow.img
+printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_code_off_overflow.img bs=1 seek=48 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_code_off_overflow.img >/tmp/l0_bad_code_off_overflow.out 2>/tmp/l0_bad_code_off_overflow.err; then
+  echo "FAIL: imgcheck accepted overflowing code_off"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_debug_off_overflow.img
+printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_debug_off_overflow.img bs=1 seek=64 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_debug_off_overflow.img >/tmp/l0_bad_debug_off_overflow.out 2>/tmp/l0_bad_debug_off_overflow.err; then
+  echo "FAIL: imgcheck accepted overflowing debug_off"
+  exit 1
+fi
 cp /tmp/l0_test.img /tmp/l0_bad_dbg_magic.img
 dbg_off_main=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
 printf 'BAD!' | dd of=/tmp/l0_bad_dbg_magic.img bs=1 seek="$dbg_off_main" conv=notrunc status=none
