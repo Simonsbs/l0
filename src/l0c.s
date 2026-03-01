@@ -934,7 +934,7 @@ do_build:
 .build_try_const_kernel:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
-    call try_select_const_kernel_code
+    call try_select_general_const_kernel_code
     cmp rax, 1
     jne .build_code_selected
     lea r14, [rip+codegen_buf]
@@ -10928,6 +10928,46 @@ try_select_general_mem_roundtrip_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgmem_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_const_kernel_code
+# generalized pre-lowering normalization for const-return kernel:
+# - removes canonical dead const value lines
+# - reuses the existing const-return selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets codegen_buf/codegen_len ; 0 otherwise
+try_select_general_const_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgconst_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_const_kernel_code
+    cmp rax, 1
+    jne .tsgconst_no
+    mov rax, 1
+    jmp .tsgconst_done
+
+.tsgconst_no:
+    xor rax, rax
+.tsgconst_done:
+    pop r15
+    pop r14
     pop r13
     pop r12
     pop rbx

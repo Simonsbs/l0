@@ -358,7 +358,16 @@ Last updated: 2026-03-01
   - preserved fallback behavior for unsupported verified modules through the existing single-byte `ret` stub path
   - validated deterministic behavior and full regression-suite stability under the generalized-only routing
 
-### M30: Non-template backend and full general codegen completion
+### M30: Generalized Selector-Chain Completion (Const-Return Path)
+
+- Status: complete
+- Scope completed:
+  - added generalized pre-lowering normalization routing for const-return kernel selection in `build`
+  - removed the remaining direct const-return selection stage from the `build` chain
+  - added regression coverage for const-return dead-const-injected shapes, including cross-function value-id reuse variants
+  - validated deterministic behavior and full regression-suite stability under generalized-only routing for all current kernel families
+
+### M31: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
