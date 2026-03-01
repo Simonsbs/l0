@@ -267,7 +267,18 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these heavier staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M22: Non-template backend and full general codegen completion
+### M22: Staged Intrinsic Nonzero-ID Fallback Matrix Expansion
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for dead-const-injected const-dependent intrinsic shapes using nonzero/multi-digit SSA ids:
+    - `write`
+    - `free`
+    - `trace`
+  - added deterministic build assertions proving these staged-hook nonzero-id cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M23: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

@@ -98,7 +98,8 @@ Current bootstrap status:
 - I now consider my M19 generalized intrinsic hook activation milestone complete: generalized normalization hook stages are active in the build chain for all current intrinsic families with deterministic legacy fallback behavior preserved under full-suite coverage.
 - I now consider my M20 const-dependent intrinsic fallback-closure milestone complete: I added explicit regression coverage proving dead-const-injected `write`/`free`/`trace` shapes deterministically remain unlowered (`kernel_kind 0`, `code_size 1`) while generalized hook stages are active.
 - I now consider my M21 staged intrinsic fallback-matrix milestone complete: I expanded deterministic fallback coverage to multi-dead-const injected `write`/`free`/`trace` shapes and locked those invariants in the automated suite.
-- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering (from deterministic fallback to lowered closure) as my next milestone (M22).
+- I now consider my M22 staged intrinsic nonzero-id fallback-matrix milestone complete: I expanded deterministic fallback coverage for dead-const injected `write`/`free`/`trace` shapes that use nonzero/multi-digit SSA ids and locked those invariants in the automated suite.
+- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering (from deterministic fallback to lowered closure) as my next milestone (M23).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
