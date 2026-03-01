@@ -56,9 +56,10 @@ Last updated: 2026-03-01
   - ordered/non-overlapping map validation
   - strict `tracejoin` id resolution (unknown ids rejected)
   - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
+  - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
   - negative-path tests for malformed artifacts
 - Remaining:
-  - broader malformed-image fuzz-style tests
+  - broader malformed-image fuzz-style tests (randomized/automated generation)
   - broader multi-record trace corruption patterns beyond truncation/alignment checks
 
 ### M5: Full language/general codegen

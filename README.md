@@ -20,6 +20,7 @@ Current bootstrap status:
 - I enforce strict debug-map ordering in `mapcat` and `tracejoin` (`inst_id` strictly increasing and monotonic non-overlapping ranges).
 - I require `tracejoin` to resolve every trace record `id` against the debug map; unknown ids are rejected.
 - I reject truncated/non-16-byte-aligned trace payloads in both `tracecat` and `tracejoin`.
+- I keep `imgcheck` tamper coverage broad in tests (header-size/offset corruption and code/debug section-pair consistency failures).
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - two-arg compare kernel (`icmp.eq`) returning `i1`

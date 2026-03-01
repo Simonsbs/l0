@@ -870,6 +870,30 @@ if "$BIN" imgcheck /tmp/l0_badflags.img >/tmp/l0_badflags.out 2>/tmp/l0_badflags
   echo "FAIL: imgcheck accepted nonzero flags"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_header_size.img
+printf '\x4f\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_header_size.img bs=1 seek=16 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_header_size.img >/tmp/l0_bad_header_size.out 2>/tmp/l0_bad_header_size.err; then
+  echo "FAIL: imgcheck accepted bad header size"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_src_off.img
+printf '\x4f\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_src_off.img bs=1 seek=32 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_src_off.img >/tmp/l0_bad_src_off.out 2>/tmp/l0_bad_src_off.err; then
+  echo "FAIL: imgcheck accepted bad src_off"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_code_pair.img
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_code_pair.img bs=1 seek=48 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_code_pair.img >/tmp/l0_bad_code_pair.out 2>/tmp/l0_bad_code_pair.err; then
+  echo "FAIL: imgcheck accepted inconsistent code pair"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_debug_pair.img
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_pair.img bs=1 seek=72 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_debug_pair.img >/tmp/l0_bad_debug_pair.out 2>/tmp/l0_bad_debug_pair.err; then
+  echo "FAIL: imgcheck accepted inconsistent debug pair"
+  exit 1
+fi
 cp /tmp/l0_test.img /tmp/l0_bad_dbg_magic.img
 dbg_off_main=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
 printf 'BAD!' | dd of=/tmp/l0_bad_dbg_magic.img bs=1 seek="$dbg_off_main" conv=notrunc status=none
