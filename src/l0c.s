@@ -100,6 +100,8 @@ code_stub_ret: .byte 0xc3
 code_stub_ret_len = . - code_stub_ret
 code_stub_add: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0xc3
 code_stub_add_len = . - code_stub_add
+code_stub_add_trap: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x70,0x01,0xc3,0x0f,0x0b
+code_stub_add_trap_len = . - code_stub_add_trap
 code_stub_sub: .byte 0x48,0x89,0xf8,0x48,0x29,0xf0,0xc3
 code_stub_sub_len = . - code_stub_sub
 code_stub_and: .byte 0x48,0x89,0xf8,0x48,0x21,0xf0,0xc3
@@ -136,6 +138,8 @@ pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
 pat_const_suffix_len = . - pat_const_suffix
 tok_add_wrap: .ascii "add.wrap"
 tok_add_wrap_len = . - tok_add_wrap
+tok_add_trap: .ascii "add.trap"
+tok_add_trap_len = . - tok_add_trap
 tok_sub_wrap: .ascii "sub.wrap"
 tok_sub_wrap_len = . - tok_sub_wrap
 tok_mul_wrap: .ascii "mul.wrap"
@@ -2776,6 +2780,33 @@ validate_value_uses_defined:
     jmp .vvud_bin_done
 .vvud_chk_sub_wrap:
     mov al, byte ptr [r12+r14]
+    cmp al, 'a'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'd'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'd'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+3]
+    cmp al, '.'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 't'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'r'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'a'
+    jne .vvud_chk_sub_wrap_real
+    mov al, byte ptr [r12+r14+7]
+    cmp al, 'p'
+    jne .vvud_chk_sub_wrap_real
+    mov rdx, 1
+    jmp .vvud_bin_done
+.vvud_chk_sub_wrap_real:
+    mov al, byte ptr [r12+r14]
     cmp al, 's'
     jne .vvud_chk_mul_wrap
     mov al, byte ptr [r12+r14+1]
@@ -4255,6 +4286,34 @@ line_is_value_instruction:
 
 .lvi_chk_sub_wrap:
     mov al, byte ptr [rdi+r12]
+    cmp al, 'a'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'd'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'd'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, '.'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 't'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'r'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'a'
+    jne .lvi_chk_sub_wrap_real
+    mov al, byte ptr [rdi+r12+7]
+    cmp al, 'p'
+    jne .lvi_chk_sub_wrap_real
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_chk_sub_wrap_real:
+    mov al, byte ptr [rdi+r12]
     cmp al, 's'
     jne .lvi_chk_mul_wrap
     mov al, byte ptr [rdi+r12+1]
@@ -4854,6 +4913,20 @@ try_select_bin_kernel_code:
     jmp .tsbk_yes
 
 .tsbk_chk_sub:
+    cmp r15, tok_add_trap_len
+    jne .tsbk_chk_sub_real
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_add_trap]
+    mov rdx, tok_add_trap_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_sub_real
+    lea r14, [rip+code_stub_add_trap]
+    mov r15, code_stub_add_trap_len
+    jmp .tsbk_yes
+
+.tsbk_chk_sub_real:
     cmp r15, tok_sub_wrap_len
     jne .tsbk_chk_mul
     mov rdi, r12

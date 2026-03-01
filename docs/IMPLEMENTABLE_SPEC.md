@@ -42,7 +42,7 @@ value_instr = IND value_id SP "=" SP opcode SP args SP ":" SP type_id ;
 nonvalue_instr = IND "st" SP value_id SP value_id ;
 
 opcode      = "arg" | "const" | "call"
-            | "add.wrap" | "sub.wrap" | "mul.wrap"
+            | "add.wrap" | "add.trap" | "sub.wrap" | "mul.wrap"
             | "and" | "or" | "xor" | "shl" | "shr"
             | "icmp.eq"
             | "ld" | "gep" | "alloca" ;
@@ -101,7 +101,7 @@ digit       = "0".."9" ;
 - `cbr vC bT bF`:
   - `vC` must be defined before use
   - type(`vC`) must be `i1`
-- Binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`):
+- Binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`):
   - args shape: `vA vB`
   - both operands defined before use
   - type(`vA`) == type(`vB`) == explicit result type suffix
@@ -137,7 +137,7 @@ digit       = "0".."9" ;
 
 ## 4) Core Semantics (Bootstrap Contract)
 
-- Integer ops currently implemented in lowering are wrap semantics on 64-bit registers.
+- Integer ops currently implemented in lowering are wrap semantics on 64-bit registers, except `add.trap` which traps on signed overflow (`jo` -> `ud2`).
 - `icmp.eq` returns `0` or `1`.
 - Pointer arithmetic and memory instruction semantics are defined at verifier level; full lowering/runtime semantics are still incremental.
 - I keep behavior defined by default and avoid UB contracts.
@@ -147,7 +147,7 @@ digit       = "0".."9" ;
 I currently lower deterministic canonical kernels:
 
 - Two-arg kernels (`f0(t0,t0)->t0`, single block):
-  - `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+  - `add.wrap`, `add.trap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
 - Compare kernel:
   - `icmp.eq` returning `i1`
 - Control-flow select kernel:

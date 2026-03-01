@@ -61,7 +61,7 @@ I also enforce a structural subset inside `fns`:
   - `ld` requires a single `vN` operand and that operand must be typed as `p0<i8>`
   - `gep` requires `vN <signed_decimal>` and both operand/result pointer typing must be `p0<i8>`
   - `alloca` requires `tN, N` operands and a `p0<i8>` result type
-  - binary ops (`add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+  - binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
   - binary ops require operand value types to match the explicit result type suffix
   - non-value instruction `st vPtr vVal` is accepted and requires `vPtr` to be `p0<i8>` and both operands to be defined
 - SSA bootstrap check:
@@ -94,7 +94,7 @@ I also enforce a structural subset inside `fns`:
     - `v1 = arg 1 : t0`
     - `v2 = <op> v0 v1 : t0`
     - `ret v2`
-  - I currently lower these ops: `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+  - I currently lower these ops: `add.wrap`, `add.trap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
   - I lower canonical `icmp.eq + cbr` select kernel shape:
     - `v2 = icmp.eq v0 v1 : t1`
