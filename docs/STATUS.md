@@ -393,7 +393,20 @@ Last updated: 2026-03-01
     - dead-const-injected call->`or` generalized lowered shape
   - validated with full-suite pass
 
-### M33: Non-template backend and full general codegen completion
+### M33: Call-Family Backend Expansion (`xor`)
+
+- Status: complete
+- Scope completed:
+  - extended two-function call-kernel lowering to include canonical `xor` target in `f1`
+  - added commutative swapped call-arg lowering support for call->`xor` in `f0`
+  - validated generalized dead-const normalization path for call->`xor` with dead consts in both `f0` and `f1`
+  - added regression fixtures and assertions for:
+    - canonical call->`xor` lowered shape
+    - swapped call-arg call->`xor` lowered shape
+    - dead-const-injected call->`xor` generalized lowered shape
+  - validated with full-suite pass
+
+### M34: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

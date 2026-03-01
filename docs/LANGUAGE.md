@@ -298,7 +298,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
     - canonical two-function call kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`/`and`/`or`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
-    - call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`) also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
+    - call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`, `xor`) also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
     - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only when `f0` call-arg mapping remains semantically arg0->arg1
     - call-kernel templates also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)

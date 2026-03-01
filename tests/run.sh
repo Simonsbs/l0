@@ -188,6 +188,21 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_or_with_dead_const_general_lowered.out; then
   echo "FAIL: verify valid_call_or_with_dead_const_general_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_xor_lowered.l0" >/tmp/l0_ok_call_xor_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_xor_lowered.out; then
+  echo "FAIL: verify valid_call_xor_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_xor_swapped_lowered.l0" >/tmp/l0_ok_call_xor_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_xor_swapped_lowered.out; then
+  echo "FAIL: verify valid_call_xor_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_xor_with_dead_const_general_lowered.l0" >/tmp/l0_ok_call_xor_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_xor_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_call_xor_with_dead_const_general_lowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_sub_f1_swapped_with_dead_const_unlowered.l0" >/tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out; then
   echo "FAIL: verify valid_call_sub_f1_swapped_with_dead_const_unlowered"
@@ -1130,6 +1145,54 @@ fi
 "$BIN" run /tmp/l0_test_call_or_with_dead_const_general_lowered.img 42 15 >/tmp/l0_run_call_or_with_dead_const_general_lowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_call_or_with_dead_const_general_lowered.out)" != "47" ]; then
   echo "FAIL: run call->or with dead const lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_xor_lowered.l0" /tmp/l0_test_call_xor_lowered.img >/tmp/l0_build_call_xor_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_xor_lowered.out; then
+  echo "FAIL: build valid_call_xor_lowered"
+  exit 1
+fi
+call_xor_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_xor_lowered.img | tr -d ' ')
+call_xor_kernel_kind=$(od -An -t u8 -j "$((call_xor_dbg_off + 32))" -N 8 /tmp/l0_test_call_xor_lowered.img | tr -d ' ')
+if [ "$call_xor_kernel_kind" != "7" ]; then
+  echo "FAIL: call->xor debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_xor_lowered.img 42 15 >/tmp/l0_run_call_xor_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_xor_lowered.out)" != "37" ]; then
+  echo "FAIL: run call->xor lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_xor_swapped_lowered.l0" /tmp/l0_test_call_xor_swapped_lowered.img >/tmp/l0_build_call_xor_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_xor_swapped_lowered.out; then
+  echo "FAIL: build valid_call_xor_swapped_lowered"
+  exit 1
+fi
+call_xor_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_xor_swapped_lowered.img | tr -d ' ')
+call_xor_swapped_kernel_kind=$(od -An -t u8 -j "$((call_xor_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_xor_swapped_lowered.img | tr -d ' ')
+if [ "$call_xor_swapped_kernel_kind" != "7" ]; then
+  echo "FAIL: call->xor swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_xor_swapped_lowered.img 42 15 >/tmp/l0_run_call_xor_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_xor_swapped_lowered.out)" != "37" ]; then
+  echo "FAIL: run call->xor swapped lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_xor_with_dead_const_general_lowered.l0" /tmp/l0_test_call_xor_with_dead_const_general_lowered.img >/tmp/l0_build_call_xor_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_xor_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_call_xor_with_dead_const_general_lowered"
+  exit 1
+fi
+call_xor_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_xor_with_dead_const_general_lowered.img | tr -d ' ')
+call_xor_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_xor_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_xor_with_dead_const_general_lowered.img | tr -d ' ')
+if [ "$call_xor_dead_const_kernel_kind" != "7" ]; then
+  echo "FAIL: call->xor with dead const debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_xor_with_dead_const_general_lowered.img 42 15 >/tmp/l0_run_call_xor_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_xor_with_dead_const_general_lowered.out)" != "37" ]; then
+  echo "FAIL: run call->xor with dead const lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_add_swapped_lowered.l0" /tmp/l0_test_call_add_swapped_lowered.img >/tmp/l0_build_call_add_swapped_lowered.out
