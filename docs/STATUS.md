@@ -380,7 +380,20 @@ Last updated: 2026-03-01
     - dead-const-injected call->`and` generalized lowered shape
   - validated with full-suite pass
 
-### M32: Non-template backend and full general codegen completion
+### M32: Call-Family Backend Expansion (`or`)
+
+- Status: complete
+- Scope completed:
+  - extended two-function call-kernel lowering to include canonical `or` target in `f1`
+  - added commutative swapped call-arg lowering support for call->`or` in `f0`
+  - validated generalized dead-const normalization path for call->`or` with dead consts in both `f0` and `f1`
+  - added regression fixtures and assertions for:
+    - canonical call->`or` lowered shape
+    - swapped call-arg call->`or` lowered shape
+    - dead-const-injected call->`or` generalized lowered shape
+  - validated with full-suite pass
+
+### M33: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
