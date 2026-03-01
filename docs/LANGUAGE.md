@@ -166,7 +166,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - flags `0` (reserved for future use)
 - source section bounds/size consistency
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
-- debug schema consistency for non-zero debug section (`L0IX` magic/version and code-size match)
+- debug schema consistency for non-zero debug section (`L0IX` magic/version, kernel kind range, code-size match, trace schema/version constants)
 
 ### `run` bootstrap execution rules
 
@@ -177,7 +177,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - I print the returned value as unsigned decimal with a newline.
 - I reject invalid numeric arguments.
 
-Bootstrap build output currently also includes a compact 48-byte debug semantic index section:
+Bootstrap build output currently also includes a compact 64-byte debug semantic index section:
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
     - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
@@ -195,6 +195,8 @@ Bootstrap build output currently also includes a compact 48-byte debug semantic 
 - type count
 - kernel kind id
 - code size
+- trace schema version
+- trace record size
 
 ## Planned language expansion (next milestones)
 

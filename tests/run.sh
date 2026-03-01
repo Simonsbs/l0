@@ -179,7 +179,7 @@ if [ "$(head -c 4 /tmp/l0_test.img)" != "L0IM" ]; then
 fi
 in_size=$(wc -c < "$ROOT/tests/valid_min.l0")
 img_size=$(wc -c < /tmp/l0_test.img)
-expected_size=$((80 + in_size + 7 + 48))
+expected_size=$((80 + in_size + 7 + 64))
 if [ "$img_size" -ne "$expected_size" ]; then
   echo "FAIL: build image size mismatch"
   exit 1
@@ -194,6 +194,8 @@ dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test.img | tr -d ' ')
 dbg_size=$(od -An -t u8 -j 72 -N 8 /tmp/l0_test.img | tr -d ' ')
 dbg_kernel_kind=$(od -An -t u8 -j "$((dbg_off + 32))" -N 8 /tmp/l0_test.img | tr -d ' ')
 dbg_code_size=$(od -An -t u8 -j "$((dbg_off + 40))" -N 8 /tmp/l0_test.img | tr -d ' ')
+dbg_trace_schema_ver=$(od -An -t u8 -j "$((dbg_off + 48))" -N 8 /tmp/l0_test.img | tr -d ' ')
+dbg_trace_record_size=$(od -An -t u8 -j "$((dbg_off + 56))" -N 8 /tmp/l0_test.img | tr -d ' ')
 if [ "$version" != "1" ] || [ "$hdr_size" != "80" ] || [ "$src_off" != "80" ] || [ "$src_size" != "$in_size" ]; then
   echo "FAIL: build header fields"
   exit 1
@@ -202,7 +204,7 @@ if [ "$code_off" != "$((80 + in_size))" ] || [ "$code_size" != "7" ]; then
   echo "FAIL: build code header fields"
   exit 1
 fi
-if [ "$dbg_off" != "$((80 + in_size + 7))" ] || [ "$dbg_size" != "48" ]; then
+if [ "$dbg_off" != "$((80 + in_size + 7))" ] || [ "$dbg_size" != "64" ]; then
   echo "FAIL: build debug header fields"
   exit 1
 fi
@@ -216,6 +218,10 @@ if [ "$(od -An -t x1 -j "$dbg_off" -N 4 /tmp/l0_test.img | tr -d ' \n')" != "4c3
 fi
 if [ "$dbg_kernel_kind" != "1" ] || [ "$dbg_code_size" != "7" ]; then
   echo "FAIL: build debug index kernel metadata"
+  exit 1
+fi
+if [ "$dbg_trace_schema_ver" != "1" ] || [ "$dbg_trace_record_size" != "16" ]; then
+  echo "FAIL: build debug index trace metadata"
   exit 1
 fi
 "$BIN" imgcheck /tmp/l0_test.img >/tmp/l0_imgcheck.out
@@ -630,6 +636,18 @@ cp /tmp/l0_test.img /tmp/l0_bad_dbg_kernel_kind.img
 printf '\xff\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_kernel_kind.img bs=1 seek="$((dbg_off_main + 32))" conv=notrunc status=none
 if "$BIN" imgcheck /tmp/l0_bad_dbg_kernel_kind.img >/tmp/l0_bad_dbg_kernel_kind.out 2>/tmp/l0_bad_dbg_kernel_kind.err; then
   echo "FAIL: imgcheck accepted out-of-range debug kernel kind"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_dbg_trace_schema_ver.img
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_trace_schema_ver.img bs=1 seek="$((dbg_off_main + 48))" conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_dbg_trace_schema_ver.img >/tmp/l0_bad_dbg_trace_schema_ver.out 2>/tmp/l0_bad_dbg_trace_schema_ver.err; then
+  echo "FAIL: imgcheck accepted bad debug trace schema version"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_dbg_trace_record_size.img
+printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_trace_record_size.img bs=1 seek="$((dbg_off_main + 56))" conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_dbg_trace_record_size.img >/tmp/l0_bad_dbg_trace_record_size.out 2>/tmp/l0_bad_dbg_trace_record_size.err; then
+  echo "FAIL: imgcheck accepted bad debug trace record size"
   exit 1
 fi
 printf 'BADIMG' >/tmp/l0_bad.img

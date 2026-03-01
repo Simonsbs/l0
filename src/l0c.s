@@ -9,7 +9,7 @@
 .lcomm codegen_buf, 65536
 .lcomm codegen_len, 8
 .lcomm img_header_buf, 80
-.lcomm img_debug_idx_buf, 48
+.lcomm img_debug_idx_buf, 64
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -535,7 +535,7 @@ do_build:
     mov r10, rax               # out fd
 
     # Build structured 80-byte L0IMG header in-memory.
-    # Also emit a bootstrap code stub and 48-byte debug semantic index (L0IX).
+    # Also emit a bootstrap code stub and 64-byte debug semantic index (L0IX).
     # qword[0]  = magic "L0IM"
     # qword[1]  = version
     # qword[2]  = header size
@@ -545,7 +545,7 @@ do_build:
     # qword[6]  = code offset (after source payload)
     # qword[7]  = code size   (bootstrap-selected payload size)
     # qword[8]  = debug offset (after code payload)
-    # qword[9]  = debug size   (48 in bootstrap)
+    # qword[9]  = debug size   (64 in bootstrap)
     mov r8, img_header_len
     add r8, rbx                 # code_off
     mov r9, r8
@@ -561,11 +561,11 @@ do_build:
     mov qword ptr [r11+48], r8
     mov qword ptr [r11+56], r15
     mov qword ptr [r11+64], r9
-    mov qword ptr [r11+72], 48
+    mov qword ptr [r11+72], 64
 
     # Build debug semantic index qwords:
     # [0]=magic "L0IX" [1]=version [2]=fn_count [3]=type_count
-    # [4]=kernel_kind [5]=code_size
+    # [4]=kernel_kind [5]=code_size [6]=trace_schema_ver [7]=trace_record_size
     lea r11, [rip+img_debug_idx_buf]
     mov rax, 0x000000005849304c
     mov qword ptr [r11+0], rax
@@ -578,6 +578,8 @@ do_build:
     mov rax, qword ptr [rip+build_kernel_kind]
     mov qword ptr [r11+32], rax
     mov qword ptr [r11+40], r15
+    mov qword ptr [r11+48], 1
+    mov qword ptr [r11+56], 16
 
     mov rdi, r10
     lea rsi, [rip+img_header_buf]
@@ -602,7 +604,7 @@ do_build:
 
     mov rdi, r10
     lea rsi, [rip+img_debug_idx_buf]
-    mov rdx, 48
+    mov rdx, 64
     call write_all
     cmp rax, 0
     jne .build_write_fail
@@ -691,7 +693,7 @@ do_imgcheck:
 .img_chk_debug_nonzero:
     cmp r13, 0
     je fail_img
-    cmp r13, 48
+    cmp r13, 64
     jne fail_img
     cmp r12, r10
     jb fail_img
@@ -704,7 +706,7 @@ do_imgcheck:
     ja fail_img
     # validate debug payload qwords for bootstrap schema
     mov rax, qword ptr [r8+72]    # debug_size
-    cmp rax, 48
+    cmp rax, 64
     jne fail_img
     mov r9, qword ptr [r8+64]     # debug_off
     mov rax, qword ptr [r8+r9+0]  # L0IX magic
@@ -721,6 +723,12 @@ do_imgcheck:
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
     cmp rax, qword ptr [r8+56]
+    jne fail_img
+    mov rax, qword ptr [r8+r9+48]
+    cmp rax, 1
+    jne fail_img
+    mov rax, qword ptr [r8+r9+56]
+    cmp rax, 16
     jne fail_img
 
 .img_ok:

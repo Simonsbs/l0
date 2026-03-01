@@ -221,13 +221,15 @@ Section order in file:
 
 ## 7) Debug Semantic Index Schema (Bootstrap-Implemented)
 
-`debug_size = 48` bytes (`L0IX` payload):
+`debug_size = 64` bytes (`L0IX` payload):
 - `qword[0]`: magic (`L0IX`)
 - `qword[1]`: version (`1`)
 - `qword[2]`: function count
 - `qword[3]`: type count
 - `qword[4]`: kernel kind id
 - `qword[5]`: emitted code size
+- `qword[6]`: trace schema version (`1`)
+- `qword[7]`: trace record size (`16`)
 
 Current bootstrap `kernel kind id` mapping:
 - `0`: fallback `ret`

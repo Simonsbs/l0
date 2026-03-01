@@ -95,7 +95,7 @@ I also enforce a structural subset inside `fns`:
   - `qword[6]`: `code_off` (`src_off + src_size`)
   - `qword[7]`: `code_size` (bootstrap-selected code payload size)
   - `qword[8]`: `debug_off` (`code_off + code_size`)
-  - `qword[9]`: `debug_size` (`48` in bootstrap)
+  - `qword[9]`: `debug_size` (`64` in bootstrap)
 - I then write raw canonical source bytes at `src_off`
 - I then write bootstrap code section bytes at `code_off`:
   - I lower canonical two-arg kernels with the shape:
@@ -137,13 +137,15 @@ I also enforce a structural subset inside `fns`:
     - `v0 = const -N : t0`
     - `ret v0`
   - I currently use `c3` (`ret`) as the fallback for other verified inputs
-- I then write a 48-byte bootstrap debug semantic index (`L0IX`):
+- I then write a 64-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)
   - `qword[1]`: version (`1`)
   - `qword[2]`: function count
   - `qword[3]`: type count
   - `qword[4]`: kernel kind id (bootstrap lowering selector output)
   - `qword[5]`: emitted code size
+  - `qword[6]`: trace schema version (`1` in current bootstrap)
+  - `qword[7]`: trace record size (`16` bytes in current bootstrap)
   - current kernel kind ids are documented in `docs/IMPLEMENTABLE_SPEC.md`
 
 `l0c imgcheck <file.l0img>` validates bootstrap container integrity:
@@ -156,10 +158,11 @@ I also enforce a structural subset inside `fns`:
   - either both offset/size are zero
   - or both are non-zero and within file bounds
 - for non-zero debug section, bootstrap schema checks:
-  - debug size must be `48`
+  - debug size must be `64`
   - `L0IX` magic/version must match
   - `L0IX` kernel kind id must be in the current bootstrap range
   - debug `code_size` field must match header `code_size`
+  - debug trace schema/version fields must match current bootstrap constants
 
 `l0c run <file.l0img> [u64_a] [u64_b]` currently:
 - I validate image magic/version/header and code section bounds.
