@@ -497,6 +497,12 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_inst_order.bin >/tmp/l0_bad_debug_map_ins
   echo "FAIL: mapcat accepted non-increasing inst_id order"
   exit 1
 fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_truncated.bin
+printf '\x00' >> /tmp/l0_bad_debug_map_truncated.bin
+if "$BIN" mapcat /tmp/l0_bad_debug_map_truncated.bin >/tmp/l0_bad_debug_map_truncated.out 2>/tmp/l0_bad_debug_map_truncated.err; then
+  echo "FAIL: mapcat accepted misaligned debug-map payload size"
+  exit 1
+fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
   echo "FAIL: tracejoin accepted invalid map file"
   exit 1
@@ -513,6 +519,10 @@ if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_overlap.bin
 fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_inst_order.bin >/tmp/l0_bad_tracejoin_inst_order.out 2>/tmp/l0_bad_tracejoin_inst_order.err; then
   echo "FAIL: tracejoin accepted non-increasing inst_id order"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_truncated.bin >/tmp/l0_bad_tracejoin_map_truncated.out 2>/tmp/l0_bad_tracejoin_map_truncated.err; then
+  echo "FAIL: tracejoin accepted misaligned debug-map payload size"
   exit 1
 fi
 cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_trace_unknown_id.err

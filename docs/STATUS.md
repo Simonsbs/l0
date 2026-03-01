@@ -56,6 +56,7 @@ Last updated: 2026-03-01
   - ordered/non-overlapping map validation
   - strict `tracejoin` id resolution (unknown ids rejected)
   - explicit `tracejoin` rejection test for non-increasing debug-map `inst_id` ordering
+  - explicit malformed debug-map payload-size tests: `mapcat` and `tracejoin` both reject misaligned/truncated map payloads
   - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
   - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
   - overflow-style image tamper checks for `imgcheck` (`src_size`/`code_size`/`code_off`/`debug_off` set to max u64 values)
