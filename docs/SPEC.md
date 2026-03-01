@@ -195,11 +195,12 @@ I also enforce a structural subset inside `fns`:
 - I load and validate debug-map payload (`L0DM`, version `2`).
 - I enforce debug-map entry validity (non-zero strictly increasing `inst_id`, `start <= end <= code_size`, monotonic non-overlapping ranges).
 - I load and decode trace payload as fixed 16-byte records.
+- I require every trace record id to resolve to a debug-map `inst_id` entry; unknown ids are rejected.
 - For each trace record, I join by `trace_id == inst_id` and print:
   - `id <trace_id>`
   - `val <value>`
-  - `start <offset>` (default `0` if no match)
-  - `end <offset>` (default `0` if no match)
+  - `start <offset>`
+  - `end <offset>`
 
 `l0c imgmeta <file.l0img>` currently:
 - I validate core header and debug-section bounds for bootstrap images.

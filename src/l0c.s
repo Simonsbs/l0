@@ -1925,13 +1925,13 @@ do_tracejoin:
     add r8, r12
     mov r13, qword ptr [r8+0]     # trace id
     mov r14, qword ptr [r8+8]     # traced value
-    xor r9, r9                    # joined start default
-    xor r10, r10                  # joined end default
+    xor r9, r9                    # joined start
+    xor r10, r10                  # joined end
     xor rcx, rcx
     mov r11, qword ptr [rip+tracejoin_map_count]
 .tj_find_loop:
     cmp rcx, r11
-    jae .tj_emit
+    jae fail_parse
     mov rax, rcx
     shl rax, 3
     lea rdx, [rip+tracejoin_map_inst_id]

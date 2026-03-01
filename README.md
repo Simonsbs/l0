@@ -17,6 +17,7 @@ Current bootstrap status:
 - I keep the bootstrap trace-kernel debug-map split stable (`inst_id 1` trace bytes, `inst_id 2` return-path bytes) for deterministic `tracejoin`.
 - I validate debug-map entry integrity (`inst_id != 0`, `start <= end <= code_size`) in `mapcat` and `tracejoin`.
 - I enforce strict debug-map ordering in `mapcat` and `tracejoin` (`inst_id` strictly increasing and monotonic non-overlapping ranges).
+- I require `tracejoin` to resolve every trace record `id` against the debug map; unknown ids are rejected.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - two-arg compare kernel (`icmp.eq`) returning `i1`
