@@ -122,6 +122,7 @@ I also enforce a structural subset inside `fns`:
     - `st v1 v0`
     - `v2 = ld v1 : t0`
     - `ret v2`
+  - for memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/ld/ret when all uses reference the corresponding defs
   - I lower canonical `gep` memory roundtrip kernel shape:
     - `v1 = alloca t0, 1 : t1`
     - `st v1 v0`

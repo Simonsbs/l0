@@ -37,6 +37,8 @@ Current bootstrap status:
   - `icmp.eq + cbr` lowering now accepts canonical nonzero compare-result ids when `cbr` uses the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
   - I keep mismatched `icmp.eq + cbr` id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
+  - memory-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/load/return dataflow when each use references matching defs
+  - I keep mismatched memory-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)

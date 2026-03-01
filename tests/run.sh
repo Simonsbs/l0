@@ -213,6 +213,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip.out; then
   echo "FAIL: verify valid_mem_roundtrip"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_mem_roundtrip_v7.l0" >/tmp/l0_ok_mem_roundtrip_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip_v7.out; then
+  echo "FAIL: verify valid_mem_roundtrip_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_mem_roundtrip_mismatch_unlowered.l0" >/tmp/l0_ok_mem_roundtrip_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_mem_roundtrip_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_mem_gep_roundtrip.l0" >/tmp/l0_ok_mem_gep_roundtrip.out
 if ! grep -q '^ok$' /tmp/l0_ok_mem_gep_roundtrip.out; then
   echo "FAIL: verify valid_mem_gep_roundtrip"
@@ -1113,6 +1123,34 @@ fi
 "$BIN" run /tmp/l0_test_mem_roundtrip.img 123 >/tmp/l0_run_mem_roundtrip.out
 if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip.out)" != "123" ]; then
   echo "FAIL: run mem roundtrip result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip_v7.l0" /tmp/l0_test_mem_roundtrip_v7.img >/tmp/l0_build_mem_roundtrip_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_v7.out; then
+  echo "FAIL: build valid_mem_roundtrip_v7"
+  exit 1
+fi
+mem_roundtrip_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_roundtrip_v7.img | tr -d ' ')
+mem_roundtrip_v7_kernel_kind=$(od -An -t u8 -j "$((mem_roundtrip_v7_dbg_off + 32))" -N 8 /tmp/l0_test_mem_roundtrip_v7.img | tr -d ' ')
+if [ "$mem_roundtrip_v7_kernel_kind" != "14" ]; then
+  echo "FAIL: mem roundtrip v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_roundtrip_v7.img 123 >/tmp/l0_run_mem_roundtrip_v7.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip_v7.out)" != "123" ]; then
+  echo "FAIL: run mem roundtrip v7 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip_mismatch_unlowered.l0" /tmp/l0_test_mem_roundtrip_mismatch_unlowered.img >/tmp/l0_build_mem_roundtrip_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_mismatch_unlowered.out; then
+  echo "FAIL: build valid_mem_roundtrip_mismatch_unlowered"
+  exit 1
+fi
+mem_roundtrip_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_roundtrip_mismatch_unlowered.img | tr -d ' ')
+mem_roundtrip_mismatch_kernel_kind=$(od -An -t u8 -j "$((mem_roundtrip_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_mem_roundtrip_mismatch_unlowered.img | tr -d ' ')
+mem_roundtrip_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_mem_roundtrip_mismatch_unlowered.img | tr -d ' ')
+if [ "$mem_roundtrip_mismatch_kernel_kind" != "0" ] || [ "$mem_roundtrip_mismatch_code_size" != "1" ]; then
+  echo "FAIL: mem roundtrip mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip.l0" /tmp/l0_test_mem_gep_roundtrip.img >/tmp/l0_build_mem_gep_roundtrip.out

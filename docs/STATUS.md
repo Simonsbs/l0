@@ -95,6 +95,8 @@ Last updated: 2026-03-01
   - exit selector guardrail added: mismatch between exit operand id and returned id remains intentionally unlowered
   - write intrinsic selector now accepts canonical nonzero ids across alloca/const/store/write/ret dataflow for the bootstrap newline kernel template
   - write selector guardrail added: mismatch between final const id and returned id remains intentionally unlowered
+  - memory roundtrip selector now accepts canonical nonzero ids across arg/alloca/st/ld/ret dataflow
+  - memory roundtrip selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
 
 ## Documentation status
 
