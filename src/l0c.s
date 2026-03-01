@@ -198,12 +198,16 @@ code_stub_write_newline: .byte 0x48,0x83,0xec,0x08,0x48,0xc7,0x04,0x24,0x0a,0x00
 code_stub_write_newline_len = . - code_stub_write_newline
 code_stub_trace_emit: .byte 0x48,0x83,0xec,0x10,0x48,0xc7,0x04,0x24,0x01,0x00,0x00,0x00,0x48,0x89,0x7c,0x24,0x08,0x48,0xc7,0xc0,0x01,0x00,0x00,0x00,0x48,0xc7,0xc7,0x02,0x00,0x00,0x00,0x48,0x89,0xe6,0x48,0xc7,0xc2,0x10,0x00,0x00,0x00,0x0f,0x05,0x48,0x31,0xc0,0x48,0x83,0xc4,0x10,0xc3
 code_stub_trace_emit_len = . - code_stub_trace_emit
-pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
-pat_bin_prefix_len = . - pat_bin_prefix
-pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
-pat_bin_suffix_len = . - pat_bin_suffix
-pat_bin_suffix_swapped: .ascii "v1 v0 : t0\n  ret v2\n}\n"
-pat_bin_suffix_swapped_len = . - pat_bin_suffix_swapped
+pat_bin_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
+pat_bin_head_len = . - pat_bin_head
+pat_bin_mid: .ascii " = "
+pat_bin_mid_len = . - pat_bin_mid
+pat_bin_tail_a: .ascii "v0 v1 : t0\n  ret v"
+pat_bin_tail_a_len = . - pat_bin_tail_a
+pat_bin_tail_a_swapped: .ascii "v1 v0 : t0\n  ret v"
+pat_bin_tail_a_swapped_len = . - pat_bin_tail_a_swapped
+pat_bin_tail_b: .ascii "\n}\n"
+pat_bin_tail_b_len = . - pat_bin_tail_b
 pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
 pat_icmp_eq_len = . - pat_icmp_eq
 pat_icmp_eq_swapped: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v1 v0 : t1\n  ret v2\n}\n"
@@ -7031,8 +7035,8 @@ try_select_bin_kernel_code:
 
     mov r12, rdi
     mov r13, rsi
-    lea rdx, [rip+pat_bin_prefix]
-    mov rcx, pat_bin_prefix_len
+    lea rdx, [rip+pat_bin_head]
+    mov rcx, pat_bin_head_len
     mov rdi, r12
     mov rsi, r13
     call find_substr_pos
@@ -7040,10 +7044,47 @@ try_select_bin_kernel_code:
     je .tsbk_no
 
     mov r8, rax
-    add r8, pat_bin_prefix_len      # opcode start
+    add r8, pat_bin_head_len        # result-id start
     cmp r8, r13
     jae .tsbk_no
+
     mov r9, r8
+.tsbk_find_vid_end:
+    cmp r9, r13
+    jae .tsbk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbk_vid_done
+    cmp al, '9'
+    ja .tsbk_vid_done
+    inc r9
+    jmp .tsbk_find_vid_end
+.tsbk_vid_done:
+    cmp r9, r8
+    je .tsbk_no
+
+    mov rbx, r8                       # preserve result-id start
+    mov r11, r9
+    sub r11, r8                       # preserve result-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_bin_mid_len
+    jb .tsbk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_mid]
+    mov rdx, pat_bin_mid_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
+    add r10, pat_bin_mid_len          # opcode start
+    cmp r10, r13
+    jae .tsbk_no
+    mov r14, r10                      # preserve opcode start across calls
+
+    mov r9, r10
 .tsbk_find_space:
     cmp r9, r13
     jae .tsbk_no
@@ -7053,33 +7094,52 @@ try_select_bin_kernel_code:
     inc r9
     jmp .tsbk_find_space
 .tsbk_space:
-    cmp r9, r8
+    cmp r9, r10
     je .tsbk_no
-    mov r14, r8                       # preserve opcode start across calls
 
     mov r10, r9
-    inc r10                          # suffix start
-    mov r11, r13
-    sub r11, r10
-    cmp r11, pat_bin_suffix_len
+    inc r10                           # suffix start
+    mov rax, r13
+    sub rax, r10
+    mov rcx, pat_bin_tail_a_len
+    add rcx, r11
+    add rcx, pat_bin_tail_b_len
+    cmp rax, rcx
     jb .tsbk_no
-    xor r13d, r13d                   # operand order flag: 0=v0 v1, 1=v1 v0
+    xor r13d, r13d                    # operand order flag: 0=v0 v1, 1=v1 v0
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_bin_suffix]
-    mov rdx, pat_bin_suffix_len
+    lea rsi, [rip+pat_bin_tail_a]
+    mov rdx, pat_bin_tail_a_len
     call mem_eq
     cmp rax, 1
-    je .tsbk_suffix_ok
+    je .tsbk_tail_a_ok
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_bin_suffix_swapped]
-    mov rdx, pat_bin_suffix_swapped_len
+    lea rsi, [rip+pat_bin_tail_a_swapped]
+    mov rdx, pat_bin_tail_a_swapped_len
     call mem_eq
     cmp rax, 1
     jne .tsbk_no
     mov r13d, 1
-.tsbk_suffix_ok:
+.tsbk_tail_a_ok:
+    add r10, pat_bin_tail_a_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
+    add r10, r11
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_tail_b]
+    mov rdx, pat_bin_tail_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
 
     mov r15, r9
     sub r15, r14                     # opcode len

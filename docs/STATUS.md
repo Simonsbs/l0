@@ -79,6 +79,7 @@ Last updated: 2026-03-01
   - const-return selector now accepts canonical nonzero value ids when `ret` references the same const-def id
   - const-return selector path is regression-covered for both single-digit and multi-digit value ids
   - non-commutative guardrail test added: swapped `sub.wrap` remains intentionally unlowered in current bootstrap selector
+  - binary kernel selector now accepts canonical nonzero result value ids (`vN = <op> ...`, `ret vN`)
 
 ## Documentation status
 
