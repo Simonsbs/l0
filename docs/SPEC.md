@@ -205,7 +205,11 @@ I also enforce a structural subset inside `fns`:
 - I print deterministic text lines: `entries <count>`, `code_size <bytes>`, then one `(inst_id,start,end)` triplet per entry.
 
 `l0c schemacat <trace_schema.bin>` currently:
-- I load a 32-byte trace-schema payload and validate magic/version.
+- I load a 32-byte trace-schema payload and validate:
+  - magic `L0TS`
+  - version `1`
+  - record size `16`
+  - field count `2`
 - I print deterministic text lines: `version <n>`, `record_size <bytes>`, `fields <count>`.
 
 `l0c tracejoin <trace.bin> <debug_map.bin>` currently:

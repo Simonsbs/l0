@@ -1861,6 +1861,12 @@ do_schemacat:
     mov rax, qword ptr [r8+8]
     cmp rax, 1
     jne fail_parse
+    mov rax, qword ptr [r8+16]
+    cmp rax, 16
+    jne fail_parse
+    mov rax, qword ptr [r8+24]
+    cmp rax, 2
+    jne fail_parse
     mov rdi, 1
     lea rsi, [rip+schema_version_prefix]
     mov rdx, schema_version_prefix_len

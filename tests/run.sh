@@ -458,6 +458,18 @@ if "$BIN" schemacat /tmp/l0_bad_trace_schema_version.bin >/tmp/l0_bad_trace_sche
   echo "FAIL: schemacat accepted bad schema version"
   exit 1
 fi
+cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_record_size.bin
+printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_schema_record_size.bin bs=1 seek=16 conv=notrunc status=none
+if "$BIN" schemacat /tmp/l0_bad_trace_schema_record_size.bin >/tmp/l0_bad_trace_schema_record_size.out 2>/tmp/l0_bad_trace_schema_record_size.err; then
+  echo "FAIL: schemacat accepted bad schema record_size"
+  exit 1
+fi
+cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_fields.bin
+printf '\x03\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_schema_fields.bin bs=1 seek=24 conv=notrunc status=none
+if "$BIN" schemacat /tmp/l0_bad_trace_schema_fields.bin >/tmp/l0_bad_trace_schema_fields.out 2>/tmp/l0_bad_trace_schema_fields.err; then
+  echo "FAIL: schemacat accepted bad schema fields"
+  exit 1
+fi
 cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_truncated.bin
 truncate -s 31 /tmp/l0_bad_trace_schema_truncated.bin
 if "$BIN" schemacat /tmp/l0_bad_trace_schema_truncated.bin >/tmp/l0_bad_trace_schema_truncated.out 2>/tmp/l0_bad_trace_schema_truncated.err; then

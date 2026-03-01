@@ -245,6 +245,7 @@ Current bootstrap debug map payload is variable-size:
 - `version <n>`
 - `record_size <bytes>`
 - `fields <count>`
+and it now rejects schema payloads where bootstrap constants do not match (`version != 1`, `record_size != 16`, or `fields != 2`).
 
 `tracejoin` decodes trace records and debug-map entries, joins by `inst_id`, and prints:
 - `id <trace_id>`
