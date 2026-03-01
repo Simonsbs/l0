@@ -206,8 +206,12 @@ pat_bin_suffix_swapped: .ascii "v1 v0 : t0\n  ret v2\n}\n"
 pat_bin_suffix_swapped_len = . - pat_bin_suffix_swapped
 pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
 pat_icmp_eq_len = . - pat_icmp_eq
+pat_icmp_eq_swapped: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v1 v0 : t1\n  ret v2\n}\n"
+pat_icmp_eq_swapped_len = . - pat_icmp_eq_swapped
 pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
 pat_cbr_eq_select_len = . - pat_cbr_eq_select
+pat_cbr_eq_select_swapped: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v1 v0 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
+pat_cbr_eq_select_swapped_len = . - pat_cbr_eq_select_swapped
 pat_mem_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = ld v1 : t0\n  ret v2\n}\n"
 pat_mem_roundtrip_len = . - pat_mem_roundtrip
 pat_mem_gep_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = gep v1 0 : t1\n  v3 = ld v2 : t0\n  ret v3\n}\n"
@@ -838,6 +842,19 @@ do_build:
     mov rcx, pat_cbr_eq_select_len
     call find_substr
     cmp rax, 1
+    jne .build_try_cbr_eq_select_swapped
+    lea r14, [rip+code_stub_cbr_eq_select]
+    mov r15, code_stub_cbr_eq_select_len
+    mov qword ptr [rip+build_kernel_kind], 12
+    jmp .build_code_selected
+
+.build_try_cbr_eq_select_swapped:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_cbr_eq_select_swapped]
+    mov rcx, pat_cbr_eq_select_swapped_len
+    call find_substr
+    cmp rax, 1
     jne .build_try_icmp_eq
     lea r14, [rip+code_stub_cbr_eq_select]
     mov r15, code_stub_cbr_eq_select_len
@@ -849,6 +866,19 @@ do_build:
     mov rsi, rbx
     lea rdx, [rip+pat_icmp_eq]
     mov rcx, pat_icmp_eq_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_icmp_eq_swapped
+    lea r14, [rip+code_stub_icmp_eq]
+    mov r15, code_stub_icmp_eq_len
+    mov qword ptr [rip+build_kernel_kind], 11
+    jmp .build_code_selected
+
+.build_try_icmp_eq_swapped:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_icmp_eq_swapped]
+    mov rcx, pat_icmp_eq_swapped_len
     call find_substr
     cmp rax, 1
     jne .build_try_bin_kernel

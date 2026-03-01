@@ -107,11 +107,13 @@ I also enforce a structural subset inside `fns`:
   - I accept canonical swapped-operand form (`v1 v0`) for commutative ops in this set: `add.wrap`, `add.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`
   - `add.trap`/`sub.trap`/`mul.trap` currently trap via `jo` to `ud2` on signed overflow
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
+  - I also accept swapped compare form for that kernel (`v2 = icmp.eq v1 v0 : t1`)
   - I lower canonical `icmp.eq + cbr` select kernel shape:
     - `v2 = icmp.eq v0 v1 : t1`
     - `cbr v2 b1 b2`
     - `b1: ret v0`
     - `b2: ret v1`
+  - I also accept swapped compare form in that select kernel (`v2 = icmp.eq v1 v0 : t1`)
   - I lower canonical memory roundtrip kernel shape:
     - `v1 = alloca t0, 1 : t1`
     - `st v1 v0`
