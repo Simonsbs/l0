@@ -91,6 +91,7 @@ Current bootstrap status:
 ## Documentation
 
 - Language reference: `docs/LANGUAGE.md`
+- Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
 - MVP/compiler spec: `docs/SPEC.md`
 - Implementable spec contract: `docs/IMPLEMENTABLE_SPEC.md`
 - Project status dashboard: `docs/STATUS.md`
