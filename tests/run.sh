@@ -893,16 +893,34 @@ if "$BIN" imgcheck /tmp/l0_bad_src_off.img >/tmp/l0_bad_src_off.out 2>/tmp/l0_ba
   echo "FAIL: imgcheck accepted bad src_off"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_src_size_overflow.img
+printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_src_size_overflow.img bs=1 seek=40 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_src_size_overflow.img >/tmp/l0_bad_src_size_overflow.out 2>/tmp/l0_bad_src_size_overflow.err; then
+  echo "FAIL: imgcheck accepted overflowing src_size"
+  exit 1
+fi
 cp /tmp/l0_test.img /tmp/l0_bad_code_pair.img
 printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_code_pair.img bs=1 seek=48 conv=notrunc status=none
 if "$BIN" imgcheck /tmp/l0_bad_code_pair.img >/tmp/l0_bad_code_pair.out 2>/tmp/l0_bad_code_pair.err; then
   echo "FAIL: imgcheck accepted inconsistent code pair"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_code_size_overflow.img
+printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_code_size_overflow.img bs=1 seek=56 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_code_size_overflow.img >/tmp/l0_bad_code_size_overflow.out 2>/tmp/l0_bad_code_size_overflow.err; then
+  echo "FAIL: imgcheck accepted overflowing code_size"
+  exit 1
+fi
 cp /tmp/l0_test.img /tmp/l0_bad_debug_pair.img
 printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_pair.img bs=1 seek=72 conv=notrunc status=none
 if "$BIN" imgcheck /tmp/l0_bad_debug_pair.img >/tmp/l0_bad_debug_pair.out 2>/tmp/l0_bad_debug_pair.err; then
   echo "FAIL: imgcheck accepted inconsistent debug pair"
+  exit 1
+fi
+cp /tmp/l0_test.img /tmp/l0_bad_debug_size_non64.img
+printf '\x3f\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_size_non64.img bs=1 seek=72 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_debug_size_non64.img >/tmp/l0_bad_debug_size_non64.out 2>/tmp/l0_bad_debug_size_non64.err; then
+  echo "FAIL: imgcheck accepted non-64 debug_size"
   exit 1
 fi
 cp /tmp/l0_test.img /tmp/l0_bad_code_off_overflow.img
