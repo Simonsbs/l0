@@ -45,6 +45,8 @@ Current bootstrap status:
   - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` stderr-binary emit path)
   - malloc-kernel lowering now accepts canonical nonzero arg/result ids when `malloc` and `ret` reference the corresponding defined ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
   - I keep mismatched malloc result/return-id shapes outside current lowering and regression-test them as intentionally unlowered
+  - free-noop kernel lowering now accepts canonical nonzero arg/const-ret ids when `free` and `ret` reference the corresponding defined ids (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
+  - I keep mismatched free-noop const/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - trace-kernel lowering now accepts canonical nonzero trace/dataflow value ids when `trace` and `ret` both reference the corresponding defined ids (`vN = arg ...`, `trace 1 vN`, `vM = const 0`, `ret vM`)
   - I keep mismatched trace id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)

@@ -89,6 +89,8 @@ Last updated: 2026-03-01
   - trace selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
   - malloc intrinsic selector now accepts canonical nonzero arg/result ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
   - malloc selector guardrail added: mismatch between malloc result id and returned id remains intentionally unlowered
+  - free-noop intrinsic selector now accepts canonical nonzero arg/const-ret ids (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
+  - free-noop selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
 
 ## Documentation status
 

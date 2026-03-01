@@ -238,6 +238,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_free_noop.out; then
   echo "FAIL: verify valid_free_noop"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_free_noop_v7.l0" >/tmp/l0_ok_free_noop_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop_v7.out; then
+  echo "FAIL: verify valid_free_noop_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_free_noop_mismatch_unlowered.l0" >/tmp/l0_ok_free_noop_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_free_noop_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_exit.l0" >/tmp/l0_ok_exit.out
 if ! grep -q '^ok$' /tmp/l0_ok_exit.out; then
   echo "FAIL: verify valid_exit"
@@ -1171,6 +1181,34 @@ fi
 "$BIN" run /tmp/l0_test_free_noop.img 123 >/tmp/l0_run_free_noop.out
 if [ "$(tr -d '\n' < /tmp/l0_run_free_noop.out)" != "0" ]; then
   echo "FAIL: run free noop image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop_v7.l0" /tmp/l0_test_free_noop_v7.img >/tmp/l0_build_free_noop_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_v7.out; then
+  echo "FAIL: build valid_free_noop_v7"
+  exit 1
+fi
+free_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_free_noop_v7.img | tr -d ' ')
+free_v7_kernel_kind=$(od -An -t u8 -j "$((free_v7_dbg_off + 32))" -N 8 /tmp/l0_test_free_noop_v7.img | tr -d ' ')
+if [ "$free_v7_kernel_kind" != "21" ]; then
+  echo "FAIL: free noop v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_free_noop_v7.img 123 >/tmp/l0_run_free_noop_v7.out
+if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_v7.out)" != "0" ]; then
+  echo "FAIL: run free noop v7 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop_mismatch_unlowered.l0" /tmp/l0_test_free_noop_mismatch_unlowered.img >/tmp/l0_build_free_noop_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_mismatch_unlowered.out; then
+  echo "FAIL: build valid_free_noop_mismatch_unlowered"
+  exit 1
+fi
+free_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
+free_mismatch_kernel_kind=$(od -An -t u8 -j "$((free_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
+free_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
+if [ "$free_mismatch_kernel_kind" != "0" ] || [ "$free_mismatch_code_size" != "1" ]; then
+  echo "FAIL: free noop mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_exit.l0" /tmp/l0_test_exit.img >/tmp/l0_build_exit.out

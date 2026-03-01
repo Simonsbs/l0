@@ -138,6 +138,7 @@ I also enforce a structural subset inside `fns`:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
     - for `malloc`, I also accept canonical nonzero arg/result ids when dataflow matches (`vN = arg 0`, `vM = malloc vN`, `ret vM`)
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
+    - for `free`, I also accept canonical nonzero arg/const-ret ids when dataflow matches (`vN = arg 0`, `free vN`, `vM = const 0`, `ret vM`)
     - `exit` kernel (`exit v0`) via syscall `exit` stub
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
