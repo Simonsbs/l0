@@ -54,8 +54,8 @@ Current bootstrap status:
   - memory-gep-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - memory-gep-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I keep mismatched memory-gep-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
-  - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
-  - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
+  - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, `mul.wrap`, or `and`)
+  - for call->commutative targets (`add.wrap`, `mul.wrap`, `and`), I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
   - for call->`sub.wrap`, I preserve non-commutative guardrails by lowering only semantic arg0->arg1 mapping under either arg-definition order
   - call-kernel lowering now also accepts either canonical arg-definition order inside `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
@@ -107,7 +107,8 @@ Current bootstrap status:
 - I now consider my M28 generalized intrinsic-selector pipeline cutoff milestone complete: in `build` I removed legacy direct fallback stages for `trace`/`write`/`free` and route those families through generalized normalized selector paths only, with full regression stability preserved.
 - I now consider my M29 generalized selector-chain unification milestone complete: in `build` I removed the remaining legacy direct fallback stages for generalized families (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, and binary), so all generalized families now route through normalization+selector stages only.
 - I now consider my M30 generalized selector-chain completion milestone complete: I routed const-return through the same generalized normalization path and added dead-const/cross-function const regression coverage, so all current kernel families now flow through generalized normalization+selector stages.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M31).
+- I now consider my M31 call-family backend expansion milestone complete: I extended two-function call lowering to include canonical `and` kernels (including swapped call-arg order and dead-const generalized variants) with full regression coverage.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M32).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

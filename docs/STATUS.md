@@ -367,7 +367,20 @@ Last updated: 2026-03-01
   - added regression coverage for const-return dead-const-injected shapes, including cross-function value-id reuse variants
   - validated deterministic behavior and full regression-suite stability under generalized-only routing for all current kernel families
 
-### M31: Non-template backend and full general codegen completion
+### M31: Call-Family Backend Expansion (`and`)
+
+- Status: complete
+- Scope completed:
+  - extended two-function call-kernel lowering to include canonical `and` target in `f1`
+  - added commutative swapped call-arg lowering support for call->`and` in `f0`
+  - validated generalized dead-const normalization path for call->`and` with dead consts in both `f0` and `f1`
+  - added regression fixtures and assertions for:
+    - canonical call->`and` lowered shape
+    - swapped call-arg call->`and` lowered shape
+    - dead-const-injected call->`and` generalized lowered shape
+  - validated with full-suite pass
+
+### M32: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
