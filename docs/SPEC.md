@@ -176,8 +176,12 @@ I also enforce a structural subset inside `fns`:
 - I print deterministic text lines for each record: `id <trace_id>` and `val <traced_value>`.
 
 `l0c mapcat <debug_map.bin>` currently:
-- I load a 56-byte bootstrap debug-map payload and validate magic/version.
-- I print deterministic text lines: `entries <count>`, `code_size <bytes>`, `inst_id <id>`, `start <offset>`, `end <offset>`.
+- I load a bootstrap debug-map payload and validate:
+  - minimum size `32`
+  - exact size `32 + (entry_count * 24)`
+  - magic `L0DM`
+  - version `2`
+- I print deterministic text lines: `entries <count>`, `code_size <bytes>`, then one `(inst_id,start,end)` triplet per entry.
 
 `l0c schemacat <trace_schema.bin>` currently:
 - I load a 32-byte trace-schema payload and validate magic/version.
@@ -199,14 +203,18 @@ I also enforce a structural subset inside `fns`:
 - `qword[2]`: trace record size (`16`)
 - `qword[3]`: field count (`2`)
 
-`l0c build ... --debug-map <out.bin>` currently writes a 56-byte bootstrap map payload:
+`l0c build ... --debug-map <out.bin>` currently writes a variable-size bootstrap map payload:
 - `qword[0]`: magic (`L0DM`)
-- `qword[1]`: version (`1`)
-- `qword[2]`: instruction-entry count (`1`)
+- `qword[1]`: version (`2`)
+- `qword[2]`: instruction-entry count (`N`)
 - `qword[3]`: code size (`code_size` from emitted image)
-- `qword[4]`: instruction id (`1` in current bootstrap)
-- `qword[5]`: code start offset (`0`)
-- `qword[6]`: code end offset (`code_size`)
+- entries follow at `qword[4+]`, each entry is:
+  - `inst_id`
+  - `start`
+  - `end`
+- current bootstrap emits:
+  - fallback/const kernels: `N=1`
+  - other kernels: `N=3` with contiguous synthetic partitions across `code_size`
 
 Current bootstrap parser accepts either side artifact independently or both together in one build command, and rejects duplicate optional side-artifact flags.
 

@@ -271,7 +271,7 @@ Optional build-side bootstrap artifacts:
 - `--trace-schema <out.bin>`:
   - 32-byte payload: `L0TS`, version `1`, record size `16`, field count `2`
 - `--debug-map <out.bin>`:
-  - 56-byte payload: `L0DM`, version `1`, entry count `1`, code size, `inst_id`, `start`, `end`
+  - variable-size payload: `L0DM`, version `2`, entry count `N`, code size, then `N` triplets of `inst_id/start/end`
 - current bootstrap parser accepts either option independently or both together, and rejects duplicate optional flags
 
 ## 9) Near-Term Completion Steps

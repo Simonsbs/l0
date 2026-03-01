@@ -13,7 +13,9 @@
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
 .lcomm trace_schema_buf, 32
-.lcomm debug_map_buf, 56
+.lcomm debug_map_buf, 104
+.lcomm debug_map_size, 8
+.lcomm debug_map_fd, 8
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -914,6 +916,7 @@ do_build:
     test rax, rax
     js fail_build
     mov r10, rax
+    mov qword ptr [rip+debug_map_fd], r10
     lea r11, [rip+trace_schema_buf]
     mov rax, 0x000000005354304c
     mov qword ptr [r11+0], rax
@@ -942,22 +945,64 @@ do_build:
     test rax, rax
     js fail_build
     mov r10, rax
+    mov qword ptr [rip+debug_map_fd], r10
     lea r11, [rip+debug_map_buf]
     mov rax, 0x000000004d44304c
     mov qword ptr [r11+0], rax
-    mov qword ptr [r11+8], 1
-    mov qword ptr [r11+16], 1
+    mov qword ptr [r11+8], 2
+    mov r12, 3
+    mov rax, qword ptr [rip+build_kernel_kind]
+    cmp rax, 0
+    je .build_dbg_map_set_count
+    cmp rax, 13
+    jne .build_dbg_map_count_done
+.build_dbg_map_set_count:
+    mov r12, 1
+.build_dbg_map_count_done:
+    mov qword ptr [r11+16], r12
     mov qword ptr [r11+24], r15
-    mov qword ptr [r11+32], 1
-    mov qword ptr [r11+40], 0
-    mov qword ptr [r11+48], r15
-    mov rdi, r10
+    mov rax, r15
+    xor rdx, rdx
+    div r12
+    mov r13, rax                # per-entry base segment size
+    mov r14, rdx                # remainder for last segment
+    xor r8, r8                  # start offset
+    mov r9, 1                   # synthetic inst_id starts at 1
+    xor rcx, rcx                # entry index
+.build_dbg_map_loop:
+    cmp rcx, r12
+    jae .build_dbg_map_done
+    mov rax, r13
+    mov rbx, r12
+    dec rbx
+    cmp rcx, rbx
+    jne .build_dbg_map_no_rem
+    add rax, r14
+.build_dbg_map_no_rem:
+    mov r10, r8
+    add r10, rax                # end offset
+    mov rdx, rcx
+    imul rdx, 24
+    add rdx, 32
+    mov qword ptr [r11+rdx+0], r9
+    mov qword ptr [r11+rdx+8], r8
+    mov qword ptr [r11+rdx+16], r10
+    mov r8, r10
+    inc r9
+    inc rcx
+    jmp .build_dbg_map_loop
+.build_dbg_map_done:
+    mov rax, r12
+    imul rax, 24
+    add rax, 32
+    mov qword ptr [rip+debug_map_size], rax
+    mov rdi, qword ptr [rip+debug_map_fd]
     lea rsi, [rip+debug_map_buf]
-    mov rdx, 56
+    mov rdx, qword ptr [rip+debug_map_size]
     call write_all
     cmp rax, 0
     jne .build_write_debug_map_fail
-    mov rdi, r10
+    mov rdi, qword ptr [rip+debug_map_fd]
     mov rax, 3
     syscall
 
@@ -976,7 +1021,7 @@ do_build:
     jmp fail_build
 
 .build_write_debug_map_fail:
-    mov rdi, r10
+    mov rdi, qword ptr [rip+debug_map_fd]
     mov rax, 3
     syscall
     jmp fail_build
@@ -1352,46 +1397,76 @@ do_mapcat:
     cmp rax, 0
     jl fail_io
     mov rbx, rax
-    cmp rbx, 56
+    cmp rbx, 32
+    jb fail_parse
+    mov rax, rbx
+    sub rax, 32
+    xor rdx, rdx
+    mov rcx, 24
+    div rcx
+    cmp rdx, 0
     jne fail_parse
     lea r8, [rip+file_buf]
-    mov rax, qword ptr [r8+0]
+    mov r12, r8
+    mov rax, qword ptr [r12+0]
     mov r9, 0x000000004d44304c
     cmp rax, r9
     jne fail_parse
-    mov rax, qword ptr [r8+8]
-    cmp rax, 1
+    mov rax, qword ptr [r12+8]
+    cmp rax, 2
+    jne fail_parse
+    mov r15, qword ptr [r12+16]    # entry count
+    mov rax, r15
+    imul rax, 24
+    add rax, 32
+    cmp rax, rbx
     jne fail_parse
     mov rdi, 1
     lea rsi, [rip+map_entries_prefix]
     mov rdx, map_entries_prefix_len
     call write_fd
-    mov rdi, qword ptr [r8+16]
+    mov rdi, r15
     call print_u64_nl
     mov rdi, 1
     lea rsi, [rip+map_code_size_prefix]
     mov rdx, map_code_size_prefix_len
     call write_fd
-    mov rdi, qword ptr [r8+24]
+    mov rdi, qword ptr [r12+24]
     call print_u64_nl
+    xor r14, r14
+.mapcat_entry_loop:
+    cmp r14, r15
+    jae .mapcat_done
     mov rdi, 1
     lea rsi, [rip+map_inst_id_prefix]
     mov rdx, map_inst_id_prefix_len
     call write_fd
-    mov rdi, qword ptr [r8+32]
+    mov r11, r14
+    imul r11, 24
+    add r11, 32
+    mov rdi, qword ptr [r12+r11+0]
     call print_u64_nl
     mov rdi, 1
     lea rsi, [rip+map_start_prefix]
     mov rdx, map_start_prefix_len
     call write_fd
-    mov rdi, qword ptr [r8+40]
+    mov r11, r14
+    imul r11, 24
+    add r11, 32
+    mov rdi, qword ptr [r12+r11+8]
     call print_u64_nl
     mov rdi, 1
     lea rsi, [rip+map_end_prefix]
     mov rdx, map_end_prefix_len
     call write_fd
-    mov rdi, qword ptr [r8+48]
+    mov r11, r14
+    imul r11, 24
+    add r11, 32
+    mov rdi, qword ptr [r12+r11+16]
     call print_u64_nl
+    inc r14
+    jmp .mapcat_entry_loop
+.mapcat_done:
     mov rdi, 0
     call exit
 

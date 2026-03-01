@@ -209,21 +209,21 @@ Current bootstrap schema payload is 32 bytes:
 - field count `2`
 
 I can emit a minimal debug map file during build with `--debug-map <out.bin>`.
-Current bootstrap debug map payload is 56 bytes:
+Current bootstrap debug map payload is variable-size:
 - magic `L0DM`
-- version `1`
-- instruction entry count `1`
+- version `2`
+- instruction entry count `N`
 - code size (`code_size` from the built image)
-- instruction id (`1` in current bootstrap)
-- code start (`0`)
-- code end (`code_size`)
+- entry array with triplets:
+  - `inst_id`
+  - `start`
+  - `end`
+- current bootstrap emits `N=1` for fallback/const kernels and `N=3` for other kernels.
 
 `mapcat` decodes this bootstrap debug map format and prints:
 - `entries <count>`
 - `code_size <bytes>`
-- `inst_id <id>`
-- `start <offset>`
-- `end <offset>`
+- then one `inst_id/start/end` triplet per entry
 
 `schemacat` decodes the bootstrap trace-schema format and prints:
 - `version <n>`

@@ -224,7 +224,7 @@ if [ "$(wc -c < /tmp/l0_trace_schema_flag_o.bin)" -ne 32 ]; then
   echo "FAIL: trace schema size (-o form)"
   exit 1
 fi
-if [ "$(wc -c < /tmp/l0_debug_map.bin)" -ne 56 ] || [ "$(wc -c < /tmp/l0_debug_map_flag_o.bin)" -ne 56 ]; then
+if [ "$(wc -c < /tmp/l0_debug_map.bin)" -ne 104 ] || [ "$(wc -c < /tmp/l0_debug_map_flag_o.bin)" -ne 104 ]; then
   echo "FAIL: debug map size"
   exit 1
 fi
@@ -232,7 +232,7 @@ if [ "$(wc -c < /tmp/l0_trace_schema_both.bin)" -ne 32 ] || [ "$(wc -c < /tmp/l0
   echo "FAIL: trace schema size (both flags)"
   exit 1
 fi
-if [ "$(wc -c < /tmp/l0_debug_map_both.bin)" -ne 56 ] || [ "$(wc -c < /tmp/l0_debug_map_both_flag_o.bin)" -ne 56 ]; then
+if [ "$(wc -c < /tmp/l0_debug_map_both.bin)" -ne 104 ] || [ "$(wc -c < /tmp/l0_debug_map_both_flag_o.bin)" -ne 104 ]; then
   echo "FAIL: debug map size (both flags)"
   exit 1
 fi
@@ -259,15 +259,21 @@ fi
 dbg_map_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_inst_count=$(od -An -t u8 -j 16 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_code_size=$(od -An -t u8 -j 24 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
-dbg_map_inst_id=$(od -An -t u8 -j 32 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
-dbg_map_start=$(od -An -t u8 -j 40 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
-dbg_map_end=$(od -An -t u8 -j 48 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
-if [ "$dbg_map_version" != "1" ] || [ "$dbg_map_inst_count" != "1" ] || [ "$dbg_map_code_size" != "7" ] || [ "$dbg_map_inst_id" != "1" ] || [ "$dbg_map_start" != "0" ] || [ "$dbg_map_end" != "7" ]; then
+dbg_map_inst1_id=$(od -An -t u8 -j 32 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst1_start=$(od -An -t u8 -j 40 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst1_end=$(od -An -t u8 -j 48 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst2_id=$(od -An -t u8 -j 56 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst2_start=$(od -An -t u8 -j 64 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst2_end=$(od -An -t u8 -j 72 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst3_id=$(od -An -t u8 -j 80 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst3_start=$(od -An -t u8 -j 88 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+dbg_map_inst3_end=$(od -An -t u8 -j 96 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
+if [ "$dbg_map_version" != "2" ] || [ "$dbg_map_inst_count" != "3" ] || [ "$dbg_map_code_size" != "7" ] || [ "$dbg_map_inst1_id" != "1" ] || [ "$dbg_map_inst1_start" != "0" ] || [ "$dbg_map_inst1_end" != "2" ] || [ "$dbg_map_inst2_id" != "2" ] || [ "$dbg_map_inst2_start" != "2" ] || [ "$dbg_map_inst2_end" != "4" ] || [ "$dbg_map_inst3_id" != "3" ] || [ "$dbg_map_inst3_start" != "4" ] || [ "$dbg_map_inst3_end" != "7" ]; then
   echo "FAIL: debug map fields"
   exit 1
 fi
 "$BIN" mapcat /tmp/l0_debug_map.bin >/tmp/l0_mapcat.out
-if [ "$(cat /tmp/l0_mapcat.out)" != $'entries 1\ncode_size 7\ninst_id 1\nstart 0\nend 7' ]; then
+if [ "$(cat /tmp/l0_mapcat.out)" != $'entries 3\ncode_size 7\ninst_id 1\nstart 0\nend 2\ninst_id 2\nstart 2\nend 4\ninst_id 3\nstart 4\nend 7' ]; then
   echo "FAIL: mapcat decoded output"
   exit 1
 fi
