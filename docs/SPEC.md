@@ -101,6 +101,11 @@ I also enforce a structural subset inside `fns`:
     - `cbr v2 b1 b2`
     - `b1: ret v0`
     - `b2: ret v1`
+  - I lower canonical memory roundtrip kernel shape:
+    - `v1 = alloca t0, 1 : t1`
+    - `st v1 v0`
+    - `v2 = ld v1 : t0`
+    - `ret v2`
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

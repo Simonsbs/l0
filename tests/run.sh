@@ -84,6 +84,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
   echo "FAIL: verify valid_memory_ops"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_mem_roundtrip.l0" >/tmp/l0_ok_mem_roundtrip.out
+if ! grep -q '^ok$' /tmp/l0_ok_mem_roundtrip.out; then
+  echo "FAIL: verify valid_mem_roundtrip"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -261,6 +266,16 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select.img 9 8 >/tmp/l0_run_cbr_eq_select_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_f.out)" != "8" ]; then
   echo "FAIL: run cbr eq-select false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out
+if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip.out; then
+  echo "FAIL: build valid_mem_roundtrip"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_roundtrip.img 123 >/tmp/l0_run_mem_roundtrip.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip.out)" != "123" ]; then
+  echo "FAIL: run mem roundtrip result"
   exit 1
 fi
 
