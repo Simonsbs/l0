@@ -272,7 +272,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - in that normalization pass, I now strip only dead const defs (not live const defs), and I scope dead-const detection to the current function so same numeric value ids in other functions do not interfere
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
-    - before compare/select kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs do not block `icmp.eq` or `icmp.eq + cbr` lowering
+    - before compare/select kernel selection, I run normalization that strips dead `const` and dead `icmp.eq` value lines, so canonical interleaved dead defs do not block `icmp.eq` or `icmp.eq + cbr` lowering
     - both kernels also accept swapped compare operand order (`icmp.eq v1 v0`) in bootstrap lowering
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
     - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id

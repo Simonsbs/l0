@@ -41,6 +41,7 @@ Current bootstrap status:
   - `icmp.eq` lowering now accepts canonical nonzero `arg` value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when compare operands reference those exact defined ids
   - `icmp.eq + cbr` lowering now accepts canonical nonzero compare-result ids when `cbr` uses the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
   - `icmp.eq + cbr` lowering now accepts canonical nonzero `arg` value ids in `f0` and enforces `b1`/`b2` return mapping to those arg defs
+  - generalized compare/select normalization now strips dead `icmp.eq` value lines, so extra unused compare defs no longer block `icmp.eq + cbr` lowering
   - I keep mismatched `icmp.eq + cbr` id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - I keep mismatched `icmp.eq + cbr` branch-return mappings outside current lowering and regression-test them as intentionally unlowered
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
@@ -117,7 +118,8 @@ Current bootstrap status:
 - I now consider my M39 non-commutative binary generalization milestone complete: I extended direct binary `sub.wrap` lowering to canonical swapped operand forms (including nonzero-id, argdef-order-swapped, and dead-const variants) while preserving `sub.trap` non-commutative guardrails.
 - I now consider my M40 non-commutative shift-call generalization milestone complete: I extended `call->shl` and `call->shr` lowering to canonical swapped call-arg forms (`call f1 v1 v0`) with deterministic reverse-shift payloads while preserving existing structural mismatch guardrails.
 - I now consider my M41 non-returning-exit generalization milestone complete: I lower canonical `exit` shapes when arg-to-exit mapping is valid even if trailing return-path lines are unreachable, including dead-const variants.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M42).
+- I now consider my M42 dead-compare normalization milestone complete: I extended generalized normalization to strip dead `icmp.eq` value lines and now lower compare/select shapes that include extra unused compare defs.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M43).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

@@ -523,7 +523,19 @@ Last updated: 2026-03-01
   - preserved existing mismatch guardrails for unrelated intrinsic families
   - validated with full-suite pass
 
-### M42: Non-template backend and full general codegen completion
+### M42: Dead-Compare Normalization (Compare/Select Generalization)
+
+- Status: complete
+- Scope completed:
+  - extended shared generalized normalization to strip dead canonical `icmp.eq` value lines (in addition to dead `const` value lines)
+  - enabled lowering for compare/select modules that include extra unused compare defs
+  - updated regression assertions for previously intentional unlowered fixture:
+    - `valid_cbr_eq_select_mismatch_unlowered.l0`
+  - converted that assertion from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 12`) plus deterministic true/false runtime outputs
+  - preserved existing compare/select guardrails for branch-return/dataflow mismatch families
+  - validated with full-suite pass
+
+### M43: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

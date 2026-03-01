@@ -466,6 +466,8 @@ tok_arg: .ascii "arg"
 tok_arg_len = . - tok_arg
 tok_const: .ascii "const"
 tok_const_len = . - tok_const
+tok_icmp_eq: .ascii "icmp.eq"
+tok_icmp_eq_len = . - tok_icmp_eq
 
 .section .text
 .global _start
@@ -11842,7 +11844,9 @@ normalize_strip_const_value_lines:
     mov qword ptr [rsp+16], r10     # line start idx
     mov qword ptr [rsp+24], r14     # line len
 
-    # detect canonical value const line: "  vN = const ... : tN"
+    # detect canonical dead pure value line candidates:
+    #   "  vN = const ... : tN"
+    #   "  vN = icmp.eq ... : tN"
     mov rdi, rbx
     mov rsi, r14
     call line_is_value_instruction
@@ -11873,26 +11877,57 @@ normalize_strip_const_value_lines:
     cmp al, ' '
     jne .tsgbk_norm_copy
     inc rcx
-    mov rax, r14
-    sub rax, rcx
-    cmp rax, 6
-    jb .tsgbk_norm_copy
+    mov r15, rcx                    # opcode token start
+    cmp rcx, r14
+    jae .tsgbk_norm_copy
+    mov r9, rcx
+.tsgbk_norm_find_op_end:
+    cmp r9, r14
+    jae .tsgbk_norm_copy
+    mov al, byte ptr [rbx+r9]
+    cmp al, ' '
+    je .tsgbk_norm_have_op
+    inc r9
+    jmp .tsgbk_norm_find_op_end
+.tsgbk_norm_have_op:
+    cmp r9, rcx
+    je .tsgbk_norm_copy
+    mov r8, rcx
+    mov rax, r9
+    sub rax, r8                     # opcode len
+    cmp rax, tok_const_len
+    jne .tsgbk_norm_try_icmp_eq
     mov rdi, rbx
-    add rdi, rcx
+    add rdi, r8
     lea rsi, [rip+tok_const]
     mov rdx, tok_const_len
     call mem_eq
     cmp rax, 1
+    je .tsgbk_norm_op_ok
+.tsgbk_norm_try_icmp_eq:
+    mov rax, r9
+    sub rax, r8
+    cmp rax, tok_icmp_eq_len
     jne .tsgbk_norm_copy
-    mov al, byte ptr [rbx+rcx+5]
+    mov rdi, rbx
+    add rdi, r8
+    lea rsi, [rip+tok_icmp_eq]
+    mov rdx, tok_icmp_eq_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgbk_norm_copy
+.tsgbk_norm_op_ok:
+    cmp r9, r14
+    jae .tsgbk_norm_copy
+    mov al, byte ptr [rbx+r9]
     cmp al, ' '
     jne .tsgbk_norm_copy
 
-    # const value line found; strip only if value id is dead (not used later)
+    # dead pure value line candidate found; strip only if value id is dead
     mov rax, qword ptr [rsp+16]      # line start idx
     add rax, 3                       # lhs value-id digits start idx
     mov qword ptr [rsp+32], rax
-    mov rax, rcx
+    mov rax, r15
     sub rax, 6                       # lhs value-id digits len ("  v" + " = ")
     mov qword ptr [rsp+40], rax
     mov r10, qword ptr [rsp+16]
@@ -11901,7 +11936,7 @@ normalize_strip_const_value_lines:
 .tsgbk_norm_find_use_loop:
     cmp r10, r13
     jae .tsgbk_norm_skip
-    # stop dead-const scan at the next function header ("fn ")
+    # stop dead-value scan at the next function header ("fn ")
     mov al, byte ptr [r12+r10]
     cmp al, 'f'
     jne .tsgbk_norm_find_use_check_vid
