@@ -270,6 +270,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - before binary kernel selection, I run a normalization pass that strips canonical dead `const` value lines; this lets me lower binary kernels even when dead const defs are interleaved in the block
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
+    - before compare/select kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs do not block `icmp.eq` or `icmp.eq + cbr` lowering
     - both kernels also accept swapped compare operand order (`icmp.eq v1 v0`) in bootstrap lowering
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
     - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id

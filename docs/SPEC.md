@@ -109,6 +109,7 @@ I also enforce a structural subset inside `fns`:
   - before binary kernel selection, I normalize by stripping canonical dead `const` value lines; this allows lowering binary kernels that include interleaved dead const defs without changing non-commutative guardrails
   - `add.trap`/`sub.trap`/`mul.trap` currently trap via `jo` to `ud2` on signed overflow
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
+  - before `icmp.eq` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - I also accept swapped compare form for that kernel (`v2 = icmp.eq v1 v0 : t1`)
   - I also accept canonical nonzero compare-result ids for that kernel when `ret` references the same value id (`vN = icmp.eq ...`, `ret vN`)
   - I lower canonical `icmp.eq + cbr` select kernel shape:
@@ -117,6 +118,7 @@ I also enforce a structural subset inside `fns`:
     - `b1: ret v0`
     - `b2: ret v1`
   - I also accept swapped compare form in that select kernel (`v2 = icmp.eq v1 v0 : t1`)
+  - before `icmp.eq + cbr` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - I also accept canonical nonzero compare-result ids in that select kernel when `cbr` references the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
   - I lower canonical memory roundtrip kernel shape:
     - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)

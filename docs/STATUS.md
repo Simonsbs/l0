@@ -184,7 +184,20 @@ Last updated: 2026-03-01
     - lowered add kernel with an injected dead `const` value line
     - intentionally unlowered swapped non-commutative sub kernel with an injected dead `const` value line
 
-### M14: Non-template backend and full general codegen
+### M14: Generalized Compare/Select Normalization Path
+
+- Status: complete
+- Scope completed:
+  - added generalized pre-lowering normalization path for `icmp.eq` kernels in `build`
+  - added generalized pre-lowering normalization path for `icmp.eq + cbr` select kernels in `build`
+  - reused shared dead-const normalization so canonical interleaved `const` value lines do not block compare/select lowering
+  - preserved existing compare/select guardrails by delegating final lowering decisions to existing selectors
+  - added regression coverage for:
+    - lowered `icmp.eq` kernel with injected dead `const` value line
+    - lowered `icmp.eq + cbr` kernel with injected dead `const` value line
+    - intentionally unlowered `icmp.eq + cbr` return-mismatch shape with injected dead `const` value line
+
+### M15: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

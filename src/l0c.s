@@ -904,6 +904,14 @@ do_build:
     mov rsi, rbx
     call try_select_mem_roundtrip_kernel_code
     cmp rax, 1
+    jne .build_try_general_cbr_eq_select
+    jmp .build_code_selected
+
+.build_try_general_cbr_eq_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_cbr_eq_select_kernel_code
+    cmp rax, 1
     jne .build_try_cbr_eq_select
     jmp .build_code_selected
 
@@ -911,6 +919,14 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_cbr_eq_select_kernel_code
+    cmp rax, 1
+    jne .build_try_general_icmp_eq
+    jmp .build_code_selected
+
+.build_try_general_icmp_eq:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_icmp_eq_kernel_code
     cmp rax, 1
     jne .build_try_icmp_eq
     jmp .build_code_selected
@@ -10244,14 +10260,10 @@ try_select_icmp_eq_kernel_code:
     pop rbx
     ret
 
-# try_select_general_bin_kernel_code
-# generalized pre-lowering normalization for binary kernels:
-# - removes canonical dead const value lines
-# - reuses the existing binary selector on normalized text
-# - preserves existing non-commutative guardrails from try_select_bin_kernel_code
-# rdi=src_ptr, rsi=src_len
-# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
-try_select_general_bin_kernel_code:
+# normalize_strip_const_value_lines
+# rdi=src_ptr, rsi=src_len, rdx=out_ptr
+# out: rax=out_len, 0 on parse failure
+normalize_strip_const_value_lines:
     push rbx
     push r12
     push r13
@@ -10361,25 +10373,151 @@ try_select_general_bin_kernel_code:
     jmp .tsgbk_norm_next_line
 
 .tsgbk_norm_done:
-    lea rdi, [rip+codegen_buf]
-    mov rsi, qword ptr [rsp+0]
-    call try_select_bin_kernel_code
-    cmp rax, 1
-    jne .tsgbk_no
-    mov rax, 1
+    mov rax, qword ptr [rsp+0]
     jmp .tsgbk_done
 
 .tsgbk_no:
     xor rax, rax
 .tsgbk_done:
     add rsp, 32
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_bin_kernel_code
+# generalized pre-lowering normalization for binary kernels:
+# - removes canonical dead const value lines
+# - reuses the existing binary selector on normalized text
+# - preserves existing non-commutative guardrails from try_select_bin_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_bin_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgbk2_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_bin_kernel_code
+    cmp rax, 1
+    jne .tsgbk2_no
+    mov rax, 1
+    jmp .tsgbk2_done
+
+.tsgbk2_no:
+    xor rax, rax
+.tsgbk2_done:
     pop rcx
     pop rdx
     cmp rax, 1
-    je .tsgbk_keep_out
+    je .tsgbk2_keep_out
     mov r14, rdx
     mov r15, rcx
-.tsgbk_keep_out:
+.tsgbk2_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_icmp_eq_kernel_code
+# generalized pre-lowering normalization for icmp.eq kernel:
+# - removes canonical dead const value lines
+# - reuses the existing icmp.eq selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_icmp_eq_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgik_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_icmp_eq_kernel_code
+    cmp rax, 1
+    jne .tsgik_no
+    mov rax, 1
+    jmp .tsgik_done
+
+.tsgik_no:
+    xor rax, rax
+.tsgik_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgik_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgik_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_cbr_eq_select_kernel_code
+# generalized pre-lowering normalization for icmp.eq+cbr select kernel:
+# - removes canonical dead const value lines
+# - reuses the existing cbr selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_cbr_eq_select_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgck_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_cbr_eq_select_kernel_code
+    cmp rax, 1
+    jne .tsgck_no
+    mov rax, 1
+    jmp .tsgck_done
+
+.tsgck_no:
+    xor rax, rax
+.tsgck_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgck_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgck_keep_out:
     pop r13
     pop r12
     pop rbx
