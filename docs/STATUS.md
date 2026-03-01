@@ -97,6 +97,8 @@ Last updated: 2026-03-01
   - guardrail added: `icmp.eq + cbr` path with mismatched compare-id/dataflow shape remains intentionally unlowered in bootstrap selector
   - call-kernel selector now accepts canonical nonzero call-result ids in `f0` (`vN = call ...`, `ret vN`)
   - call-kernel guardrail added: mismatch between call result id and returned id in `f0` remains intentionally unlowered
+  - call-kernel selector now accepts canonical nonzero internal result ids in `f1` for `add.wrap`/`sub.wrap`/`mul.wrap` (`vN = <op> ...`, `ret vN`)
+  - call-kernel guardrail added: mismatch between `f1` op-result id and `f1` returned id remains intentionally unlowered
   - trace intrinsic selector now accepts canonical nonzero value ids for traced arg and returned const value (`trace 1 vN`, `ret vM` where `vM` matches the const-def id)
   - trace selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
   - malloc intrinsic selector now accepts canonical nonzero arg/result ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)

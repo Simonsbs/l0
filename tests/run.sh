@@ -43,6 +43,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_add_v7_lowered.out; then
   echo "FAIL: verify valid_call_add_v7_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_f1v7_lowered.l0" >/tmp/l0_ok_call_add_f1v7_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_f1v7_lowered.out; then
+  echo "FAIL: verify valid_call_add_f1v7_lowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_sub_lowered.l0" >/tmp/l0_ok_call_sub_lowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_sub_lowered.out; then
   echo "FAIL: verify valid_call_sub_lowered"
@@ -51,6 +56,11 @@ fi
 "$BIN" verify "$ROOT/tests/valid_call_sub_v7_lowered.l0" >/tmp/l0_ok_call_sub_v7_lowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_sub_v7_lowered.out; then
   echo "FAIL: verify valid_call_sub_v7_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_sub_f1v123_lowered.l0" >/tmp/l0_ok_call_sub_f1v123_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1v123_lowered.out; then
+  echo "FAIL: verify valid_call_sub_f1v123_lowered"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_call_mul_lowered.l0" >/tmp/l0_ok_call_mul_lowered.out
@@ -68,9 +78,19 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_mul_v7_swapped_lowered.out; then
   echo "FAIL: verify valid_call_mul_v7_swapped_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_mul_f1v77_swapped_lowered.l0" >/tmp/l0_ok_call_mul_f1v77_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_mul_f1v77_swapped_lowered.out; then
+  echo "FAIL: verify valid_call_mul_f1v77_swapped_lowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_add_mismatch_unlowered.l0" >/tmp/l0_ok_call_add_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_add_mismatch_unlowered.out; then
   echo "FAIL: verify valid_call_add_mismatch_unlowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_add_f1_ret_mismatch_unlowered.l0" >/tmp/l0_ok_call_add_f1_ret_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_f1_ret_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_call_add_f1_ret_mismatch_unlowered"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
@@ -762,6 +782,22 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_add_v7_lowered.out)" != "42" ]; then
   echo "FAIL: run call->add v7 lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_add_f1v7_lowered.l0" /tmp/l0_test_call_add_f1v7_lowered.img >/tmp/l0_build_call_add_f1v7_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_f1v7_lowered.out; then
+  echo "FAIL: build valid_call_add_f1v7_lowered"
+  exit 1
+fi
+call_add_f1v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_f1v7_lowered.img | tr -d ' ')
+call_add_f1v7_kernel_kind=$(od -An -t u8 -j "$((call_add_f1v7_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_f1v7_lowered.img | tr -d ' ')
+if [ "$call_add_f1v7_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add f1v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_f1v7_lowered.img 21 21 >/tmp/l0_run_call_add_f1v7_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_f1v7_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add f1v7 lowered image result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_sub_lowered.l0" /tmp/l0_test_call_sub_lowered.img >/tmp/l0_build_call_sub_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_sub_lowered.out; then
   echo "FAIL: build valid_call_sub_lowered"
@@ -792,6 +828,22 @@ fi
 "$BIN" run /tmp/l0_test_call_sub_v7_lowered.img 21 9 >/tmp/l0_run_call_sub_v7_lowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_v7_lowered.out)" != "12" ]; then
   echo "FAIL: run call->sub v7 lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_sub_f1v123_lowered.l0" /tmp/l0_test_call_sub_f1v123_lowered.img >/tmp/l0_build_call_sub_f1v123_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1v123_lowered.out; then
+  echo "FAIL: build valid_call_sub_f1v123_lowered"
+  exit 1
+fi
+call_sub_f1v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1v123_lowered.img | tr -d ' ')
+call_sub_f1v123_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1v123_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1v123_lowered.img | tr -d ' ')
+if [ "$call_sub_f1v123_kernel_kind" != "17" ]; then
+  echo "FAIL: call->sub f1v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_f1v123_lowered.img 21 9 >/tmp/l0_run_call_sub_f1v123_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1v123_lowered.out)" != "12" ]; then
+  echo "FAIL: run call->sub f1v123 lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_mul_lowered.l0" /tmp/l0_test_call_mul_lowered.img >/tmp/l0_build_call_mul_lowered.out
@@ -842,6 +894,22 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_mul_v7_swapped_lowered.out)" != "42" ]; th
   echo "FAIL: run call->mul v7 swapped lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_mul_f1v77_swapped_lowered.l0" /tmp/l0_test_call_mul_f1v77_swapped_lowered.img >/tmp/l0_build_call_mul_f1v77_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_mul_f1v77_swapped_lowered.out; then
+  echo "FAIL: build valid_call_mul_f1v77_swapped_lowered"
+  exit 1
+fi
+call_mul_f1v77_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_mul_f1v77_swapped_lowered.img | tr -d ' ')
+call_mul_f1v77_swapped_kernel_kind=$(od -An -t u8 -j "$((call_mul_f1v77_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_mul_f1v77_swapped_lowered.img | tr -d ' ')
+if [ "$call_mul_f1v77_swapped_kernel_kind" != "18" ]; then
+  echo "FAIL: call->mul f1v77 swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_mul_f1v77_swapped_lowered.img 7 6 >/tmp/l0_run_call_mul_f1v77_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_mul_f1v77_swapped_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->mul f1v77 swapped lowered image result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_add_mismatch_unlowered.l0" /tmp/l0_test_call_add_mismatch_unlowered.img >/tmp/l0_build_call_add_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_add_mismatch_unlowered.out; then
   echo "FAIL: build valid_call_add_mismatch_unlowered"
@@ -852,6 +920,18 @@ call_add_mismatch_kernel_kind=$(od -An -t u8 -j "$((call_add_mismatch_dbg_off + 
 call_add_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_add_mismatch_unlowered.img | tr -d ' ')
 if [ "$call_add_mismatch_kernel_kind" != "0" ] || [ "$call_add_mismatch_code_size" != "1" ]; then
   echo "FAIL: call add mismatch unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_f1_ret_mismatch_unlowered.l0" /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img >/tmp/l0_build_call_add_f1_ret_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_f1_ret_mismatch_unlowered.out; then
+  echo "FAIL: build valid_call_add_f1_ret_mismatch_unlowered"
+  exit 1
+fi
+call_add_f1_ret_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img | tr -d ' ')
+call_add_f1_ret_mismatch_kernel_kind=$(od -An -t u8 -j "$((call_add_f1_ret_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img | tr -d ' ')
+call_add_f1_ret_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img | tr -d ' ')
+if [ "$call_add_f1_ret_mismatch_kernel_kind" != "0" ] || [ "$call_add_f1_ret_mismatch_code_size" != "1" ]; then
+  echo "FAIL: call add f1 ret mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_const.l0" /tmp/l0_test_const.img >/tmp/l0_build_const.out
