@@ -293,7 +293,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero ids across alloca/const/store/write/ret when ids/dataflow match
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
-    - for const-dependent kernels (`free`, `write`, `trace`), I currently keep exact canonical template matching as the lowering authority; generalized normalization hooks are active in the build chain, and I now regression-lock deterministic unlowered fallback across mixed canonical variants (including write alloca0 guardrail shapes with dead-const injection) while I track lowered dead-const closure in M25
+    - for const-dependent kernels (`free`, `write`, `trace`), I currently keep exact canonical template matching as the lowering authority; generalized normalization hooks are active in the build chain, and I now regression-lock deterministic unlowered fallback across stress mixed canonical variants (including write alloca0 guardrail + nonzero-id + multi-dead-const combinations) while I track lowered dead-const closure in M26
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering

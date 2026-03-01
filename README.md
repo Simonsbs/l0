@@ -101,7 +101,8 @@ Current bootstrap status:
 - I now consider my M22 staged intrinsic nonzero-id fallback-matrix milestone complete: I expanded deterministic fallback coverage for dead-const injected `write`/`free`/`trace` shapes that use nonzero/multi-digit SSA ids and locked those invariants in the automated suite.
 - I now consider my M23 staged intrinsic mixed-variant fallback-matrix milestone complete: I expanded deterministic fallback coverage across mixed canonical variants (`alloca` count variants plus nonzero-id and multi-dead-const combinations) for `write`/`free`/`trace` and locked those invariants in the automated suite.
 - I now consider my M24 staged intrinsic write-guardrail fallback-closure milestone complete: I expanded deterministic fallback coverage for dead-const-injected write guardrail shapes with `alloca 0` and locked those invariants in the automated suite.
-- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering (from deterministic fallback to lowered closure) as my next milestone (M25).
+- I now consider my M25 staged intrinsic stress fallback-matrix milestone complete: I expanded deterministic fallback coverage to higher-stress combinations (write guardrail + nonzero ids + multi-dead-const injections, plus deeper free/trace dead-const stacks) and locked those invariants in the automated suite.
+- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering (from deterministic fallback to lowered closure) as my next milestone (M26).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

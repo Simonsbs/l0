@@ -297,7 +297,18 @@ Last updated: 2026-03-01
   - added deterministic build assertion proving this staged-hook guardrail case remains intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M25: Non-template backend and full general codegen completion
+### M25: Staged Intrinsic Stress Fallback Matrix Expansion
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for higher-stress staged-hook combinations:
+    - `write` with `alloca 0` + nonzero/multi-digit ids + multi-dead-const injection
+    - `free` with nonzero/multi-digit ids + deeper dead-const stack
+    - `trace` with nonzero/multi-digit ids + deeper dead-const stack
+  - added deterministic build assertions proving these stress staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M26: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
