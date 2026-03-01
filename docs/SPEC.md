@@ -105,6 +105,7 @@ I also enforce a structural subset inside `fns`:
     - `ret v2`
   - I currently lower these ops: `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
   - I accept canonical swapped-operand form (`v1 v0`) for commutative ops in this set: `add.wrap`, `add.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`
+  - for non-commutative `sub.wrap`, I also accept canonical swapped-operand form (`v1 v0`) by selecting a reverse-sub payload
   - I accept canonical nonzero result value ids for this kernel shape when `ret` references the same value id (`vN = <op> ...`, `ret vN`)
   - before binary kernel selection, I normalize by stripping canonical dead `const` value lines; this allows lowering binary kernels that include interleaved dead const defs without changing non-commutative guardrails
   - in that normalization pass, I strip only dead const defs (not live const defs), and I scope dead-const detection to the current function so same numeric value ids in other functions do not block stripping

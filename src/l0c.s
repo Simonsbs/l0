@@ -12841,9 +12841,15 @@ try_select_bin_kernel_code:
     cmp rax, 1
     jne .tsbk_chk_mul
     cmp qword ptr [rsp+80], 0
-    jne .tsbk_no
+    jne .tsbk_chk_sub_wrap_rev
     lea r14, [rip+code_stub_sub]
     mov r15, code_stub_sub_len
+    mov qword ptr [rip+build_kernel_kind], 3
+    jmp .tsbk_yes
+
+.tsbk_chk_sub_wrap_rev:
+    lea r14, [rip+code_stub_sub_rev]
+    mov r15, code_stub_sub_rev_len
     mov qword ptr [rip+build_kernel_kind], 3
     jmp .tsbk_yes
 

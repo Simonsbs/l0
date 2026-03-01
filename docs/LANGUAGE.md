@@ -266,6 +266,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
   - canonical lowered kernel payloads for:
     - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
     - commutative binary kernels in that set also accept canonical swapped operand order (`v1 v0`) during bootstrap lowering
+    - non-commutative `sub.wrap` also accepts canonical swapped operand order (`v1 v0`) during bootstrap lowering by selecting a reverse-sub payload
     - binary kernel templates also accept nonzero result value ids when `ret` references the same value (`vN = <op> ...`, `ret vN`)
     - before binary kernel selection, I run a normalization pass that strips canonical dead `const` value lines; this lets me lower binary kernels even when dead const defs are interleaved in the block
     - in that normalization pass, I now strip only dead const defs (not live const defs), and I scope dead-const detection to the current function so same numeric value ids in other functions do not interfere

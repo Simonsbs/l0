@@ -30,11 +30,10 @@ Current bootstrap status:
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - for commutative binary kernels (`add*`, `mul*`, `and`, `or`, `xor`), I also lower canonical swapped operand order (`v1 v0`) in the bootstrap selector
+  - for non-commutative `sub.wrap`, I now also lower canonical swapped operand order (`v1 v0`) by selecting the reverse-sub payload
   - binary kernel lowering now accepts canonical nonzero result ids when `ret` references the same result value id (`vN = <op> ...`, `ret vN`)
   - binary kernel lowering now accepts canonical nonzero `arg` value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when binary operands reference those exact defined ids
   - I regression-test the dynamic-arg binary selector with multi-digit ids (for example `v77`, `v123`) to keep digit parsing stable
-  - I keep swapped non-commutative forms (for example `sub.wrap v1 v0`) outside current lowering and covered by regression tests as intentionally unlowered
-  - I keep swapped non-commutative binary forms with nonzero arg ids outside current lowering and covered by regression tests as intentionally unlowered
   - two-arg compare kernel (`icmp.eq`) returning `i1`
   - canonical `icmp.eq + cbr` select kernel returning either arg0 or arg1
   - for `icmp.eq` and `icmp.eq + cbr`, I also lower canonical swapped compare order (`icmp.eq v1 v0`)
@@ -115,7 +114,8 @@ Current bootstrap status:
 - I now consider my M36 non-commutative call generalization milestone complete: I added deterministic reverse-mapping lowering for `call->sub.wrap` when `f0` provides arg1->arg0 mapping under parsed arg-definition order and `f1` keeps canonical `sub.wrap` mapping, including dead-const generalized coverage.
 - I now consider my M37 compare/select branch-mapping generalization milestone complete: I added deterministic reverse return-mapping lowering for `icmp.eq + cbr` select shapes (`b1` returns arg1, `b2` returns arg0), including dead-const generalized variants.
 - I now consider my M38 non-commutative call generalization milestone complete: I extended deterministic reverse-mapping lowering for `call->sub.wrap` to cover reverse `f1` mapping shapes (including argdef-order-swapped and dead-const generalized variants) while keeping structural mismatch guardrails intact.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M39).
+- I now consider my M39 non-commutative binary generalization milestone complete: I extended direct binary `sub.wrap` lowering to canonical swapped operand forms (including nonzero-id, argdef-order-swapped, and dead-const variants) while preserving `sub.trap` non-commutative guardrails.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M40).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

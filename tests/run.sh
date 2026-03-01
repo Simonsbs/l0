@@ -1806,9 +1806,13 @@ if ! grep -q '^ok$' /tmp/l0_build_sub_swapped_unlowered.out; then
 fi
 sub_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
 sub_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((sub_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
-sub_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
-if [ "$sub_swapped_unlowered_kernel_kind" != "0" ] || [ "$sub_swapped_unlowered_code_size" != "1" ]; then
-  echo "FAIL: sub_swapped_unlowered unexpectedly lowered"
+if [ "$sub_swapped_unlowered_kernel_kind" != "3" ]; then
+  echo "FAIL: sub_swapped_unlowered debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub_swapped_unlowered.img 9 21 >/tmp/l0_run_sub_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run sub_swapped_unlowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_sub_argids_v7_v9_swapped_unlowered.l0" /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img >/tmp/l0_build_sub_argids_v7_v9_swapped_unlowered.out
@@ -1818,9 +1822,13 @@ if ! grep -q '^ok$' /tmp/l0_build_sub_argids_v7_v9_swapped_unlowered.out; then
 fi
 sub_argids_v7_v9_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
 sub_argids_v7_v9_swapped_kernel_kind=$(od -An -t u8 -j "$((sub_argids_v7_v9_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
-sub_argids_v7_v9_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
-if [ "$sub_argids_v7_v9_swapped_kernel_kind" != "0" ] || [ "$sub_argids_v7_v9_swapped_code_size" != "1" ]; then
-  echo "FAIL: sub_argids_v7_v9_swapped unexpectedly lowered"
+if [ "$sub_argids_v7_v9_swapped_kernel_kind" != "3" ]; then
+  echo "FAIL: sub_argids_v7_v9_swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img 9 21 >/tmp/l0_run_sub_argids_v7_v9_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub_argids_v7_v9_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run sub_argids_v7_v9_swapped image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_swapped.l0" /tmp/l0_test_add_swapped.img >/tmp/l0_build_add_swapped.out
@@ -1942,9 +1950,13 @@ if ! grep -q '^ok$' /tmp/l0_build_sub_argdef_order_swapped_unlowered.out; then
 fi
 sub_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
 sub_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((sub_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
-sub_argdef_order_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
-if [ "$sub_argdef_order_swapped_kernel_kind" != "0" ] || [ "$sub_argdef_order_swapped_code_size" != "1" ]; then
-  echo "FAIL: sub_argdef_order_swapped unexpectedly lowered"
+if [ "$sub_argdef_order_swapped_kernel_kind" != "3" ]; then
+  echo "FAIL: sub_argdef_order_swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub_argdef_order_swapped_unlowered.img 9 21 >/tmp/l0_run_sub_argdef_order_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub_argdef_order_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run sub_argdef_order_swapped image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_with_dead_const_general_lowered.l0" /tmp/l0_test_add_with_dead_const_general_lowered.img >/tmp/l0_build_add_with_dead_const_general_lowered.out
@@ -1970,9 +1982,13 @@ if ! grep -q '^ok$' /tmp/l0_build_sub_with_dead_const_swapped_unlowered.out; the
 fi
 sub_dead_const_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_with_dead_const_swapped_unlowered.img | tr -d ' ')
 sub_dead_const_swapped_kernel_kind=$(od -An -t u8 -j "$((sub_dead_const_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_sub_with_dead_const_swapped_unlowered.img | tr -d ' ')
-sub_dead_const_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_with_dead_const_swapped_unlowered.img | tr -d ' ')
-if [ "$sub_dead_const_swapped_kernel_kind" != "0" ] || [ "$sub_dead_const_swapped_code_size" != "1" ]; then
-  echo "FAIL: sub_with_dead_const_swapped unexpectedly lowered"
+if [ "$sub_dead_const_swapped_kernel_kind" != "3" ]; then
+  echo "FAIL: sub_with_dead_const_swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub_with_dead_const_swapped_unlowered.img 9 21 >/tmp/l0_run_sub_with_dead_const_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub_with_dead_const_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run sub_with_dead_const_swapped image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_trap.l0" /tmp/l0_test_add_trap.img >/tmp/l0_build_add_trap.out

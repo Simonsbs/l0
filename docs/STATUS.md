@@ -481,7 +481,22 @@ Last updated: 2026-03-01
   - preserved existing structural mismatch guardrails for unrelated call shapes (for example call-result/id mismatches and non-canonical mismatches)
   - validated with full-suite pass
 
-### M39: Non-template backend and full general codegen completion
+### M39: Non-Commutative Binary Generalization (`sub.wrap` swapped forms)
+
+- Status: complete
+- Scope completed:
+  - extended direct binary selector lowering for `sub.wrap` to accept canonical swapped operand order (`v1 v0`)
+  - routed swapped `sub.wrap` binary forms to reverse-sub machine payload while keeping kernel kind stable (`3`)
+  - preserved existing non-commutative guardrail for `sub.trap` swapped forms (still intentionally unlowered)
+  - updated regression assertions for previously intentional unlowered swapped `sub.wrap` fixtures:
+    - `valid_sub_swapped_unlowered.l0`
+    - `valid_sub_argids_v7_v9_swapped_unlowered.l0`
+    - `valid_sub_argdef_order_swapped_unlowered.l0`
+    - `valid_sub_with_dead_const_swapped_unlowered.l0`
+  - converted those assertions from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 3` + deterministic runtime output)
+  - validated with full-suite pass
+
+### M40: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
