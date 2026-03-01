@@ -106,6 +106,7 @@ I also enforce a structural subset inside `fns`:
   - I currently lower these ops: `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
   - I accept canonical swapped-operand form (`v1 v0`) for commutative ops in this set: `add.wrap`, `add.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`
   - I accept canonical nonzero result value ids for this kernel shape when `ret` references the same value id (`vN = <op> ...`, `ret vN`)
+  - before binary kernel selection, I normalize by stripping canonical dead `const` value lines; this allows lowering binary kernels that include interleaved dead const defs without changing non-commutative guardrails
   - `add.trap`/`sub.trap`/`mul.trap` currently trap via `jo` to `ud2` on signed overflow
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
   - I also accept swapped compare form for that kernel (`v2 = icmp.eq v1 v0 : t1`)

@@ -173,7 +173,18 @@ Last updated: 2026-03-01
   - memory-gep roundtrip selector accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - regression matrix added for swapped memory def-order variants (lowered and intentional unlowered guardrail shapes)
 
-### M13: Non-template backend and full general codegen
+### M13: Generalized Binary Normalization Path
+
+- Status: complete
+- Scope completed:
+  - added a generalized pre-lowering normalization path for binary kernels in `build`
+  - normalization strips canonical dead `const` value lines before binary lowering
+  - normalized source is lowered through the existing binary selector path, so existing opcode mappings and non-commutative guardrails are preserved
+  - added regression coverage for:
+    - lowered add kernel with an injected dead `const` value line
+    - intentionally unlowered swapped non-commutative sub kernel with an injected dead `const` value line
+
+### M14: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

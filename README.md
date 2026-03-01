@@ -89,7 +89,8 @@ Current bootstrap status:
 - I now consider my M10 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
 - I now consider my M11 selector-decoupling completion milestone complete: I lower the write-newline kernel across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
 - I now consider my M12 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels independent of arg/alloca definition order in `f0`, while preserving intentional unlowered guardrails for mismatched dataflow.
-- I track true non-template generalized backend/codegen work as my next milestone (M13).
+- I now consider my M13 generalized binary-lowering milestone complete: before binary selection, I run a normalization pass that strips canonical dead `const` value lines and then lower from the normalized function shape, while preserving existing non-commutative guardrails.
+- I track broader non-template multi-block backend/codegen work as my next milestone (M14).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

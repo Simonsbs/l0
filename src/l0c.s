@@ -214,6 +214,8 @@ pat_bin_tail_mid: .ascii " : t0\n  ret v"
 pat_bin_tail_mid_len = . - pat_bin_tail_mid
 pat_bin_tail_b: .ascii "\n}\n"
 pat_bin_tail_b_len = . - pat_bin_tail_b
+pat_gen_bin_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n"
+pat_gen_bin_head_len = . - pat_gen_bin_head
 pat_icmp_head: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v"
 pat_icmp_head_len = . - pat_icmp_head
 pat_icmp_mid_a: .ascii " = arg 0 : t0\n  v"
@@ -420,6 +422,10 @@ tok_shl: .ascii "shl"
 tok_shl_len = . - tok_shl
 tok_shr: .ascii "shr"
 tok_shr_len = . - tok_shr
+tok_arg: .ascii "arg"
+tok_arg_len = . - tok_arg
+tok_const: .ascii "const"
+tok_const_len = . - tok_const
 
 .section .text
 .global _start
@@ -913,6 +919,14 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_icmp_eq_kernel_code
+    cmp rax, 1
+    jne .build_try_general_bin
+    jmp .build_code_selected
+
+.build_try_general_bin:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_bin_kernel_code
     cmp rax, 1
     jne .build_try_bin_kernel
     jmp .build_code_selected
@@ -10225,6 +10239,147 @@ try_select_icmp_eq_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsik_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_bin_kernel_code
+# generalized pre-lowering normalization for binary kernels:
+# - removes canonical dead const value lines
+# - reuses the existing binary selector on normalized text
+# - preserves existing non-commutative guardrails from try_select_bin_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_bin_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 32
+
+    mov r12, rdi                    # src ptr
+    mov r13, rsi                    # src len
+    mov qword ptr [rsp+0], 0        # dst cursor (codegen_len)
+    mov qword ptr [rsp+8], 0        # src cursor
+
+.tsgbk_norm_next_line:
+    mov r10, qword ptr [rsp+8]
+    cmp r10, r13
+    jae .tsgbk_norm_done
+    mov r8, r10
+.tsgbk_norm_find_nl:
+    cmp r8, r13
+    jae .tsgbk_no
+    mov al, byte ptr [r12+r8]
+    cmp al, 10
+    je .tsgbk_norm_have_line
+    inc r8
+    jmp .tsgbk_norm_find_nl
+
+.tsgbk_norm_have_line:
+    mov rbx, r12
+    add rbx, r10                    # line ptr
+    mov r14, r8
+    sub r14, r10                    # line len (without newline)
+    mov qword ptr [rsp+16], r10     # line start idx
+    mov qword ptr [rsp+24], r14     # line len
+
+    # detect canonical value const line: "  vN = const ... : tN"
+    mov rdi, rbx
+    mov rsi, r14
+    call line_is_value_instruction
+    cmp rax, 1
+    jne .tsgbk_norm_copy
+
+    mov rdi, rbx
+    mov rsi, r14
+    mov rcx, 3
+    call parse_digits
+    cmp rax, 1
+    jne .tsgbk_norm_copy
+    cmp rcx, r14
+    jae .tsgbk_norm_copy
+    mov al, byte ptr [rbx+rcx]
+    cmp al, ' '
+    jne .tsgbk_norm_copy
+    inc rcx
+    cmp rcx, r14
+    jae .tsgbk_norm_copy
+    mov al, byte ptr [rbx+rcx]
+    cmp al, '='
+    jne .tsgbk_norm_copy
+    inc rcx
+    cmp rcx, r14
+    jae .tsgbk_norm_copy
+    mov al, byte ptr [rbx+rcx]
+    cmp al, ' '
+    jne .tsgbk_norm_copy
+    inc rcx
+    mov rax, r14
+    sub rax, rcx
+    cmp rax, 6
+    jb .tsgbk_norm_copy
+    mov rdi, rbx
+    add rdi, rcx
+    lea rsi, [rip+tok_const]
+    mov rdx, tok_const_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgbk_norm_copy
+    mov al, byte ptr [rbx+rcx+5]
+    cmp al, ' '
+    je .tsgbk_norm_skip
+
+.tsgbk_norm_copy:
+    mov rax, qword ptr [rsp+24]
+    inc rax                         # include newline
+    mov rcx, 0
+.tsgbk_norm_copy_loop:
+    cmp rcx, rax
+    jae .tsgbk_norm_advance
+    mov r9, r12
+    add r9, qword ptr [rsp+16]
+    add r9, rcx
+    mov dl, byte ptr [r9]
+    lea r9, [rip+codegen_buf]
+    add r9, qword ptr [rsp+0]
+    add r9, rcx
+    mov byte ptr [r9], dl
+    inc rcx
+    jmp .tsgbk_norm_copy_loop
+
+.tsgbk_norm_advance:
+    add qword ptr [rsp+0], rax
+
+.tsgbk_norm_skip:
+    mov r10, qword ptr [rsp+16]
+    add r10, qword ptr [rsp+24]
+    inc r10
+    mov qword ptr [rsp+8], r10
+    jmp .tsgbk_norm_next_line
+
+.tsgbk_norm_done:
+    lea rdi, [rip+codegen_buf]
+    mov rsi, qword ptr [rsp+0]
+    call try_select_bin_kernel_code
+    cmp rax, 1
+    jne .tsgbk_no
+    mov rax, 1
+    jmp .tsgbk_done
+
+.tsgbk_no:
+    xor rax, rax
+.tsgbk_done:
+    add rsp, 32
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgbk_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgbk_keep_out:
     pop r13
     pop r12
     pop rbx
