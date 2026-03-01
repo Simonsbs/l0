@@ -67,6 +67,7 @@ I also enforce a structural subset inside `fns`:
   - non-value instruction `st vPtr vVal` is accepted and requires `vPtr` to be `p0<i8>` and both operands to be defined
   - non-value instruction `free vPtr` is accepted and requires `vPtr` to be `p0<i8>` and defined
   - non-value instruction `exit vCode` is accepted and requires `vCode` to be defined
+  - non-value instruction `write vPtr vLen` is accepted and requires both operands defined and `vPtr` typed as `p0<i8>`
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:
@@ -76,6 +77,7 @@ I also enforce a structural subset inside `fns`:
     - `ld vN`, `gep vN off`, and `st vPtr vVal` value operands
     - `malloc vN` and `free vPtr` value operands
     - `exit vCode` value operands
+    - `write vPtr vLen` value operands
     - bootstrap binary op operands (`vN vN`)
 
 ## Current build artifact subset
@@ -126,6 +128,7 @@ I also enforce a structural subset inside `fns`:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - `exit` kernel (`exit v0`) via syscall `exit` stub
+    - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline)
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

@@ -122,6 +122,7 @@ Current bootstrap opcode-aware checks:
 - `st` is accepted as a canonical non-value instruction (`st vPtr vVal`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
 - `free` is accepted as a canonical non-value instruction (`free vPtr`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
 - `exit` is accepted as a canonical non-value instruction (`exit vCode`) with def-before-use checks on `vCode`
+- `write` is accepted as a canonical non-value instruction (`write vPtr vLen`) with def-before-use checks and `p0<i8>` pointer typing on `vPtr`
 - binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 
@@ -134,6 +135,7 @@ Current bootstrap SSA check:
   - `ld`, `gep`, and `st` value operands
   - `malloc` and `free` value operands
   - `exit` value operands
+  - `write` value operands
   - bootstrap binary operands (`vN vN`)
 
 Note: full opcode semantics/type-checking are still being added incrementally.
@@ -179,7 +181,7 @@ Bootstrap build output currently also includes a compact 48-byte debug semantic 
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
-    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall)
+    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - I currently verify `ld/st/gep/alloca` but still route those modules through the fallback code stub until their lowering path is added.

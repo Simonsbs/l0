@@ -133,6 +133,8 @@ code_stub_free_noop: .byte 0x48,0x31,0xc0,0xc3
 code_stub_free_noop_len = . - code_stub_free_noop
 code_stub_exit: .byte 0x48,0xc7,0xc0,0x3c,0x00,0x00,0x00,0x0f,0x05
 code_stub_exit_len = . - code_stub_exit
+code_stub_write_newline: .byte 0x48,0x83,0xec,0x08,0x48,0xc7,0x04,0x24,0x0a,0x00,0x00,0x00,0x48,0xc7,0xc0,0x01,0x00,0x00,0x00,0x48,0xc7,0xc7,0x01,0x00,0x00,0x00,0x48,0x89,0xe6,0x48,0xc7,0xc2,0x01,0x00,0x00,0x00,0x0f,0x05,0x48,0x31,0xc0,0x48,0x83,0xc4,0x08,0xc3
+code_stub_write_newline_len = . - code_stub_write_newline
 pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
 pat_bin_prefix_len = . - pat_bin_prefix
 pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
@@ -151,6 +153,8 @@ pat_free_noop: .ascii "fn f0 (t1)->t0 {\nb0:\n  v0 = arg 0 : t1\n  free v0\n  v1
 pat_free_noop_len = . - pat_free_noop
 pat_exit: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  exit v0\n  ret v0\n}\n"
 pat_exit_len = . - pat_exit
+pat_write_newline: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = alloca t0, 1 : t1\n  v1 = const 10 : t0\n  st v0 v1\n  v2 = const 1 : t0\n  write v0 v2\n  v3 = const 0 : t0\n  ret v3\n}\n"
+pat_write_newline_len = . - pat_write_newline
 pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_add_len = . - pat_call_add
 pat_call_sub: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = sub.wrap v0 v1 : t0\n  ret v2\n}\n"
@@ -321,7 +325,7 @@ do_build:
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
     # - canonical call->{add,sub,mul}.wrap two-function kernel lowering
-    # - canonical malloc/free/exit intrinsic kernel lowering
+    # - canonical malloc/free/exit/write intrinsic kernel lowering
     # - canonical alloca+st+ld memory roundtrip kernel lowering
     # - canonical icmp.eq + cbr select kernel lowering
     # - canonical icmp.eq kernel lowering
@@ -330,6 +334,19 @@ do_build:
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
     mov qword ptr [rip+build_kernel_kind], 0
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_write_newline]
+    mov rcx, pat_write_newline_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_exit
+    lea r14, [rip+code_stub_write_newline]
+    mov r15, code_stub_write_newline_len
+    mov qword ptr [rip+build_kernel_kind], 22
+    jmp .build_code_selected
+
+.build_try_exit:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_exit]
@@ -2102,9 +2119,118 @@ validate_nonvalue_uses_defined:
     mov r12, rdi
     mov r13, rsi
 
-    # bootstrap non-value set: exit vCode | free vPtr | st vPtr vVal
+    # bootstrap non-value set: write vPtr vLen | exit vCode | free vPtr | st vPtr vVal
     cmp r13, 9
     jb .vnud_bad
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+2]
+    cmp al, 'w'
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+3]
+    cmp al, 'r'
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+4]
+    cmp al, 'i'
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+5]
+    cmp al, 't'
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+6]
+    cmp al, 'e'
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+7]
+    cmp al, ' '
+    jne .vnud_try_exit
+    mov al, byte ptr [r12+8]
+    cmp al, 'v'
+    jne .vnud_try_exit
+    mov rcx, 9
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vnud_try_exit
+    cmp rcx, r13
+    jae .vnud_try_exit
+    xor rbx, rbx
+    mov r8, 9
+.vnud_write_ptr_conv:
+    cmp r8, rcx
+    jae .vnud_write_ptr_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vnud_write_ptr_conv
+.vnud_write_ptr_check:
+    push rcx
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    je .vnud_write_ptr_seen
+    pop rcx
+    jmp .vnud_bad
+.vnud_write_ptr_seen:
+    pop rcx
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vnud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    jne .vnud_bad
+    mov r8, rcx
+    mov al, byte ptr [r12+r8]
+    cmp al, ' '
+    jne .vnud_bad
+    inc r8
+    cmp r8, r13
+    jae .vnud_bad
+    mov al, byte ptr [r12+r8]
+    cmp al, 'v'
+    jne .vnud_bad
+    inc r8
+    mov rcx, r8
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vnud_bad
+    cmp rcx, r13
+    jne .vnud_bad
+    xor rbx, rbx
+.vnud_write_len_conv:
+    cmp r8, rcx
+    jae .vnud_write_len_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vnud_write_len_conv
+.vnud_write_len_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vnud_bad
+    mov rax, 1
+    jmp .vnud_done
+
+.vnud_try_exit:
     mov al, byte ptr [r12]
     cmp al, ' '
     jne .vnud_try_free
@@ -4055,7 +4181,61 @@ line_is_terminator:
 # "  st vN vN"
 # "  free vN"
 # "  exit vN"
+# "  write vN vN"
 line_is_nonvalue_instruction:
+    # write vN vN
+    cmp rsi, 11
+    jb .lnvi_try_exit
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+2]
+    cmp al, 'w'
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+3]
+    cmp al, 'r'
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+4]
+    cmp al, 'i'
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+5]
+    cmp al, 't'
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+6]
+    cmp al, 'e'
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+7]
+    cmp al, ' '
+    jne .lnvi_try_exit
+    mov al, byte ptr [rdi+8]
+    cmp al, 'v'
+    jne .lnvi_try_exit
+    mov rcx, 9
+    call parse_digits
+    cmp rax, 1
+    jne .lnvi_try_exit
+    cmp rcx, rsi
+    jae .lnvi_try_exit
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lnvi_try_exit
+    inc rcx
+    cmp rcx, rsi
+    jae .lnvi_try_exit
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lnvi_try_exit
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lnvi_try_exit
+    cmp rcx, rsi
+    je .lnvi_yes
+
+.lnvi_try_exit:
     # exit vN
     cmp rsi, 9
     jb .lnvi_try_free

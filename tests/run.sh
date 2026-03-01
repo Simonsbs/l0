@@ -139,6 +139,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_exit.out; then
   echo "FAIL: verify valid_exit"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_write_newline.l0" >/tmp/l0_ok_write_newline.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline.out; then
+  echo "FAIL: verify valid_write_newline"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -516,6 +521,22 @@ if [ "$exit_rc" -ne 7 ]; then
   echo "FAIL: run exit image status"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_write_newline.l0" /tmp/l0_test_write_newline.img >/tmp/l0_build_write_newline.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline.out; then
+  echo "FAIL: build valid_write_newline"
+  exit 1
+fi
+write_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline.img | tr -d ' ')
+write_kernel_kind=$(od -An -t u8 -j "$((write_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline.img | tr -d ' ')
+if [ "$write_kernel_kind" != "22" ]; then
+  echo "FAIL: write debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_write_newline.img >/tmp/l0_run_write_newline.out
+if [ "$(tr -d '\n' < /tmp/l0_run_write_newline.out)" != "0" ]; then
+  echo "FAIL: run write newline image result"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
@@ -733,6 +754,10 @@ if "$BIN" verify "$ROOT/tests/invalid_free_ptr_not_pointer.l0" >/tmp/l0_bad38b.o
 fi
 if "$BIN" verify "$ROOT/tests/invalid_exit_undefined.l0" >/tmp/l0_bad38d.out 2>/tmp/l0_bad38d.err; then
   echo "FAIL: invalid_exit_undefined unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_write_ptr_not_pointer.l0" >/tmp/l0_bad38e.out 2>/tmp/l0_bad38e.err; then
+  echo "FAIL: invalid_write_ptr_not_pointer unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then
