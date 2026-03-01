@@ -771,6 +771,10 @@ if "$BIN" verify "$ROOT/tests/invalid_malloc_result_not_pointer.l0" >/tmp/l0_bad
   echo "FAIL: invalid_malloc_result_not_pointer unexpectedly passed"
   exit 1
 fi
+if "$BIN" verify "$ROOT/tests/invalid_malloc_size_undefined.l0" >/tmp/l0_bad38aa.out 2>/tmp/l0_bad38aa.err; then
+  echo "FAIL: invalid_malloc_size_undefined unexpectedly passed"
+  exit 1
+fi
 if "$BIN" verify "$ROOT/tests/invalid_free_ptr_not_pointer.l0" >/tmp/l0_bad38b.out 2>/tmp/l0_bad38b.err; then
   echo "FAIL: invalid_free_ptr_not_pointer unexpectedly passed"
   exit 1
@@ -781,6 +785,10 @@ if "$BIN" verify "$ROOT/tests/invalid_exit_undefined.l0" >/tmp/l0_bad38d.out 2>/
 fi
 if "$BIN" verify "$ROOT/tests/invalid_write_ptr_not_pointer.l0" >/tmp/l0_bad38e.out 2>/tmp/l0_bad38e.err; then
   echo "FAIL: invalid_write_ptr_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_write_len_undefined.l0" >/tmp/l0_bad38f.out 2>/tmp/l0_bad38f.err; then
+  echo "FAIL: invalid_write_len_undefined unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then
