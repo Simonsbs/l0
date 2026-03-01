@@ -95,7 +95,8 @@ Current bootstrap status:
 - I now consider my M16 generalized memory/malloc/exit normalization milestone complete: I run the same dead-const normalization path before memory roundtrip, memory-gep roundtrip, `malloc`, and `exit` kernel selection, and I regression-test both lowered and intentionally unlowered mismatch outcomes.
 - I now consider my M17 dead-const normalization correctness-hardening milestone complete: I now strip only dead canonical `const` value lines (instead of stripping all const lines), scope dead-const detection to the current function so same numeric value IDs in later functions do not block stripping, and keep generalized lowering behavior stable for my completed kernel families.
 - I now consider my M18 backend-readiness integration milestone complete: I wired generalized normalization hooks for the remaining const-dependent intrinsic selector families (`write`/`free`/`trace`) and kept full-suite behavior stable while preserving canonical fallback behavior.
-- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering closure as my next milestone (M19).
+- I now consider my M19 generalized intrinsic hook activation milestone complete: generalized normalization hook stages are active in the build chain for all current intrinsic families with deterministic legacy fallback behavior preserved under full-suite coverage.
+- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering closure as my next milestone (M20).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

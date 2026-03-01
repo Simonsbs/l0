@@ -237,7 +237,15 @@ Last updated: 2026-03-01
   - retained legacy canonical fallback behavior for const-dependent intrinsic dead-const-injected shapes while generalized normalization hook path is staged
   - validated end-to-end with full-suite pass
 
-### M19: Non-template backend and full general codegen completion
+### M19: Generalized Intrinsic Hook Activation
+
+- Status: complete
+- Scope completed:
+  - activated generalized normalization hook stages in the live `build` selection chain for all current intrinsic families (`trace`, `write`, `exit`, `malloc`, `free`)
+  - preserved deterministic legacy selector fallbacks when generalized hook paths do not select
+  - validated end-to-end stability with full regression-suite pass
+
+### M20: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
