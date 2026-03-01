@@ -496,7 +496,21 @@ Last updated: 2026-03-01
   - converted those assertions from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 3` + deterministic runtime output)
   - validated with full-suite pass
 
-### M40: Non-template backend and full general codegen completion
+### M40: Non-Commutative Shift-Call Generalization (`shl`/`shr` reverse mapping)
+
+- Status: complete
+- Scope completed:
+  - extended `call->shl` selector lowering to support canonical swapped call-arg mapping (`call f1 v1 v0`) under canonical call structure
+  - extended `call->shr` selector lowering to support canonical swapped call-arg mapping (`call f1 v1 v0`) under canonical call structure
+  - added dedicated reverse machine payload routing for non-commutative shift semantics while keeping kernel kinds stable (`8` for `shl`, `9` for `shr`)
+  - updated regression assertions for previously intentional unlowered fixtures:
+    - `valid_call_shl_swapped_unlowered.l0`
+    - `valid_call_shr_swapped_unlowered.l0`
+  - converted those assertions from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 8/9` + deterministic runtime output)
+  - preserved existing structural mismatch guardrails for unrelated call shapes
+  - validated with full-suite pass
+
+### M41: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

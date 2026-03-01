@@ -1644,9 +1644,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_shl_swapped_unlowered.out; then
 fi
 call_shl_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
 call_shl_swapped_kernel_kind=$(od -An -t u8 -j "$((call_shl_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
-call_shl_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
-if [ "$call_shl_swapped_kernel_kind" != "0" ] || [ "$call_shl_swapped_code_size" != "1" ]; then
-  echo "FAIL: call shl swapped unexpectedly lowered"
+if [ "$call_shl_swapped_kernel_kind" != "8" ]; then
+  echo "FAIL: call shl swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shl_swapped_unlowered.img 2 5 >/tmp/l0_run_call_shl_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shl_swapped_unlowered.out)" != "20" ]; then
+  echo "FAIL: run call shl swapped lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_shr_swapped_unlowered.l0" /tmp/l0_test_call_shr_swapped_unlowered.img >/tmp/l0_build_call_shr_swapped_unlowered.out
@@ -1656,9 +1660,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_shr_swapped_unlowered.out; then
 fi
 call_shr_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
 call_shr_swapped_kernel_kind=$(od -An -t u8 -j "$((call_shr_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
-call_shr_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
-if [ "$call_shr_swapped_kernel_kind" != "0" ] || [ "$call_shr_swapped_code_size" != "1" ]; then
-  echo "FAIL: call shr swapped unexpectedly lowered"
+if [ "$call_shr_swapped_kernel_kind" != "9" ]; then
+  echo "FAIL: call shr swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shr_swapped_unlowered.img 2 32 >/tmp/l0_run_call_shr_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shr_swapped_unlowered.out)" != "8" ]; then
+  echo "FAIL: run call shr swapped lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_sub_f1_swapped_unlowered.l0" /tmp/l0_test_call_sub_f1_swapped_unlowered.img >/tmp/l0_build_call_sub_f1_swapped_unlowered.out

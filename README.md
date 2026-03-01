@@ -53,8 +53,8 @@ Current bootstrap status:
   - memory-gep-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - memory-gep-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I keep mismatched memory-gep-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
-  - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, or `or`)
-  - for call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`), I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
+  - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, or `shr`)
+  - for call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`, `xor`), I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
   - for call->`sub.wrap`, I preserve non-commutative guardrails by lowering only semantic arg0->arg1 mapping under either arg-definition order
   - call-kernel lowering now also accepts either canonical arg-definition order inside `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
@@ -115,7 +115,8 @@ Current bootstrap status:
 - I now consider my M37 compare/select branch-mapping generalization milestone complete: I added deterministic reverse return-mapping lowering for `icmp.eq + cbr` select shapes (`b1` returns arg1, `b2` returns arg0), including dead-const generalized variants.
 - I now consider my M38 non-commutative call generalization milestone complete: I extended deterministic reverse-mapping lowering for `call->sub.wrap` to cover reverse `f1` mapping shapes (including argdef-order-swapped and dead-const generalized variants) while keeping structural mismatch guardrails intact.
 - I now consider my M39 non-commutative binary generalization milestone complete: I extended direct binary `sub.wrap` lowering to canonical swapped operand forms (including nonzero-id, argdef-order-swapped, and dead-const variants) while preserving `sub.trap` non-commutative guardrails.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M40).
+- I now consider my M40 non-commutative shift-call generalization milestone complete: I extended `call->shl` and `call->shr` lowering to canonical swapped call-arg forms (`call f1 v1 v0`) with deterministic reverse-shift payloads while preserving existing structural mismatch guardrails.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M41).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
