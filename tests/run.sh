@@ -253,6 +253,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_exit.out; then
   echo "FAIL: verify valid_exit"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_exit_v7.l0" >/tmp/l0_ok_exit_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_exit_v7.out; then
+  echo "FAIL: verify valid_exit_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_exit_mismatch_unlowered.l0" >/tmp/l0_ok_exit_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_exit_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_exit_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_write_newline.l0" >/tmp/l0_ok_write_newline.out
 if ! grep -q '^ok$' /tmp/l0_ok_write_newline.out; then
   echo "FAIL: verify valid_write_newline"
@@ -1228,6 +1238,37 @@ exit_rc=$?
 set -e
 if [ "$exit_rc" -ne 7 ]; then
   echo "FAIL: run exit image status"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_exit_v7.l0" /tmp/l0_test_exit_v7.img >/tmp/l0_build_exit_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_v7.out; then
+  echo "FAIL: build valid_exit_v7"
+  exit 1
+fi
+exit_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_exit_v7.img | tr -d ' ')
+exit_v7_kernel_kind=$(od -An -t u8 -j "$((exit_v7_dbg_off + 32))" -N 8 /tmp/l0_test_exit_v7.img | tr -d ' ')
+if [ "$exit_v7_kernel_kind" != "23" ]; then
+  echo "FAIL: exit v7 debug kernel kind id"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit_v7.img 9 >/tmp/l0_run_exit_v7.out 2>/tmp/l0_run_exit_v7.err
+exit_v7_rc=$?
+set -e
+if [ "$exit_v7_rc" -ne 9 ]; then
+  echo "FAIL: run exit v7 image status"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_exit_mismatch_unlowered.l0" /tmp/l0_test_exit_mismatch_unlowered.img >/tmp/l0_build_exit_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_mismatch_unlowered.out; then
+  echo "FAIL: build valid_exit_mismatch_unlowered"
+  exit 1
+fi
+exit_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
+exit_mismatch_kernel_kind=$(od -An -t u8 -j "$((exit_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
+exit_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
+if [ "$exit_mismatch_kernel_kind" != "0" ] || [ "$exit_mismatch_code_size" != "1" ]; then
+  echo "FAIL: exit mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_write_newline.l0" /tmp/l0_test_write_newline.img >/tmp/l0_build_write_newline.out

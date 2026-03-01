@@ -91,6 +91,8 @@ Last updated: 2026-03-01
   - malloc selector guardrail added: mismatch between malloc result id and returned id remains intentionally unlowered
   - free-noop intrinsic selector now accepts canonical nonzero arg/const-ret ids (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
   - free-noop selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
+  - exit intrinsic selector now accepts canonical nonzero arg/return ids (`vN = arg ...`, `exit vN`, `ret vN`)
+  - exit selector guardrail added: mismatch between exit operand id and returned id remains intentionally unlowered
 
 ## Documentation status
 

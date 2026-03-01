@@ -47,6 +47,8 @@ Current bootstrap status:
   - I keep mismatched malloc result/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - free-noop kernel lowering now accepts canonical nonzero arg/const-ret ids when `free` and `ret` reference the corresponding defined ids (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
   - I keep mismatched free-noop const/return-id shapes outside current lowering and regression-test them as intentionally unlowered
+  - exit-kernel lowering now accepts canonical nonzero arg/ret ids when `exit` and `ret` reference the same defined value id (`vN = arg ...`, `exit vN`, `ret vN`)
+  - I keep mismatched exit arg/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - trace-kernel lowering now accepts canonical nonzero trace/dataflow value ids when `trace` and `ret` both reference the corresponding defined ids (`vN = arg ...`, `trace 1 vN`, `vM = const 0`, `ret vM`)
   - I keep mismatched trace id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
