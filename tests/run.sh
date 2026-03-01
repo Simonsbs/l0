@@ -256,6 +256,12 @@ if [ "$(cat /tmp/l0_schemacat.out)" != $'version 1\nrecord_size 16\nfields 2' ];
   echo "FAIL: schemacat decoded output"
   exit 1
 fi
+cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_magic.bin
+printf 'BAD!' | dd of=/tmp/l0_bad_trace_schema_magic.bin bs=1 seek=0 conv=notrunc status=none
+if "$BIN" schemacat /tmp/l0_bad_trace_schema_magic.bin >/tmp/l0_bad_trace_schema_magic.out 2>/tmp/l0_bad_trace_schema_magic.err; then
+  echo "FAIL: schemacat accepted bad schema magic"
+  exit 1
+fi
 dbg_map_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_inst_count=$(od -An -t u8 -j 16 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_code_size=$(od -An -t u8 -j 24 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
@@ -275,6 +281,16 @@ fi
 "$BIN" mapcat /tmp/l0_debug_map.bin >/tmp/l0_mapcat.out
 if [ "$(cat /tmp/l0_mapcat.out)" != $'entries 3\ncode_size 7\ninst_id 1\nstart 0\nend 2\ninst_id 2\nstart 2\nend 4\ninst_id 3\nstart 4\nend 7' ]; then
   echo "FAIL: mapcat decoded output"
+  exit 1
+fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_version.bin
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_version.bin bs=1 seek=8 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_debug_map_version.out 2>/tmp/l0_bad_debug_map_version.err; then
+  echo "FAIL: mapcat accepted bad map version"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
+  echo "FAIL: tracejoin accepted invalid map file"
   exit 1
 fi
 if [ ! -s /tmp/l0_test.img ]; then
