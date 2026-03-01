@@ -452,6 +452,18 @@ if "$BIN" schemacat /tmp/l0_bad_trace_schema_magic.bin >/tmp/l0_bad_trace_schema
   echo "FAIL: schemacat accepted bad schema magic"
   exit 1
 fi
+cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_version.bin
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_schema_version.bin bs=1 seek=8 conv=notrunc status=none
+if "$BIN" schemacat /tmp/l0_bad_trace_schema_version.bin >/tmp/l0_bad_trace_schema_version.out 2>/tmp/l0_bad_trace_schema_version.err; then
+  echo "FAIL: schemacat accepted bad schema version"
+  exit 1
+fi
+cp /tmp/l0_trace_schema.bin /tmp/l0_bad_trace_schema_truncated.bin
+truncate -s 31 /tmp/l0_bad_trace_schema_truncated.bin
+if "$BIN" schemacat /tmp/l0_bad_trace_schema_truncated.bin >/tmp/l0_bad_trace_schema_truncated.out 2>/tmp/l0_bad_trace_schema_truncated.err; then
+  echo "FAIL: schemacat accepted truncated schema payload"
+  exit 1
+fi
 dbg_map_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_inst_count=$(od -An -t u8 -j 16 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_code_size=$(od -An -t u8 -j 24 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
