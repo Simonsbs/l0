@@ -170,6 +170,11 @@ I also enforce a structural subset inside `fns`:
 - I pass optional unsigned decimal CLI args as `rdi` and `rsi` (default `0,0`) and print the returned `u64`.
 - I reject non-decimal run arguments with a deterministic error.
 
+`l0c tracecat <trace.bin>` currently:
+- I load a binary trace file and require payload size to be a multiple of 16 bytes.
+- I decode each record as (`u64 trace_id`, `u64 traced_value`).
+- I print deterministic text lines for each record: `id <trace_id>` and `val <traced_value>`.
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy

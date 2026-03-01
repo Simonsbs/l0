@@ -156,6 +156,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> -o <out.l0img>`
 - `l0c imgcheck <out.l0img>`
 - `l0c run <out.l0img> [u64_a] [u64_b]`
+- `l0c tracecat <trace.bin>`
 
 ### `imgcheck` bootstrap integrity rules
 
@@ -176,6 +177,16 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - I invoke code as `fn(u64,u64)->u64` using optional decimal CLI args (`u64_a`, `u64_b`) as inputs.
 - I print the returned value as unsigned decimal with a newline.
 - I reject invalid numeric arguments.
+
+### `tracecat` bootstrap decode rules
+
+`tracecat` currently decodes binary trace records as fixed 16-byte tuples:
+- `u64 trace_id`
+- `u64 traced_value`
+
+I print decoded output in deterministic text lines:
+- `id <trace_id>`
+- `val <traced_value>`
 
 Bootstrap build output currently also includes a compact 64-byte debug semantic index section:
 - I currently emit one of two bootstrap code payloads:

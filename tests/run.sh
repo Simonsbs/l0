@@ -586,6 +586,11 @@ if [ "$(od -An -t x1 /tmp/l0_run_trace_noop.err | tr -d ' \n')" != "010000000000
   echo "FAIL: run trace emit bytes"
   exit 1
 fi
+"$BIN" tracecat /tmp/l0_run_trace_noop.err >/tmp/l0_tracecat.out
+if [ "$(cat /tmp/l0_tracecat.out)" != $'id 1\nval 123' ]; then
+  echo "FAIL: tracecat decoded output"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
