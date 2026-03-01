@@ -175,6 +175,10 @@ I also enforce a structural subset inside `fns`:
 - I decode each record as (`u64 trace_id`, `u64 traced_value`).
 - I print deterministic text lines for each record: `id <trace_id>` and `val <traced_value>`.
 
+`l0c mapcat <debug_map.bin>` currently:
+- I load a 32-byte bootstrap debug-map payload and validate magic/version.
+- I print deterministic text lines: `entries <count>` and `code_size <bytes>`.
+
 `l0c build ... --trace-schema <out.bin>` currently writes a 32-byte schema payload:
 - `qword[0]`: magic (`L0TS`)
 - `qword[1]`: version (`1`)

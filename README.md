@@ -80,6 +80,7 @@ make
 ./bin/l0c imgcheck <out.l0img>
 ./bin/l0c run <out.l0img> [u64_a] [u64_b]
 ./bin/l0c tracecat <trace.bin>
+./bin/l0c mapcat <debug_map.bin>
 ```
 
 ## Notes

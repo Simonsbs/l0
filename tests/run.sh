@@ -250,6 +250,11 @@ if [ "$dbg_map_version" != "1" ] || [ "$dbg_map_inst_count" != "1" ] || [ "$dbg_
   echo "FAIL: debug map fields"
   exit 1
 fi
+"$BIN" mapcat /tmp/l0_debug_map.bin >/tmp/l0_mapcat.out
+if [ "$(cat /tmp/l0_mapcat.out)" != $'entries 1\ncode_size 7' ]; then
+  echo "FAIL: mapcat decoded output"
+  exit 1
+fi
 if [ ! -s /tmp/l0_test.img ]; then
   echo "FAIL: build output missing"
   exit 1
