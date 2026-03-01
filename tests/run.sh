@@ -73,6 +73,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_const_v7.out; then
   echo "FAIL: verify valid_const_v7"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_const_v123.l0" >/tmp/l0_ok_const_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_const_v123.out; then
+  echo "FAIL: verify valid_const_v123"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_sub.l0" >/tmp/l0_ok_sub.out
 if ! grep -q '^ok$' /tmp/l0_ok_sub.out; then
   echo "FAIL: verify valid_sub"
@@ -565,6 +570,22 @@ fi
 "$BIN" run /tmp/l0_test_const_v7.img >/tmp/l0_run_const_v7.out
 if [ "$(tr -d '\n' < /tmp/l0_run_const_v7.out)" != "42" ]; then
   echo "FAIL: run const_v7 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_const_v123.l0" /tmp/l0_test_const_v123.img >/tmp/l0_build_const_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_const_v123.out; then
+  echo "FAIL: build valid_const_v123"
+  exit 1
+fi
+const_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_const_v123.img | tr -d ' ')
+const_v123_kernel_kind=$(od -An -t u8 -j "$((const_v123_dbg_off + 32))" -N 8 /tmp/l0_test_const_v123.img | tr -d ' ')
+if [ "$const_v123_kernel_kind" != "13" ]; then
+  echo "FAIL: const_v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_const_v123.img >/tmp/l0_run_const_v123.out
+if [ "$(tr -d '\n' < /tmp/l0_run_const_v123.out)" != "18446744073709551609" ]; then
+  echo "FAIL: run const_v123 image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_sub.l0" /tmp/l0_test_sub.img >/tmp/l0_build_sub.out
