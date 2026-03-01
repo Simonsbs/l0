@@ -175,6 +175,12 @@ I also enforce a structural subset inside `fns`:
 - I decode each record as (`u64 trace_id`, `u64 traced_value`).
 - I print deterministic text lines for each record: `id <trace_id>` and `val <traced_value>`.
 
+`l0c build ... --trace-schema <out.bin>` currently writes a 32-byte schema payload:
+- `qword[0]`: magic (`L0TS`)
+- `qword[1]`: version (`1`)
+- `qword[2]`: trace record size (`16`)
+- `qword[3]`: field count (`2`)
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy

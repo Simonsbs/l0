@@ -155,6 +155,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c verify <input.l0>`
 - `l0c build <input.l0> <out.l0img>`
 - `l0c build <input.l0> -o <out.l0img>`
+- `l0c build <input.l0> <out.l0img> --trace-schema <out.bin>`
 - `l0c imgcheck <out.l0img>`
 - `l0c run <out.l0img> [u64_a] [u64_b]`
 - `l0c tracecat <trace.bin>`
@@ -184,6 +185,13 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 `tracecat` currently decodes binary trace records as fixed 16-byte tuples:
 - `u64 trace_id`
 - `u64 traced_value`
+
+I can emit a matching schema file during build with `--trace-schema <out.bin>`.
+Current bootstrap schema payload is 32 bytes:
+- magic `L0TS`
+- version `1`
+- record size `16`
+- field count `2`
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

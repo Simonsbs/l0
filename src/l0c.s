@@ -3,6 +3,7 @@
 .section .bss
 .lcomm file_buf, 1048576
 .lcomm out_path_ptr, 8
+.lcomm trace_schema_out_path_ptr, 8
 .lcomm run_arg1_ptr, 8
 .lcomm run_arg2_ptr, 8
 .lcomm num_buf, 32
@@ -10,6 +11,7 @@
 .lcomm codegen_len, 8
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
+.lcomm trace_schema_buf, 32
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -33,7 +35,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> | l0c build <input.l0> -o <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -60,6 +62,7 @@ cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
 flag_o: .ascii "-o\0"
+flag_trace_schema: .ascii "--trace-schema\0"
 cmd_imgcheck: .ascii "imgcheck\0"
 cmd_run: .ascii "run\0"
 cmd_tracecat: .ascii "tracecat\0"
@@ -244,10 +247,17 @@ _start:
     call str_eq
     cmp rax, 1
     jne .check_imgcheck
+    mov qword ptr [rip+trace_schema_out_path_ptr], 0
     cmp r13, 4
     je .build_positional
     cmp r13, 5
+    je .build_flag_o_no_schema
+    cmp r13, 6
+    je .build_positional_with_schema
+    cmp r13, 7
+    je .build_flag_o_with_schema
     jne usage
+.build_flag_o_no_schema:
     mov rdi, [r12+32]         # argv[3] should be "-o"
     lea rsi, [rip+flag_o]
     call str_eq
@@ -259,6 +269,35 @@ _start:
 .build_positional:
     mov r11, [r12+32]         # argv[3] output path
     mov qword ptr [rip+out_path_ptr], r11
+    jmp do_build
+
+.build_positional_with_schema:
+    mov r11, [r12+32]         # argv[3] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    mov rdi, [r12+40]         # argv[4] should be --trace-schema
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+48]         # argv[5] schema path
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
+    jmp do_build
+
+.build_flag_o_with_schema:
+    mov rdi, [r12+32]         # argv[3] should be "-o"
+    lea rsi, [rip+flag_o]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+40]         # argv[4] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    mov rdi, [r12+48]         # argv[5] should be --trace-schema
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+56]         # argv[6] schema path
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
 
 .check_imgcheck:
@@ -680,12 +719,46 @@ do_build:
     mov rax, 3                 # sys_close
     syscall
 
+    mov r11, qword ptr [rip+trace_schema_out_path_ptr]
+    cmp r11, 0
+    je .build_emit_ok
+    mov rdi, r11
+    mov rax, 2                 # sys_open
+    mov rsi, 577               # O_WRONLY|O_CREAT|O_TRUNC
+    mov rdx, 420               # 0644
+    syscall
+    test rax, rax
+    js fail_build
+    mov r10, rax
+    lea r11, [rip+trace_schema_buf]
+    mov rax, 0x000000005354304c
+    mov qword ptr [r11+0], rax
+    mov qword ptr [r11+8], 1
+    mov qword ptr [r11+16], 16
+    mov qword ptr [r11+24], 2
+    mov rdi, r10
+    lea rsi, [rip+trace_schema_buf]
+    mov rdx, 32
+    call write_all
+    cmp rax, 0
+    jne .build_write_schema_fail
+    mov rdi, r10
+    mov rax, 3
+    syscall
+
+.build_emit_ok:
     lea rsi, [rip+ok_msg]
     mov rdx, ok_len
     mov rdi, 1
     call write_fd
     mov rdi, 0
     call exit
+
+.build_write_schema_fail:
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp fail_build
 
 .build_write_fail:
     mov rdi, r10
