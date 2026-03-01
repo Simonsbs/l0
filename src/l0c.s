@@ -685,6 +685,10 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
+    # L0IX kernel kind id must be within known bootstrap range [0,23]
+    mov rax, qword ptr [r8+r9+32]
+    cmp rax, 23
+    ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
     cmp rax, qword ptr [r8+56]

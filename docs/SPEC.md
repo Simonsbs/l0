@@ -155,6 +155,7 @@ I also enforce a structural subset inside `fns`:
 - for non-zero debug section, bootstrap schema checks:
   - debug size must be `48`
   - `L0IX` magic/version must match
+  - `L0IX` kernel kind id must be in the current bootstrap range
   - debug `code_size` field must match header `code_size`
 
 `l0c run <file.l0img> [u64_a] [u64_b]` currently:

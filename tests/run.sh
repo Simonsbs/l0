@@ -583,6 +583,12 @@ if "$BIN" imgcheck /tmp/l0_bad_dbg_codesz.img >/tmp/l0_bad_dbg_codesz.out 2>/tmp
   echo "FAIL: imgcheck accepted mismatched debug code size"
   exit 1
 fi
+cp /tmp/l0_test.img /tmp/l0_bad_dbg_kernel_kind.img
+printf '\xff\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_kernel_kind.img bs=1 seek="$((dbg_off_main + 32))" conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_bad_dbg_kernel_kind.img >/tmp/l0_bad_dbg_kernel_kind.out 2>/tmp/l0_bad_dbg_kernel_kind.err; then
+  echo "FAIL: imgcheck accepted out-of-range debug kernel kind"
+  exit 1
+fi
 printf 'BADIMG' >/tmp/l0_bad.img
 if "$BIN" imgcheck /tmp/l0_bad.img >/tmp/l0_badimg.out 2>/tmp/l0_badimg.err; then
   echo "FAIL: imgcheck accepted invalid image"
