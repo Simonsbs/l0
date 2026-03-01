@@ -139,7 +139,16 @@ Last updated: 2026-03-01
   - non-commutative guardrail is preserved for call->`sub.wrap` under arg-definition-order variants by requiring semantic arg0->arg1 mapping
   - regression matrix added for call arg-definition-order variants (lowered and intentional unlowered guardrail shapes)
 
-### M8: Non-template backend and full general codegen
+### M8: Selector-Decoupling Completion (Call f1 Family)
+
+- Status: complete
+- Scope completed:
+  - call-kernel selector accepts either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
+  - call-kernel lowering remains valid for commutative `f1` targets (`add.wrap`, `mul.wrap`) under either arg-definition order in `f1`
+  - non-commutative guardrail is preserved for call->`sub.wrap` under `f1` arg-definition-order variants by requiring semantic arg0->arg1 mapping
+  - regression matrix added for `f1` arg-definition-order variants (lowered and intentional unlowered guardrail shapes)
+
+### M9: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

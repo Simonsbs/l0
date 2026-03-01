@@ -356,12 +356,16 @@ pat_call_tail_a_swapped: .ascii "v1 v0 : t0\n  ret v"
 pat_call_tail_a_swapped_len = . - pat_call_tail_a_swapped
 pat_call_tail_b_head: .ascii "\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_tail_b_head_len = . - pat_call_tail_b_head
+pat_call_tail_b_head_alt: .ascii "\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v1 = arg 0 : t0\n  v0 = arg 1 : t0\n  v"
+pat_call_tail_b_head_alt_len = . - pat_call_tail_b_head_alt
 pat_call_tail_b_mid_add: .ascii " = add.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_add_len = . - pat_call_tail_b_mid_add
 pat_call_tail_b_mid_add_swapped: .ascii " = add.wrap v1 v0 : t0\n  ret v"
 pat_call_tail_b_mid_add_swapped_len = . - pat_call_tail_b_mid_add_swapped
 pat_call_tail_b_mid_sub: .ascii " = sub.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_sub_len = . - pat_call_tail_b_mid_sub
+pat_call_tail_b_mid_sub_swapped: .ascii " = sub.wrap v1 v0 : t0\n  ret v"
+pat_call_tail_b_mid_sub_swapped_len = . - pat_call_tail_b_mid_sub_swapped
 pat_call_tail_b_mid_mul: .ascii " = mul.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_mul_len = . - pat_call_tail_b_mid_mul
 pat_call_tail_b_mid_mul_swapped: .ascii " = mul.wrap v1 v0 : t0\n  ret v"
@@ -8480,11 +8484,12 @@ try_select_call_kernel_code:
     push r13
     push r14
     push r15
-    sub rsp, 8
+    sub rsp, 16
 
     mov r12, rdi
     mov r13, rsi
     mov qword ptr [rsp], 0
+    mov qword ptr [rsp+8], 0
     lea rdx, [rip+pat_call_head]
     mov rcx, pat_call_head_len
     mov rdi, r12
@@ -8578,13 +8583,23 @@ try_select_call_kernel_code:
     sub rax, r8
     cmp rax, pat_call_tail_b_head_len
     jb .tsck_call_try_add_swapped
+    mov qword ptr [rsp+8], 0
     mov rdi, r12
     add rdi, r8
     lea rsi, [rip+pat_call_tail_b_head]
     mov rdx, pat_call_tail_b_head_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_add_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_add_swapped
+    mov qword ptr [rsp+8], 1
+.tsck_call_add_head_ok:
     add r8, pat_call_tail_b_head_len
     cmp r8, r13
     jae .tsck_call_try_add_swapped
@@ -8687,13 +8702,23 @@ try_select_call_kernel_code:
     sub rax, r8
     cmp rax, pat_call_tail_b_head_len
     jb .tsck_call_try_sub
+    mov qword ptr [rsp+8], 0
     mov rdi, r12
     add rdi, r8
     lea rsi, [rip+pat_call_tail_b_head]
     mov rdx, pat_call_tail_b_head_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_add_swapped_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_sub
+    mov qword ptr [rsp+8], 1
+.tsck_call_add_swapped_head_ok:
     add r8, pat_call_tail_b_head_len
     cmp r8, r13
     jae .tsck_call_try_sub
@@ -8815,13 +8840,23 @@ try_select_call_kernel_code:
     sub rax, r8
     cmp rax, pat_call_tail_b_head_len
     jb .tsck_call_try_mul
+    mov qword ptr [rsp+8], 0
     mov rdi, r12
     add rdi, r8
     lea rsi, [rip+pat_call_tail_b_head]
     mov rdx, pat_call_tail_b_head_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_sub_f1_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_mul
+    mov qword ptr [rsp+8], 1
+.tsck_call_sub_f1_head_ok:
     add r8, pat_call_tail_b_head_len
     cmp r8, r13
     jae .tsck_call_try_mul
@@ -8849,8 +8884,15 @@ try_select_call_kernel_code:
     jb .tsck_call_try_mul
     mov rdi, r12
     add rdi, r8
+    cmp qword ptr [rsp+8], 1
+    jne .tsck_call_sub_f1_mid_canon
+    lea rsi, [rip+pat_call_tail_b_mid_sub_swapped]
+    mov rdx, pat_call_tail_b_mid_sub_swapped_len
+    jmp .tsck_call_sub_f1_mid_ready
+.tsck_call_sub_f1_mid_canon:
     lea rsi, [rip+pat_call_tail_b_mid_sub]
     mov rdx, pat_call_tail_b_mid_sub_len
+.tsck_call_sub_f1_mid_ready:
     call mem_eq
     cmp rax, 1
     jne .tsck_call_try_mul
@@ -8916,13 +8958,23 @@ try_select_call_kernel_code:
     sub rax, r8
     cmp rax, pat_call_tail_b_head_len
     jb .tsck_call_try_mul_swapped
+    mov qword ptr [rsp+8], 0
     mov rdi, r12
     add rdi, r8
     lea rsi, [rip+pat_call_tail_b_head]
     mov rdx, pat_call_tail_b_head_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_mul_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_mul_swapped
+    mov qword ptr [rsp+8], 1
+.tsck_call_mul_head_ok:
     add r8, pat_call_tail_b_head_len
     cmp r8, r13
     jae .tsck_call_try_mul_swapped
@@ -9025,13 +9077,23 @@ try_select_call_kernel_code:
     sub rax, r8
     cmp rax, pat_call_tail_b_head_len
     jb .tsck_call_no
+    mov qword ptr [rsp+8], 0
     mov rdi, r12
     add rdi, r8
     lea rsi, [rip+pat_call_tail_b_head]
     mov rdx, pat_call_tail_b_head_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_mul_swapped_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_no
+    mov qword ptr [rsp+8], 1
+.tsck_call_mul_swapped_head_ok:
     add r8, pat_call_tail_b_head_len
     cmp r8, r13
     jae .tsck_call_no
@@ -9102,9 +9164,9 @@ try_select_call_kernel_code:
 .tsck_call_no:
     xor rax, rax
 .tsck_call_done:
-    mov rcx, qword ptr [rsp+8]
-    mov rdx, qword ptr [rsp+16]
-    add rsp, 24
+    mov rcx, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    add rsp, 32
     cmp rax, 1
     je .tsck_call_keep_out
     mov r14, rdx

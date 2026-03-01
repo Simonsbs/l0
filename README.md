@@ -54,6 +54,8 @@ Current bootstrap status:
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
   - for call->`sub.wrap`, I preserve non-commutative guardrails by lowering only semantic arg0->arg1 mapping under either arg-definition order
+  - call-kernel lowering now also accepts either canonical arg-definition order inside `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
+  - for call->`sub.wrap`, I preserve non-commutative semantics under `f1` arg-definition-order variants by requiring semantic arg0->arg1 mapping in `f1`
   - call-kernel lowering now accepts canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - call-kernel lowering now accepts canonical nonzero internal result ids in `f1` when `ret` references the same value id (`vN = add.wrap|sub.wrap|mul.wrap ...`, `ret vN`)
   - call-kernel lowering now accepts canonical swapped operand order inside `f1` for commutative ops (`add.wrap`, `mul.wrap`)
@@ -78,7 +80,8 @@ Current bootstrap status:
 - I now consider my M5 bootstrap selector-broadening milestone complete.
 - I now consider my M6 selector-decoupling milestone complete: I lower binary, `icmp.eq`, and `icmp.eq + cbr` kernels independent of arg-definition line order in `f0`, with guardrails preserved.
 - I now consider my M7 selector-decoupling completion milestone complete: I lower call kernels independent of arg-definition line order in `f0` while preserving non-commutative `sub.wrap` guardrails.
-- I track true non-template generalized backend/codegen work as my next milestone (M8).
+- I now consider my M8 selector-decoupling completion milestone complete: I lower call kernels correctly across canonical arg-definition-order variants in both `f0` and `f1`, with non-commutative `sub.wrap` semantics preserved.
+- I track true non-template generalized backend/codegen work as my next milestone (M9).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

@@ -68,6 +68,26 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1v123_lowered.out; then
   echo "FAIL: verify valid_call_sub_f1v123_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_f1_argdef_order_swapped_lowered.l0" >/tmp/l0_ok_call_add_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: verify valid_call_add_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_mul_f1_argdef_order_swapped_lowered.l0" >/tmp/l0_ok_call_mul_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_mul_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: verify valid_call_mul_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_sub_f1_argdef_order_swapped_lowered.l0" >/tmp/l0_ok_call_sub_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: verify valid_call_sub_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_sub_f1_argdef_order_swapped_unlowered.l0" >/tmp/l0_ok_call_sub_f1_argdef_order_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1_argdef_order_swapped_unlowered.out; then
+  echo "FAIL: verify valid_call_sub_f1_argdef_order_swapped_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_mul_lowered.l0" >/tmp/l0_ok_call_mul_lowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_mul_lowered.out; then
   echo "FAIL: verify valid_call_mul_lowered"
@@ -985,6 +1005,66 @@ fi
 "$BIN" run /tmp/l0_test_call_sub_f1v123_lowered.img 21 9 >/tmp/l0_run_call_sub_f1v123_lowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1v123_lowered.out)" != "12" ]; then
   echo "FAIL: run call->sub f1v123 lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_f1_argdef_order_swapped_lowered.l0" /tmp/l0_test_call_add_f1_argdef_order_swapped_lowered.img >/tmp/l0_build_call_add_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: build valid_call_add_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+call_add_f1_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+call_add_f1_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((call_add_f1_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+if [ "$call_add_f1_argdef_order_swapped_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add f1 argdef-order-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_f1_argdef_order_swapped_lowered.img 21 21 >/tmp/l0_run_call_add_f1_argdef_order_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_f1_argdef_order_swapped_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add f1 argdef-order-swapped lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_mul_f1_argdef_order_swapped_lowered.l0" /tmp/l0_test_call_mul_f1_argdef_order_swapped_lowered.img >/tmp/l0_build_call_mul_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_mul_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: build valid_call_mul_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+call_mul_f1_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_mul_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+call_mul_f1_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((call_mul_f1_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_mul_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+if [ "$call_mul_f1_argdef_order_swapped_kernel_kind" != "18" ]; then
+  echo "FAIL: call->mul f1 argdef-order-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_mul_f1_argdef_order_swapped_lowered.img 7 6 >/tmp/l0_run_call_mul_f1_argdef_order_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_mul_f1_argdef_order_swapped_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->mul f1 argdef-order-swapped lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_sub_f1_argdef_order_swapped_lowered.l0" /tmp/l0_test_call_sub_f1_argdef_order_swapped_lowered.img >/tmp/l0_build_call_sub_f1_argdef_order_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_argdef_order_swapped_lowered.out; then
+  echo "FAIL: build valid_call_sub_f1_argdef_order_swapped_lowered"
+  exit 1
+fi
+call_sub_f1_argdef_order_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+call_sub_f1_argdef_order_swapped_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_argdef_order_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_lowered.img | tr -d ' ')
+if [ "$call_sub_f1_argdef_order_swapped_kernel_kind" != "17" ]; then
+  echo "FAIL: call->sub f1 argdef-order-swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_f1_argdef_order_swapped_lowered.img 21 9 >/tmp/l0_run_call_sub_f1_argdef_order_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1_argdef_order_swapped_lowered.out)" != "12" ]; then
+  echo "FAIL: run call->sub f1 argdef-order-swapped lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_sub_f1_argdef_order_swapped_unlowered.l0" /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img >/tmp/l0_build_call_sub_f1_argdef_order_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_argdef_order_swapped_unlowered.out; then
+  echo "FAIL: build valid_call_sub_f1_argdef_order_swapped_unlowered"
+  exit 1
+fi
+call_sub_f1_argdef_order_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
+call_sub_f1_argdef_order_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_argdef_order_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
+call_sub_f1_argdef_order_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
+if [ "$call_sub_f1_argdef_order_swapped_unlowered_kernel_kind" != "0" ] || [ "$call_sub_f1_argdef_order_swapped_unlowered_code_size" != "1" ]; then
+  echo "FAIL: call->sub f1 argdef-order-swapped unlowered unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_mul_lowered.l0" /tmp/l0_test_call_mul_lowered.img >/tmp/l0_build_call_mul_lowered.out

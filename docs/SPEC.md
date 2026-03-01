@@ -137,6 +137,8 @@ I also enforce a structural subset inside `fns`:
     - for `f1` in `add.wrap`/`mul.wrap`, I also accept swapped call-arg order in `f0` (`call f1 v1 v0`)
     - I also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for non-commutative call->`sub.wrap`, I only lower shapes where `f0` call-arg mapping is semantically arg0->arg1 under the parsed arg definitions
+    - I also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
+    - for non-commutative call->`sub.wrap`, I only lower shapes where `f1` operation mapping is semantically arg0->arg1 under the parsed arg definitions
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
