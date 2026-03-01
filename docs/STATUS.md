@@ -78,6 +78,7 @@ Last updated: 2026-03-01
   - compare/select bootstrap selector now accepts swapped `icmp.eq` operand order for both `icmp.eq` and `icmp.eq + cbr` kernel templates
   - const-return selector now accepts canonical nonzero value ids when `ret` references the same const-def id
   - const-return selector path is regression-covered for both single-digit and multi-digit value ids
+  - non-commutative guardrail test added: swapped `sub.wrap` remains intentionally unlowered in current bootstrap selector
 
 ## Documentation status
 

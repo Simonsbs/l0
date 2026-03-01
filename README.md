@@ -28,6 +28,7 @@ Current bootstrap status:
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - for commutative binary kernels (`add*`, `mul*`, `and`, `or`, `xor`), I also lower canonical swapped operand order (`v1 v0`) in the bootstrap selector
+  - I keep swapped non-commutative forms (for example `sub.wrap v1 v0`) outside current lowering and covered by regression tests as intentionally unlowered
   - two-arg compare kernel (`icmp.eq`) returning `i1`
   - canonical `icmp.eq + cbr` select kernel returning either arg0 or arg1
   - for `icmp.eq` and `icmp.eq + cbr`, I also lower canonical swapped compare order (`icmp.eq v1 v0`)

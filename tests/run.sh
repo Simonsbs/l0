@@ -83,6 +83,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_sub.out; then
   echo "FAIL: verify valid_sub"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_sub_swapped_unlowered.l0" >/tmp/l0_ok_sub_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sub_swapped_unlowered.out; then
+  echo "FAIL: verify valid_sub_swapped_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_add_swapped.l0" >/tmp/l0_ok_add_swapped.out
 if ! grep -q '^ok$' /tmp/l0_ok_add_swapped.out; then
   echo "FAIL: verify valid_add_swapped"
@@ -596,6 +601,18 @@ fi
 "$BIN" run /tmp/l0_test_sub.img 9 2 >/tmp/l0_run_sub.out
 if [ "$(tr -d '\n' < /tmp/l0_run_sub.out)" != "7" ]; then
   echo "FAIL: run sub image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sub_swapped_unlowered.l0" /tmp/l0_test_sub_swapped_unlowered.img >/tmp/l0_build_sub_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_sub_swapped_unlowered.out; then
+  echo "FAIL: build valid_sub_swapped_unlowered"
+  exit 1
+fi
+sub_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
+sub_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((sub_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
+sub_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_swapped_unlowered.img | tr -d ' ')
+if [ "$sub_swapped_unlowered_kernel_kind" != "0" ] || [ "$sub_swapped_unlowered_code_size" != "1" ]; then
+  echo "FAIL: sub_swapped_unlowered unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_swapped.l0" /tmp/l0_test_add_swapped.img >/tmp/l0_build_add_swapped.out
