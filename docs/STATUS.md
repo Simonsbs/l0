@@ -406,7 +406,24 @@ Last updated: 2026-03-01
     - dead-const-injected call->`xor` generalized lowered shape
   - validated with full-suite pass
 
-### M34: Non-template backend and full general codegen completion
+### M34: Call-Family Backend Expansion (`shl`/`shr`)
+
+- Status: complete
+- Scope completed:
+  - extended two-function call-kernel lowering to include canonical `shl` and `shr` targets in `f1`
+  - preserved non-commutative call semantics by lowering only semantic arg0->arg1 mappings under parsed `f0`/`f1` arg-definition order
+  - validated generalized dead-const normalization path for call->`shl`/`shr` with dead consts in both `f0` and `f1`
+  - kept swapped call-arg non-commutative guardrails intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - added regression fixtures and assertions for:
+    - canonical call->`shl` lowered shape
+    - canonical call->`shr` lowered shape
+    - dead-const-injected call->`shl` generalized lowered shape
+    - dead-const-injected call->`shr` generalized lowered shape
+    - swapped call-arg call->`shl` intentional unlowered guardrail shape
+    - swapped call-arg call->`shr` intentional unlowered guardrail shape
+  - validated with full-suite pass
+
+### M35: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

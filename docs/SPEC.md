@@ -140,14 +140,14 @@ I also enforce a structural subset inside `fns`:
   - for `gep` memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical two-function call kernel shapes:
     - `f0` computes args and calls `f1`
-    - `f1` is canonical `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, or `xor` kernel
+    - `f1` is canonical `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, or `shr` kernel
     - current bootstrap lowering maps these shapes to corresponding direct arithmetic payloads
     - before call-kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs in `f0`/`f1` do not block lowering
     - for `f1` commutative targets (`add.wrap`/`mul.wrap`/`and`/`or`/`xor`), I also accept swapped call-arg order in `f0` (`call f1 v1 v0`)
     - I also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for non-commutative call->`sub.wrap`, I only lower shapes where `f0` call-arg mapping is semantically arg0->arg1 under the parsed arg definitions
+    - for non-commutative call->`sub.wrap`/`shl`/`shr`, I only lower shapes where `f0` call-arg mapping is semantically arg0->arg1 under the parsed arg definitions
     - I also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for non-commutative call->`sub.wrap`, I only lower shapes where `f1` operation mapping is semantically arg0->arg1 under the parsed arg definitions
+    - for non-commutative call->`sub.wrap`/`shl`/`shr`, I only lower shapes where `f1` operation mapping is semantically arg0->arg1 under the parsed arg definitions
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub

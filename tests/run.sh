@@ -203,6 +203,36 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_xor_with_dead_const_general_lowered.out; the
   echo "FAIL: verify valid_call_xor_with_dead_const_general_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_shl_lowered.l0" >/tmp/l0_ok_call_shl_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shl_lowered.out; then
+  echo "FAIL: verify valid_call_shl_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_shl_with_dead_const_general_lowered.l0" >/tmp/l0_ok_call_shl_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shl_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_call_shl_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_shl_swapped_unlowered.l0" >/tmp/l0_ok_call_shl_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shl_swapped_unlowered.out; then
+  echo "FAIL: verify valid_call_shl_swapped_unlowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_shr_lowered.l0" >/tmp/l0_ok_call_shr_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shr_lowered.out; then
+  echo "FAIL: verify valid_call_shr_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_shr_with_dead_const_general_lowered.l0" >/tmp/l0_ok_call_shr_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shr_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_call_shr_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_shr_swapped_unlowered.l0" >/tmp/l0_ok_call_shr_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_shr_swapped_unlowered.out; then
+  echo "FAIL: verify valid_call_shr_swapped_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_sub_f1_swapped_with_dead_const_unlowered.l0" >/tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out; then
   echo "FAIL: verify valid_call_sub_f1_swapped_with_dead_const_unlowered"
@@ -1195,6 +1225,70 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_xor_with_dead_const_general_lowered.out)" 
   echo "FAIL: run call->xor with dead const lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_shl_lowered.l0" /tmp/l0_test_call_shl_lowered.img >/tmp/l0_build_call_shl_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shl_lowered.out; then
+  echo "FAIL: build valid_call_shl_lowered"
+  exit 1
+fi
+call_shl_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shl_lowered.img | tr -d ' ')
+call_shl_kernel_kind=$(od -An -t u8 -j "$((call_shl_dbg_off + 32))" -N 8 /tmp/l0_test_call_shl_lowered.img | tr -d ' ')
+if [ "$call_shl_kernel_kind" != "8" ]; then
+  echo "FAIL: call->shl debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shl_lowered.img 3 4 >/tmp/l0_run_call_shl_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shl_lowered.out)" != "48" ]; then
+  echo "FAIL: run call->shl lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_shl_with_dead_const_general_lowered.l0" /tmp/l0_test_call_shl_with_dead_const_general_lowered.img >/tmp/l0_build_call_shl_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shl_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_call_shl_with_dead_const_general_lowered"
+  exit 1
+fi
+call_shl_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shl_with_dead_const_general_lowered.img | tr -d ' ')
+call_shl_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_shl_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_shl_with_dead_const_general_lowered.img | tr -d ' ')
+if [ "$call_shl_dead_const_kernel_kind" != "8" ]; then
+  echo "FAIL: call->shl with dead const debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shl_with_dead_const_general_lowered.img 3 4 >/tmp/l0_run_call_shl_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shl_with_dead_const_general_lowered.out)" != "48" ]; then
+  echo "FAIL: run call->shl with dead const lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_shr_lowered.l0" /tmp/l0_test_call_shr_lowered.img >/tmp/l0_build_call_shr_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shr_lowered.out; then
+  echo "FAIL: build valid_call_shr_lowered"
+  exit 1
+fi
+call_shr_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shr_lowered.img | tr -d ' ')
+call_shr_kernel_kind=$(od -An -t u8 -j "$((call_shr_dbg_off + 32))" -N 8 /tmp/l0_test_call_shr_lowered.img | tr -d ' ')
+if [ "$call_shr_kernel_kind" != "9" ]; then
+  echo "FAIL: call->shr debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shr_lowered.img 48 4 >/tmp/l0_run_call_shr_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shr_lowered.out)" != "3" ]; then
+  echo "FAIL: run call->shr lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_shr_with_dead_const_general_lowered.l0" /tmp/l0_test_call_shr_with_dead_const_general_lowered.img >/tmp/l0_build_call_shr_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shr_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_call_shr_with_dead_const_general_lowered"
+  exit 1
+fi
+call_shr_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shr_with_dead_const_general_lowered.img | tr -d ' ')
+call_shr_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_shr_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_shr_with_dead_const_general_lowered.img | tr -d ' ')
+if [ "$call_shr_dead_const_kernel_kind" != "9" ]; then
+  echo "FAIL: call->shr with dead const debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_shr_with_dead_const_general_lowered.img 48 4 >/tmp/l0_run_call_shr_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_shr_with_dead_const_general_lowered.out)" != "3" ]; then
+  echo "FAIL: run call->shr with dead const lowered image result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_add_swapped_lowered.l0" /tmp/l0_test_call_add_swapped_lowered.img >/tmp/l0_build_call_add_swapped_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_add_swapped_lowered.out; then
   echo "FAIL: build valid_call_add_swapped_lowered"
@@ -1533,6 +1627,30 @@ call_add_mismatch_kernel_kind=$(od -An -t u8 -j "$((call_add_mismatch_dbg_off + 
 call_add_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_add_mismatch_unlowered.img | tr -d ' ')
 if [ "$call_add_mismatch_kernel_kind" != "0" ] || [ "$call_add_mismatch_code_size" != "1" ]; then
   echo "FAIL: call add mismatch unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_shl_swapped_unlowered.l0" /tmp/l0_test_call_shl_swapped_unlowered.img >/tmp/l0_build_call_shl_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shl_swapped_unlowered.out; then
+  echo "FAIL: build valid_call_shl_swapped_unlowered"
+  exit 1
+fi
+call_shl_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
+call_shl_swapped_kernel_kind=$(od -An -t u8 -j "$((call_shl_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
+call_shl_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_shl_swapped_unlowered.img | tr -d ' ')
+if [ "$call_shl_swapped_kernel_kind" != "0" ] || [ "$call_shl_swapped_code_size" != "1" ]; then
+  echo "FAIL: call shl swapped unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_shr_swapped_unlowered.l0" /tmp/l0_test_call_shr_swapped_unlowered.img >/tmp/l0_build_call_shr_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_shr_swapped_unlowered.out; then
+  echo "FAIL: build valid_call_shr_swapped_unlowered"
+  exit 1
+fi
+call_shr_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
+call_shr_swapped_kernel_kind=$(od -An -t u8 -j "$((call_shr_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
+call_shr_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_shr_swapped_unlowered.img | tr -d ' ')
+if [ "$call_shr_swapped_kernel_kind" != "0" ] || [ "$call_shr_swapped_code_size" != "1" ]; then
+  echo "FAIL: call shr swapped unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_sub_f1_swapped_unlowered.l0" /tmp/l0_test_call_sub_f1_swapped_unlowered.img >/tmp/l0_build_call_sub_f1_swapped_unlowered.out
