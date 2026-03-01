@@ -284,6 +284,8 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
+    - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
+    - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only when `f0` call-arg mapping remains semantically arg0->arg1
     - call-kernel templates also accept nonzero call-result ids in `f0` when `ret` references the same value id
     - mismatch trace-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch malloc result-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested

@@ -130,7 +130,16 @@ Last updated: 2026-03-01
   - `icmp.eq + cbr` selector accepts either canonical arg-definition order in `f0`, preserves compare-result consistency checks, and preserves strict branch-return mapping checks
   - regression matrix added for arg-definition-order variants (lowered and intentional unlowered guardrail shapes) across binary/icmp/cbr selector families
 
-### M7: Non-template backend and full general codegen
+### M7: Selector-Decoupling Completion (Call Family)
+
+- Status: complete
+- Scope completed:
+  - call-kernel selector accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
+  - call-kernel lowering remains valid for commutative call targets (`add.wrap`, `mul.wrap`) under either arg-definition order in `f0`
+  - non-commutative guardrail is preserved for call->`sub.wrap` under arg-definition-order variants by requiring semantic arg0->arg1 mapping
+  - regression matrix added for call arg-definition-order variants (lowered and intentional unlowered guardrail shapes)
+
+### M8: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

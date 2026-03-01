@@ -346,6 +346,8 @@ pat_trace_tail: .ascii "\n}\n"
 pat_trace_tail_len = . - pat_trace_tail
 pat_call_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_head_len = . - pat_call_head
+pat_call_head_alt: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v1 = arg 0 : t0\n  v0 = arg 1 : t0\n  v"
+pat_call_head_alt_len = . - pat_call_head_alt
 pat_call_mid: .ascii " = call f1 "
 pat_call_mid_len = . - pat_call_mid
 pat_call_tail_a: .ascii "v0 v1 : t0\n  ret v"
@@ -8478,19 +8480,35 @@ try_select_call_kernel_code:
     push r13
     push r14
     push r15
+    sub rsp, 8
 
     mov r12, rdi
     mov r13, rsi
+    mov qword ptr [rsp], 0
     lea rdx, [rip+pat_call_head]
     mov rcx, pat_call_head_len
     mov rdi, r12
     mov rsi, r13
     call find_substr_pos
     cmp rax, -1
+    jne .tsck_call_head_found
+    lea rdx, [rip+pat_call_head_alt]
+    mov rcx, pat_call_head_alt_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
     je .tsck_call_no
-
+    mov qword ptr [rsp], 1
+.tsck_call_head_found:
     mov r8, rax
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_head_len_ok
+    add r8, pat_call_head_alt_len   # result-id start
+    jmp .tsck_call_head_len_done
+.tsck_call_head_len_ok:
     add r8, pat_call_head_len       # result-id start
+.tsck_call_head_len_done:
     cmp r8, r13
     jae .tsck_call_no
     mov r9, r8
@@ -8746,7 +8764,13 @@ try_select_call_kernel_code:
 .tsck_call_try_sub:
     mov rax, r13
     sub rax, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_len_canon
+    mov rcx, pat_call_tail_a_swapped_len
+    jmp .tsck_call_sub_len_ready
+.tsck_call_sub_len_canon:
     mov rcx, pat_call_tail_a_len
+.tsck_call_sub_len_ready:
     add rcx, r11
     add rcx, pat_call_tail_b_head_len
     add rcx, 1
@@ -8757,8 +8781,15 @@ try_select_call_kernel_code:
     jb .tsck_call_try_mul
     mov rdi, r12
     add rdi, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_head_canon
+    lea rsi, [rip+pat_call_tail_a_swapped]
+    mov rdx, pat_call_tail_a_swapped_len
+    jmp .tsck_call_sub_head_ready
+.tsck_call_sub_head_canon:
     lea rsi, [rip+pat_call_tail_a]
     mov rdx, pat_call_tail_a_len
+.tsck_call_sub_head_ready:
     call mem_eq
     cmp rax, 1
     jne .tsck_call_try_mul
@@ -8772,7 +8803,13 @@ try_select_call_kernel_code:
     cmp rax, 1
     jne .tsck_call_try_mul
     mov r8, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_head_advance_canon
+    add r8, pat_call_tail_a_swapped_len
+    jmp .tsck_call_sub_head_advance_done
+.tsck_call_sub_head_advance_canon:
     add r8, pat_call_tail_a_len
+.tsck_call_sub_head_advance_done:
     add r8, r11
     mov rax, r13
     sub rax, r8
@@ -9065,8 +9102,9 @@ try_select_call_kernel_code:
 .tsck_call_no:
     xor rax, rax
 .tsck_call_done:
-    pop rcx
-    pop rdx
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    add rsp, 24
     cmp rax, 1
     je .tsck_call_keep_out
     mov r14, rdx
