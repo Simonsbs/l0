@@ -576,6 +576,17 @@ if "$BIN" tracejoin /tmp/l0_bad_trace_unknown_id.err /tmp/l0_trace_noop_debug_ma
   echo "FAIL: tracejoin accepted unknown trace id"
   exit 1
 fi
+cat /tmp/l0_run_trace_noop.err /tmp/l0_run_trace_noop.err >/tmp/l0_bad_trace_unknown_id_second.err
+printf '\x09\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_unknown_id_second.err bs=1 seek=16 conv=notrunc status=none
+"$BIN" tracecat /tmp/l0_bad_trace_unknown_id_second.err >/tmp/l0_tracecat_unknown_id_second.out
+if [ "$(cat /tmp/l0_tracecat_unknown_id_second.out)" != $'id 1\nval 123\nid 9\nval 123' ]; then
+  echo "FAIL: tracecat mixed-record decode output"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_bad_trace_unknown_id_second.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_trace_unknown_id_second.out 2>/tmp/l0_bad_trace_unknown_id_second.errlog; then
+  echo "FAIL: tracejoin accepted unknown trace id in later record"
+  exit 1
+fi
 if [ ! -s /tmp/l0_test.img ]; then
   echo "FAIL: build output missing"
   exit 1

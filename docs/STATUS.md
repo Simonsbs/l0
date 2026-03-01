@@ -60,6 +60,7 @@ Last updated: 2026-03-01
   - explicit debug-map header consistency tests: `mapcat` and `tracejoin` reject mismatched `entry_count` header vs payload size
   - explicit oversized debug-map entry-count tests: `mapcat` rejects oversized count payload artifacts and `tracejoin` rejects `entry_count > 64`
   - explicit malformed trace-schema tests: `schemacat` rejects bad schema version, bad record size, bad field count, and truncated payload size
+  - expanded multi-record trace corruption coverage: `tracejoin` rejects unknown `trace_id` appearing in later records while `tracecat` still decodes the mixed payload deterministically
   - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
   - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
   - overflow-style image tamper checks for `imgcheck` (`src_size`/`code_size`/`code_off`/`debug_off` set to max u64 values)
