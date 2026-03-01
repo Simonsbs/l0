@@ -189,6 +189,24 @@ Section order in file:
 - `qword[4]`: kernel kind id
 - `qword[5]`: emitted code size
 
+Current bootstrap `kernel kind id` mapping:
+- `0`: fallback `ret`
+- `1`: `add.wrap`
+- `2`: `add.trap`
+- `3`: `sub.wrap`
+- `4`: `sub.trap`
+- `5`: `mul.wrap`
+- `6`: `and`
+- `7`: `or`
+- `8`: `xor`
+- `9`: `shl`
+- `10`: `shr`
+- `11`: `icmp.eq`
+- `12`: `icmp.eq + cbr` select
+- `13`: const-return kernel
+- `14`: memory roundtrip kernel (`alloca/st/ld`)
+- `15`: `mul.trap`
+
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 
 `l0c run <file.l0img> [u64_a] [u64_b]`:

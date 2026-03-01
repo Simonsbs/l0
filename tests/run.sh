@@ -204,6 +204,12 @@ if ! grep -q '^ok$' /tmp/l0_build_add_trap.out; then
   echo "FAIL: build valid_add_trap"
   exit 1
 fi
+add_trap_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_add_trap.img | tr -d ' ')
+add_trap_kernel_kind=$(od -An -t u8 -j "$((add_trap_dbg_off + 32))" -N 8 /tmp/l0_test_add_trap.img | tr -d ' ')
+if [ "$add_trap_kernel_kind" != "2" ]; then
+  echo "FAIL: add.trap debug kernel kind id"
+  exit 1
+fi
 "$BIN" run /tmp/l0_test_add_trap.img 7 5 >/tmp/l0_run_add_trap.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add_trap.out)" != "12" ]; then
   echo "FAIL: run add.trap image result"
@@ -334,6 +340,12 @@ fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out
 if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip.out; then
   echo "FAIL: build valid_mem_roundtrip"
+  exit 1
+fi
+mem_roundtrip_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_roundtrip.img | tr -d ' ')
+mem_roundtrip_kernel_kind=$(od -An -t u8 -j "$((mem_roundtrip_dbg_off + 32))" -N 8 /tmp/l0_test_mem_roundtrip.img | tr -d ' ')
+if [ "$mem_roundtrip_kernel_kind" != "14" ]; then
+  echo "FAIL: mem roundtrip debug kernel kind id"
   exit 1
 fi
 "$BIN" run /tmp/l0_test_mem_roundtrip.img 123 >/tmp/l0_run_mem_roundtrip.out

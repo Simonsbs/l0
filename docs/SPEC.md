@@ -119,6 +119,7 @@ I also enforce a structural subset inside `fns`:
   - `qword[3]`: type count
   - `qword[4]`: kernel kind id (bootstrap lowering selector output)
   - `qword[5]`: emitted code size
+  - current kernel kind ids are documented in `docs/IMPLEMENTABLE_SPEC.md`
 
 `l0c imgcheck <file.l0img>` validates bootstrap container integrity:
 - magic match
