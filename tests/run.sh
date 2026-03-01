@@ -2976,7 +2976,10 @@ for f in \
   valid_malloc_with_dead_const_general_lowered.l0 \
   valid_malloc_mismatch_with_dead_const_unlowered.l0 \
   valid_exit_with_dead_const_general_lowered.l0 \
-  valid_exit_mismatch_with_dead_const_unlowered.l0
+  valid_exit_mismatch_with_dead_const_unlowered.l0 \
+  valid_write_newline_with_dead_const_general_unlowered.l0 \
+  valid_free_noop_with_dead_const_general_unlowered.l0 \
+  valid_trace_noop_with_dead_const_general_unlowered.l0
 do
   "$BIN" verify "$ROOT/tests/$f" >/tmp/l0_ok_m16_"$f".out
   if ! grep -q '^ok$' /tmp/l0_ok_m16_"$f".out; then
@@ -3084,6 +3087,36 @@ if ! grep -q '^ok$' /tmp/l0_build_exit_mismatch_with_dead_const_unlowered.out; t
 fi
 if [ "$(get_kernel_kind /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
   echo "FAIL: exit mismatch dead-const unexpectedly lowered"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_write_newline_with_dead_const_general_unlowered.l0" /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img >/tmp/l0_build_write_newline_with_dead_const_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_dead_const_general_unlowered.out; then
+  echo "FAIL: build valid_write_newline_with_dead_const_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: write newline dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_free_noop_with_dead_const_general_unlowered.l0" /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img >/tmp/l0_build_free_noop_with_dead_const_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_dead_const_general_unlowered.out; then
+  echo "FAIL: build valid_free_noop_with_dead_const_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: free noop dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_trace_noop_with_dead_const_general_unlowered.l0" /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img >/tmp/l0_build_trace_noop_with_dead_const_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_dead_const_general_unlowered.out; then
+  echo "FAIL: build valid_trace_noop_with_dead_const_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: trace noop dead-const generalized hook fallback violated"
   exit 1
 fi
 

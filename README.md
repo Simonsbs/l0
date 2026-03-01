@@ -96,7 +96,8 @@ Current bootstrap status:
 - I now consider my M17 dead-const normalization correctness-hardening milestone complete: I now strip only dead canonical `const` value lines (instead of stripping all const lines), scope dead-const detection to the current function so same numeric value IDs in later functions do not block stripping, and keep generalized lowering behavior stable for my completed kernel families.
 - I now consider my M18 backend-readiness integration milestone complete: I wired generalized normalization hooks for the remaining const-dependent intrinsic selector families (`write`/`free`/`trace`) and kept full-suite behavior stable while preserving canonical fallback behavior.
 - I now consider my M19 generalized intrinsic hook activation milestone complete: generalized normalization hook stages are active in the build chain for all current intrinsic families with deterministic legacy fallback behavior preserved under full-suite coverage.
-- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering closure as my next milestone (M20).
+- I now consider my M20 const-dependent intrinsic fallback-closure milestone complete: I added explicit regression coverage proving dead-const-injected `write`/`free`/`trace` shapes deterministically remain unlowered (`kernel_kind 0`, `code_size 1`) while generalized hook stages are active.
+- I track full non-template multi-block backend/codegen completion and const-dependent intrinsic dead-const lowering (from deterministic fallback to lowered closure) as my next milestone (M21).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

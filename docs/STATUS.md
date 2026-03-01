@@ -245,7 +245,18 @@ Last updated: 2026-03-01
   - preserved deterministic legacy selector fallbacks when generalized hook paths do not select
   - validated end-to-end stability with full regression-suite pass
 
-### M20: Non-template backend and full general codegen completion
+### M20: Const-Dependent Intrinsic Fallback Closure
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for dead-const-injected const-dependent intrinsic shapes:
+    - `write`
+    - `free`
+    - `trace`
+  - added deterministic build assertions proving these shapes remain intentionally unlowered under active generalized hook staging (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M21: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
@@ -253,7 +264,7 @@ Last updated: 2026-03-01
   - integrate a generalized instruction-selection pipeline instead of template matching
   - integrate register allocation across generalized function bodies
   - widen type/memory ABI coverage toward the full MVP language spec
-  - complete const-dependent intrinsic dead-const lowering closure for `write`, `free`, and `trace`
+  - complete const-dependent intrinsic dead-const lowering closure for `write`, `free`, and `trace` (move from deterministic unlowered fallback to lowered closure)
 
 ## Documentation status
 
