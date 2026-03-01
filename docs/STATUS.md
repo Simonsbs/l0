@@ -94,6 +94,7 @@ Last updated: 2026-03-01
   - binary kernel selector now accepts canonical nonzero result value ids (`vN = <op> ...`, `ret vN`)
   - binary kernel selector now accepts canonical nonzero argument value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when binary operands reference those exact defs
   - binary selector guardrail added: swapped non-commutative `sub.wrap` with nonzero arg ids remains intentionally unlowered
+  - binary dynamic-arg selector path is regression-covered for multi-digit ids (`v77`, `v123`)
   - `icmp.eq` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `ret vN`)
   - `icmp.eq + cbr` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `cbr vN ...`)
   - guardrail added: `icmp.eq + cbr` path with mismatched compare-id/dataflow shape remains intentionally unlowered in bootstrap selector
