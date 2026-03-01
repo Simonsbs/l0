@@ -10413,7 +10413,7 @@ normalize_strip_const_value_lines:
     add rax, 3                       # lhs value-id digits start idx
     mov qword ptr [rsp+32], rax
     mov rax, rcx
-    sub rax, 3                       # lhs value-id digits len
+    sub rax, 6                       # lhs value-id digits len ("  v" + " = ")
     mov qword ptr [rsp+40], rax
     mov r10, qword ptr [rsp+16]
     add r10, qword ptr [rsp+24]

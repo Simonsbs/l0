@@ -319,7 +319,20 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these cross-function staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M27: Non-template backend and full general codegen completion
+### M27: Const-Dependent Intrinsic Dead-Const Lowering Closure
+
+- Status: complete
+- Scope completed:
+  - fixed dead-const normalization value-id matching (`lhs` id-length extraction) so live const lines are preserved and only dead canonical const defs are stripped
+  - moved const-dependent intrinsic generalized lowering from deterministic staged fallback to lowered closure for valid canonical dead-const-injected shapes:
+    - `write`
+    - `free`
+    - `trace`
+  - validated lowered closure across nonzero-id, multi-dead-const, and cross-function value-id-reuse variants
+  - preserved intentional write guardrail fallback behavior for `alloca ... , 0` variants (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M28: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
@@ -327,7 +340,6 @@ Last updated: 2026-03-01
   - integrate a generalized instruction-selection pipeline instead of template matching
   - integrate register allocation across generalized function bodies
   - widen type/memory ABI coverage toward the full MVP language spec
-  - complete const-dependent intrinsic dead-const lowering closure for `write`, `free`, and `trace` (move from deterministic unlowered fallback to lowered closure)
 
 ## Documentation status
 

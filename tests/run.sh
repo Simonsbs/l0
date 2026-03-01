@@ -2513,9 +2513,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_mismatch_unlowered.out; then
 fi
 free_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
 free_mismatch_kernel_kind=$(od -An -t u8 -j "$((free_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
-free_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_free_noop_mismatch_unlowered.img | tr -d ' ')
-if [ "$free_mismatch_kernel_kind" != "0" ] || [ "$free_mismatch_code_size" != "1" ]; then
-  echo "FAIL: free noop mismatch unexpectedly lowered"
+if [ "$free_mismatch_kernel_kind" != "21" ]; then
+  echo "FAIL: free noop mismatch generalized lowering kernel kind"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_exit.l0" /tmp/l0_test_exit.img >/tmp/l0_build_exit.out
@@ -2664,9 +2663,8 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_mismatch_unlowered.out; then
 fi
 write_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
 write_mismatch_kernel_kind=$(od -An -t u8 -j "$((write_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
-write_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
-if [ "$write_mismatch_kernel_kind" != "0" ] || [ "$write_mismatch_code_size" != "1" ]; then
-  echo "FAIL: write newline mismatch unexpectedly lowered"
+if [ "$write_mismatch_kernel_kind" != "22" ]; then
+  echo "FAIL: write newline mismatch generalized lowering kernel kind"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_write_newline_alloca16_lowered.l0" /tmp/l0_test_write_newline_alloca16_lowered.img >/tmp/l0_build_write_newline_alloca16_lowered.out
@@ -2783,9 +2781,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_mismatch_unlowered.out; then
 fi
 trace_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
 trace_mismatch_kernel_kind=$(od -An -t u8 -j "$((trace_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
-trace_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
-if [ "$trace_mismatch_kernel_kind" != "0" ] || [ "$trace_mismatch_code_size" != "1" ]; then
-  echo "FAIL: trace mismatch unexpectedly lowered"
+if [ "$trace_mismatch_kernel_kind" != "24" ]; then
+  echo "FAIL: trace mismatch generalized lowering kernel kind"
   exit 1
 fi
 cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_trace_truncated.err
@@ -2995,7 +2992,8 @@ for f in \
   valid_trace_noop_v123_with_three_dead_consts_general_unlowered.l0 \
   valid_write_newline_alloca0_v123_with_two_dead_consts_crossfn_general_unlowered.l0 \
   valid_free_noop_v123_with_three_dead_consts_crossfn_general_unlowered.l0 \
-  valid_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered.l0
+  valid_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered.l0 \
+  valid_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.l0
 do
   "$BIN" verify "$ROOT/tests/$f" >/tmp/l0_ok_m16_"$f".out
   if ! grep -q '^ok$' /tmp/l0_ok_m16_"$f".out; then
@@ -3111,8 +3109,8 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_dead_const_general_unlowere
   echo "FAIL: build valid_write_newline_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: write newline dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_dead_const_general_unlowered.img)" != "22" ]; then
+  echo "FAIL: write newline dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3121,8 +3119,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_dead_const_general_unlowered.ou
   echo "FAIL: build valid_free_noop_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_dead_const_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3131,8 +3129,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_dead_const_general_unlowered.o
   echo "FAIL: build valid_trace_noop_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_dead_const_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3141,8 +3139,8 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_two_dead_consts_general_unl
   echo "FAIL: build valid_write_newline_with_two_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: write newline two-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_two_dead_consts_general_unlowered.img)" != "22" ]; then
+  echo "FAIL: write newline two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3151,8 +3149,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_two_dead_consts_general_unlower
   echo "FAIL: build valid_free_noop_with_two_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop two-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_two_dead_consts_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3161,8 +3159,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_two_dead_consts_general_unlowe
   echo "FAIL: build valid_trace_noop_with_two_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop two-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_two_dead_consts_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3171,8 +3169,8 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_v123_with_dead_const_general_unl
   echo "FAIL: build valid_write_newline_v123_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_write_newline_v123_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_v123_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: write newline v123 dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_v123_with_dead_const_general_unlowered.img)" != "22" ]; then
+  echo "FAIL: write newline v123 dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3181,8 +3179,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123_with_dead_const_general_unlower
   echo "FAIL: build valid_free_noop_v123_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_v123_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop v123 dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_dead_const_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop v123 dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3191,8 +3189,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_dead_const_general_unlowe
   echo "FAIL: build valid_trace_noop_v123_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop v123 dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_dead_const_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop v123 dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3201,8 +3199,8 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca16_with_dead_const_general
   echo "FAIL: build valid_write_newline_alloca16_with_dead_const_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: write newline alloca16 dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "22" ]; then
+  echo "FAIL: write newline alloca16 dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3221,8 +3219,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123_with_two_dead_consts_general_un
   echo "FAIL: build valid_free_noop_v123_with_two_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop v123 two-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop v123 two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3231,8 +3229,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_two_dead_consts_general_u
   echo "FAIL: build valid_trace_noop_v123_with_two_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop v123 two-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop v123 two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3251,8 +3249,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123_with_three_dead_consts_general_
   echo "FAIL: build valid_free_noop_v123_with_three_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_three_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_v123_with_three_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop v123 three-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_three_dead_consts_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop v123 three-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3261,8 +3259,8 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_three_dead_consts_general
   echo "FAIL: build valid_trace_noop_v123_with_three_dead_consts_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_three_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_three_dead_consts_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop v123 three-dead-const generalized hook fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_three_dead_consts_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop v123 three-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3281,8 +3279,8 @@ if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123_with_three_dead_consts_crossfn_
   echo "FAIL: build valid_free_noop_v123_with_three_dead_consts_crossfn_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: free noop crossfn v123 three-dead-const fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "21" ]; then
+  echo "FAIL: free noop crossfn v123 three-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
@@ -3291,8 +3289,18 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_three_dead_consts_crossfn
   echo "FAIL: build valid_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "1" ]; then
-  echo "FAIL: trace noop crossfn v123 three-dead-const fallback violated"
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_three_dead_consts_crossfn_general_unlowered.img)" != "24" ]; then
+  echo "FAIL: trace noop crossfn v123 three-dead-const generalized lowering kernel kind"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.l0" /tmp/l0_test_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.img >/tmp/l0_build_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.out; then
+  echo "FAIL: build valid_write_newline_v123_with_two_dead_consts_crossfn_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_v123_with_two_dead_consts_crossfn_general_lowered.img)" != "22" ]; then
+  echo "FAIL: write newline crossfn v123 two-dead-const generalized lowering kernel kind"
   exit 1
 fi
 
