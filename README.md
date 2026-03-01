@@ -47,10 +47,12 @@ Current bootstrap status:
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
   - memory-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/load/return dataflow when each use references matching defs
   - memory-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
+  - memory-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I keep mismatched memory-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - memory-gep-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/gep/load/return dataflow when each use references matching defs
   - memory-gep-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
+  - memory-gep-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I keep mismatched memory-gep-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
@@ -86,7 +88,8 @@ Current bootstrap status:
 - I now consider my M8 selector-decoupling completion milestone complete: I lower call kernels correctly across canonical arg-definition-order variants in both `f0` and `f1`, with non-commutative `sub.wrap` semantics preserved.
 - I now consider my M10 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
 - I now consider my M11 selector-decoupling completion milestone complete: I lower the write-newline kernel across canonical nonzero `alloca` element counts while preserving strict `alloca ... , 0` guardrails.
-- I track true non-template generalized backend/codegen work as my next milestone (M12).
+- I now consider my M12 selector-decoupling completion milestone complete: I lower memory roundtrip and memory-gep roundtrip kernels independent of arg/alloca definition order in `f0`, while preserving intentional unlowered guardrails for mismatched dataflow.
+- I track true non-template generalized backend/codegen work as my next milestone (M13).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

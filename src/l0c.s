@@ -254,6 +254,12 @@ pat_mem_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_mem_head_len = . - pat_mem_head
 pat_mem_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_mem_mid_a_len = . - pat_mem_mid_a
+pat_mem_mid_a_alt_head: .ascii " = alloca t0, "
+pat_mem_mid_a_alt_head_len = . - pat_mem_mid_a_alt_head
+pat_mem_mid_a_alt_tail: .ascii " : t1\n  v"
+pat_mem_mid_a_alt_tail_len = . - pat_mem_mid_a_alt_tail
+pat_mem_mid_b_alt: .ascii " = arg 0 : t0\n  st v"
+pat_mem_mid_b_alt_len = . - pat_mem_mid_b_alt
 pat_mem_mid_b_head: .ascii " = alloca t0, "
 pat_mem_mid_b_head_len = . - pat_mem_mid_b_head
 pat_mem_mid_b_tail: .ascii " : t1\n  st v"
@@ -272,6 +278,12 @@ pat_gep_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_gep_head_len = . - pat_gep_head
 pat_gep_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_gep_mid_a_len = . - pat_gep_mid_a
+pat_gep_mid_a_alt_head: .ascii " = alloca t0, "
+pat_gep_mid_a_alt_head_len = . - pat_gep_mid_a_alt_head
+pat_gep_mid_a_alt_tail: .ascii " : t1\n  v"
+pat_gep_mid_a_alt_tail_len = . - pat_gep_mid_a_alt_tail
+pat_gep_mid_b_alt: .ascii " = arg 0 : t0\n  st v"
+pat_gep_mid_b_alt_len = . - pat_gep_mid_b_alt
 pat_gep_mid_b_head: .ascii " = alloca t0, "
 pat_gep_mid_b_head_len = . - pat_gep_mid_b_head
 pat_gep_mid_b_tail: .ascii " : t1\n  st v"
@@ -7441,14 +7453,14 @@ try_select_mem_gep_roundtrip_kernel_code:
     mov rax, r13
     sub rax, r10
     cmp rax, pat_gep_mid_a_len
-    jb .tsgr_no
+    jb .tsgr_try_swapped_defs
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_gep_mid_a]
     mov rdx, pat_gep_mid_a_len
     call mem_eq
     cmp rax, 1
-    jne .tsgr_no
+    jne .tsgr_try_swapped_defs
     add r10, pat_gep_mid_a_len       # alloca-id start
     cmp r10, r13
     jae .tsgr_no
@@ -7530,6 +7542,105 @@ try_select_mem_gep_roundtrip_kernel_code:
     cmp rax, 1
     jne .tsgr_no
     add r10, pat_gep_mid_b_tail_len
+    jmp .tsgr_defs_ready
+
+.tsgr_try_swapped_defs:
+    mov r14, rbx
+    mov r15, r11
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_gep_mid_a_alt_head_len
+    jb .tsgr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_gep_mid_a_alt_head]
+    mov rdx, pat_gep_mid_a_alt_head_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgr_no
+    add r10, pat_gep_mid_a_alt_head_len
+    cmp r10, r13
+    jae .tsgr_no
+    mov r8, r10
+    mov r9, r8
+.tsgr_sw_alloca_count_loop:
+    cmp r9, r13
+    jae .tsgr_sw_alloca_count_done
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsgr_sw_alloca_count_done
+    cmp al, '9'
+    ja .tsgr_sw_alloca_count_done
+    inc r9
+    jmp .tsgr_sw_alloca_count_loop
+.tsgr_sw_alloca_count_done:
+    cmp r9, r8
+    je .tsgr_no
+    xor rcx, rcx
+    mov rax, r8
+.tsgr_sw_alloca_count_nz_loop:
+    cmp rax, r9
+    jae .tsgr_sw_alloca_count_nz_done
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jne .tsgr_sw_alloca_count_nz_yes
+    inc rax
+    jmp .tsgr_sw_alloca_count_nz_loop
+.tsgr_sw_alloca_count_nz_yes:
+    mov rcx, 1
+.tsgr_sw_alloca_count_nz_done:
+    cmp rcx, 1
+    jne .tsgr_no
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_gep_mid_a_alt_tail_len
+    jb .tsgr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_gep_mid_a_alt_tail]
+    mov rdx, pat_gep_mid_a_alt_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgr_no
+    add r10, pat_gep_mid_a_alt_tail_len
+    cmp r10, r13
+    jae .tsgr_no
+
+    mov r8, r10
+    mov r9, r8
+.tsgr_sw_arg_vid_loop:
+    cmp r9, r13
+    jae .tsgr_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsgr_sw_arg_vid_done
+    cmp al, '9'
+    ja .tsgr_sw_arg_vid_done
+    inc r9
+    jmp .tsgr_sw_arg_vid_loop
+.tsgr_sw_arg_vid_done:
+    cmp r9, r8
+    je .tsgr_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_gep_mid_b_alt_len
+    jb .tsgr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_gep_mid_b_alt]
+    mov rdx, pat_gep_mid_b_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsgr_no
+    add r10, pat_gep_mid_b_alt_len
+
+.tsgr_defs_ready:
 
     mov rdi, r12
     add rdi, r10
@@ -7788,14 +7899,14 @@ try_select_mem_roundtrip_kernel_code:
     mov rax, r13
     sub rax, r10
     cmp rax, pat_mem_mid_a_len
-    jb .tsmr_no
+    jb .tsmr_try_swapped_defs
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_mem_mid_a]
     mov rdx, pat_mem_mid_a_len
     call mem_eq
     cmp rax, 1
-    jne .tsmr_no
+    jne .tsmr_try_swapped_defs
     add r10, pat_mem_mid_a_len       # alloca-id start
     cmp r10, r13
     jae .tsmr_no
@@ -7877,6 +7988,105 @@ try_select_mem_roundtrip_kernel_code:
     cmp rax, 1
     jne .tsmr_no
     add r10, pat_mem_mid_b_tail_len
+    jmp .tsmr_defs_ready
+
+.tsmr_try_swapped_defs:
+    mov r14, rbx
+    mov r15, r11
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_mem_mid_a_alt_head_len
+    jb .tsmr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_mem_mid_a_alt_head]
+    mov rdx, pat_mem_mid_a_alt_head_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmr_no
+    add r10, pat_mem_mid_a_alt_head_len
+    cmp r10, r13
+    jae .tsmr_no
+    mov r8, r10
+    mov r9, r8
+.tsmr_sw_alloca_count_loop:
+    cmp r9, r13
+    jae .tsmr_sw_alloca_count_done
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmr_sw_alloca_count_done
+    cmp al, '9'
+    ja .tsmr_sw_alloca_count_done
+    inc r9
+    jmp .tsmr_sw_alloca_count_loop
+.tsmr_sw_alloca_count_done:
+    cmp r9, r8
+    je .tsmr_no
+    xor rcx, rcx
+    mov rax, r8
+.tsmr_sw_alloca_count_nz_loop:
+    cmp rax, r9
+    jae .tsmr_sw_alloca_count_nz_done
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jne .tsmr_sw_alloca_count_nz_yes
+    inc rax
+    jmp .tsmr_sw_alloca_count_nz_loop
+.tsmr_sw_alloca_count_nz_yes:
+    mov rcx, 1
+.tsmr_sw_alloca_count_nz_done:
+    cmp rcx, 1
+    jne .tsmr_no
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_mem_mid_a_alt_tail_len
+    jb .tsmr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_mem_mid_a_alt_tail]
+    mov rdx, pat_mem_mid_a_alt_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmr_no
+    add r10, pat_mem_mid_a_alt_tail_len
+    cmp r10, r13
+    jae .tsmr_no
+
+    mov r8, r10
+    mov r9, r8
+.tsmr_sw_arg_vid_loop:
+    cmp r9, r13
+    jae .tsmr_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmr_sw_arg_vid_done
+    cmp al, '9'
+    ja .tsmr_sw_arg_vid_done
+    inc r9
+    jmp .tsmr_sw_arg_vid_loop
+.tsmr_sw_arg_vid_done:
+    cmp r9, r8
+    je .tsmr_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_mem_mid_b_alt_len
+    jb .tsmr_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_mem_mid_b_alt]
+    mov rdx, pat_mem_mid_b_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmr_no
+    add r10, pat_mem_mid_b_alt_len
+
+.tsmr_defs_ready:
 
     mov rdi, r12
     add rdi, r10

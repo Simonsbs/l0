@@ -275,9 +275,11 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match
     - memory-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
+    - memory-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
     - memory-gep-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret when ids/dataflow match
     - memory-gep-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
+    - memory-gep-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
     - `malloc` intrinsic kernel also accepts canonical nonzero arg/result ids when ids/dataflow match (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
     - `free` intrinsic kernel also accepts canonical nonzero arg/const-ret ids when ids/dataflow match (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)

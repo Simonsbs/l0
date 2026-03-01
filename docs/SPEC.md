@@ -123,6 +123,7 @@ I also enforce a structural subset inside `fns`:
     - `v2 = ld v1 : t0`
     - `ret v2`
   - for memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/ld/ret when all uses reference the corresponding defs
+  - for memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical `gep` memory roundtrip kernel shape:
     - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)
     - `st v1 v0`
@@ -130,6 +131,7 @@ I also enforce a structural subset inside `fns`:
     - `v3 = ld v2 : t0`
     - `ret v3`
   - for `gep` memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/gep/ld/ret when all uses reference the corresponding defs
+  - for `gep` memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical two-function call kernel shapes:
     - `f0` computes args and calls `f1`
     - `f1` is canonical `add.wrap`, `sub.wrap`, or `mul.wrap` kernel

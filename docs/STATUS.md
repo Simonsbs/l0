@@ -165,7 +165,15 @@ Last updated: 2026-03-01
   - strict guardrails preserved: write-newline shapes with `alloca t0, 0` remain intentionally unlowered
   - regression matrix added for write-newline alloca-count variants (lowered and intentional unlowered guardrail shapes)
 
-### M12: Non-template backend and full general codegen
+### M12: Selector-Decoupling Completion (Memory Def-Order Family)
+
+- Status: complete
+- Scope completed:
+  - memory roundtrip selector accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
+  - memory-gep roundtrip selector accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
+  - regression matrix added for swapped memory def-order variants (lowered and intentional unlowered guardrail shapes)
+
+### M13: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:
