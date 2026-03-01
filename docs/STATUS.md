@@ -67,11 +67,13 @@ Last updated: 2026-03-01
 
 ### M5: Full language/general codegen
 
-- Status: not started (beyond bootstrap kernels)
+- Status: started (initial bootstrap selector broadening)
 - Planned:
   - lower general multi-block SSA modules (not only canonical kernel templates)
   - integrate a generalized instruction-selection and register allocation path
   - widen type/memory ABI coverage toward full MVP spec
+- Current incremental step completed:
+  - commutative binary bootstrap selector now accepts canonical swapped operand order (`v1 v0`) for `add*`, `mul*`, `and`, `or`, `xor`
 
 ## Documentation status
 

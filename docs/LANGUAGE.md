@@ -264,6 +264,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
     - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
+    - commutative binary kernels in that set also accept canonical swapped operand order (`v1 v0`) during bootstrap lowering
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)

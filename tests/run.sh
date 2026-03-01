@@ -63,6 +63,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_sub.out; then
   echo "FAIL: verify valid_sub"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_add_swapped.l0" >/tmp/l0_ok_add_swapped.out
+if ! grep -q '^ok$' /tmp/l0_ok_add_swapped.out; then
+  echo "FAIL: verify valid_add_swapped"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_add_trap.l0" >/tmp/l0_ok_add_trap.out
 if ! grep -q '^ok$' /tmp/l0_ok_add_trap.out; then
   echo "FAIL: verify valid_add_trap"
@@ -497,6 +502,22 @@ fi
 "$BIN" run /tmp/l0_test_sub.img 9 2 >/tmp/l0_run_sub.out
 if [ "$(tr -d '\n' < /tmp/l0_run_sub.out)" != "7" ]; then
   echo "FAIL: run sub image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_add_swapped.l0" /tmp/l0_test_add_swapped.img >/tmp/l0_build_add_swapped.out
+if ! grep -q '^ok$' /tmp/l0_build_add_swapped.out; then
+  echo "FAIL: build valid_add_swapped"
+  exit 1
+fi
+add_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_add_swapped.img | tr -d ' ')
+add_swapped_kernel_kind=$(od -An -t u8 -j "$((add_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_add_swapped.img | tr -d ' ')
+if [ "$add_swapped_kernel_kind" != "1" ]; then
+  echo "FAIL: add_swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_add_swapped.img 7 5 >/tmp/l0_run_add_swapped.out
+if [ "$(tr -d '\n' < /tmp/l0_run_add_swapped.out)" != "12" ]; then
+  echo "FAIL: run add_swapped image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_trap.l0" /tmp/l0_test_add_trap.img >/tmp/l0_build_add_trap.out

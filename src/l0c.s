@@ -202,6 +202,8 @@ pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 
 pat_bin_prefix_len = . - pat_bin_prefix
 pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
 pat_bin_suffix_len = . - pat_bin_suffix
+pat_bin_suffix_swapped: .ascii "v1 v0 : t0\n  ret v2\n}\n"
+pat_bin_suffix_swapped_len = . - pat_bin_suffix_swapped
 pat_icmp_eq: .ascii "fn f0 (t0,t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  ret v2\n}\n"
 pat_icmp_eq_len = . - pat_icmp_eq
 pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = icmp.eq v0 v1 : t1\n  cbr v2 b1 b2\nb1:\n  ret v0\nb2:\n  ret v1\n}\n"
@@ -6994,13 +6996,23 @@ try_select_bin_kernel_code:
     sub r11, r10
     cmp r11, pat_bin_suffix_len
     jb .tsbk_no
+    xor r13d, r13d                   # operand order flag: 0=v0 v1, 1=v1 v0
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_bin_suffix]
     mov rdx, pat_bin_suffix_len
     call mem_eq
     cmp rax, 1
+    je .tsbk_suffix_ok
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_suffix_swapped]
+    mov rdx, pat_bin_suffix_swapped_len
+    call mem_eq
+    cmp rax, 1
     jne .tsbk_no
+    mov r13d, 1
+.tsbk_suffix_ok:
 
     mov r15, r9
     sub r15, r14                     # opcode len
@@ -7045,6 +7057,8 @@ try_select_bin_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsbk_chk_sub_wrap_real
+    cmp r13d, 0
+    jne .tsbk_no
     lea r14, [rip+code_stub_sub_trap]
     mov r15, code_stub_sub_trap_len
     mov qword ptr [rip+build_kernel_kind], 4
@@ -7060,6 +7074,8 @@ try_select_bin_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsbk_chk_mul
+    cmp r13d, 0
+    jne .tsbk_no
     lea r14, [rip+code_stub_sub]
     mov r15, code_stub_sub_len
     mov qword ptr [rip+build_kernel_kind], 3
@@ -7150,6 +7166,8 @@ try_select_bin_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsbk_chk_shr
+    cmp r13d, 0
+    jne .tsbk_no
     lea r14, [rip+code_stub_shl]
     mov r15, code_stub_shl_len
     mov qword ptr [rip+build_kernel_kind], 9
@@ -7164,6 +7182,8 @@ try_select_bin_kernel_code:
     mov rdx, tok_shr_len
     call mem_eq
     cmp rax, 1
+    jne .tsbk_no
+    cmp r13d, 0
     jne .tsbk_no
     lea r14, [rip+code_stub_shr]
     mov r15, code_stub_shr_len

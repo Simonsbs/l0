@@ -27,6 +27,7 @@ Current bootstrap status:
 - I enforce `imgmeta` schema checks (kernel-kind range, debug code-size match, trace schema constants) and test tampered-image rejection for them.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
+  - for commutative binary kernels (`add*`, `mul*`, `and`, `or`, `xor`), I also lower canonical swapped operand order (`v1 v0`) in the bootstrap selector
   - two-arg compare kernel (`icmp.eq`) returning `i1`
   - canonical `icmp.eq + cbr` select kernel returning either arg0 or arg1
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
