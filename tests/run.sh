@@ -155,6 +155,15 @@ if ! grep -q '^ok$' /tmp/l0_build.out; then
   echo "FAIL: build valid_min"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_min.l0" -o /tmp/l0_test_flag_o.img >/tmp/l0_build_flag_o.out
+if ! grep -q '^ok$' /tmp/l0_build_flag_o.out; then
+  echo "FAIL: build valid_min with -o"
+  exit 1
+fi
+if [ ! -s /tmp/l0_test_flag_o.img ]; then
+  echo "FAIL: build -o output missing"
+  exit 1
+fi
 if [ ! -s /tmp/l0_test.img ]; then
   echo "FAIL: build output missing"
   exit 1

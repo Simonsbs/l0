@@ -33,7 +33,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b]\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c build <input.l0> <out.l0img> | l0c build <input.l0> -o <out.l0img> | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b]\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -59,6 +59,7 @@ err_run_arg_len = . - err_run_arg_msg
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
+flag_o: .ascii "-o\0"
 cmd_imgcheck: .ascii "imgcheck\0"
 cmd_run: .ascii "run\0"
 img_header_len = 80
@@ -230,7 +231,18 @@ _start:
     cmp rax, 1
     jne .check_imgcheck
     cmp r13, 4
+    je .build_positional
+    cmp r13, 5
     jne usage
+    mov rdi, [r12+32]         # argv[3] should be "-o"
+    lea rsi, [rip+flag_o]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+40]         # argv[4] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    jmp do_build
+.build_positional:
     mov r11, [r12+32]         # argv[3] output path
     mov qword ptr [rip+out_path_ptr], r11
     jmp do_build

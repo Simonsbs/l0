@@ -84,7 +84,7 @@ I also enforce a structural subset inside `fns`:
 
 ## Current build artifact subset
 
-`l0c build <in.l0> <out.l0img>` currently emits:
+`l0c build <in.l0> <out.l0img>` (or `l0c build <in.l0> -o <out.l0img>`) currently emits:
 - I write a fixed 80-byte bootstrap header (all little-endian u64 words):
   - `qword[0]`: magic (`L0IM`)
   - `qword[1]`: version (`1`)

@@ -72,6 +72,7 @@ make
 ./bin/l0c canon <module.l0>
 ./bin/l0c verify <module.l0>
 ./bin/l0c build <module.l0> <out.l0img>
+./bin/l0c build <module.l0> -o <out.l0img>
 ./bin/l0c imgcheck <out.l0img>
 ./bin/l0c run <out.l0img> [u64_a] [u64_b]
 ```
