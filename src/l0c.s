@@ -240,8 +240,16 @@ pat_exit: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  exit v0\n  ret v0\
 pat_exit_len = . - pat_exit
 pat_write_newline: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = alloca t0, 1 : t1\n  v1 = const 10 : t0\n  st v0 v1\n  v2 = const 1 : t0\n  write v0 v2\n  v3 = const 0 : t0\n  ret v3\n}\n"
 pat_write_newline_len = . - pat_write_newline
-pat_trace_noop: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  trace 1 v0\n  v1 = const 0 : t0\n  ret v1\n}\n"
-pat_trace_noop_len = . - pat_trace_noop
+pat_trace_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
+pat_trace_head_len = . - pat_trace_head
+pat_trace_mid_a: .ascii " = arg 0 : t0\n  trace 1 v"
+pat_trace_mid_a_len = . - pat_trace_mid_a
+pat_trace_mid_b: .ascii "\n  v"
+pat_trace_mid_b_len = . - pat_trace_mid_b
+pat_trace_mid_c: .ascii " = const 0 : t0\n  ret v"
+pat_trace_mid_c_len = . - pat_trace_mid_c
+pat_trace_tail: .ascii "\n}\n"
+pat_trace_tail_len = . - pat_trace_tail
 pat_call_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_head_len = . - pat_call_head
 pat_call_mid: .ascii " = call f1 "
@@ -706,14 +714,9 @@ do_build:
     mov qword ptr [rip+build_kernel_kind], 0
     lea rdi, [rip+file_buf]
     mov rsi, rbx
-    lea rdx, [rip+pat_trace_noop]
-    mov rcx, pat_trace_noop_len
-    call find_substr
+    call try_select_trace_noop_kernel_code
     cmp rax, 1
     jne .build_try_write_newline
-    lea r14, [rip+code_stub_trace_emit]
-    mov r15, code_stub_trace_emit_len
-    mov qword ptr [rip+build_kernel_kind], 24
     jmp .build_code_selected
 
 .build_try_write_newline:
@@ -6944,6 +6947,163 @@ find_substr_pos:
     ret
 .fsp_no:
     mov rax, -1
+    ret
+
+# try_select_trace_noop_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_trace_noop_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_trace_head]
+    mov rcx, pat_trace_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tstn_no
+
+    mov r8, rax
+    add r8, pat_trace_head_len       # arg value-id start
+    cmp r8, r13
+    jae .tstn_no
+    mov r9, r8
+.tstn_arg_vid_loop:
+    cmp r9, r13
+    jae .tstn_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tstn_arg_vid_done
+    cmp al, '9'
+    ja .tstn_arg_vid_done
+    inc r9
+    jmp .tstn_arg_vid_loop
+.tstn_arg_vid_done:
+    cmp r9, r8
+    je .tstn_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # arg value-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_trace_mid_a_len
+    jb .tstn_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_trace_mid_a]
+    mov rdx, pat_trace_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+    add r10, pat_trace_mid_a_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_trace_mid_b_len
+    jb .tstn_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_trace_mid_b]
+    mov rdx, pat_trace_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+    add r10, pat_trace_mid_b_len     # const result-id start
+    cmp r10, r13
+    jae .tstn_no
+
+    mov r8, r10
+    mov r9, r8
+.tstn_const_vid_loop:
+    cmp r9, r13
+    jae .tstn_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tstn_const_vid_done
+    cmp al, '9'
+    ja .tstn_const_vid_done
+    inc r9
+    jmp .tstn_const_vid_loop
+.tstn_const_vid_done:
+    cmp r9, r8
+    je .tstn_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # const result-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_trace_mid_c_len
+    jb .tstn_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_trace_mid_c]
+    mov rdx, pat_trace_mid_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+    add r10, pat_trace_mid_c_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_trace_tail_len
+    jb .tstn_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_trace_tail]
+    mov rdx, pat_trace_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tstn_no
+
+    lea r14, [rip+code_stub_trace_emit]
+    mov r15, code_stub_trace_emit_len
+    mov qword ptr [rip+build_kernel_kind], 24
+    mov rax, 1
+    jmp .tstn_done
+
+.tstn_no:
+    xor rax, rax
+.tstn_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tstn_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tstn_keep_out:
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # try_select_call_kernel_code

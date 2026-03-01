@@ -43,6 +43,8 @@ Current bootstrap status:
   - call-kernel lowering now accepts canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I keep mismatch call-result/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` stderr-binary emit path)
+  - trace-kernel lowering now accepts canonical nonzero trace/dataflow value ids when `trace` and `ret` both reference the corresponding defined ids (`vN = arg ...`, `trace 1 vN`, `vM = const 0`, `ret vM`)
+  - I keep mismatched trace id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
   - const-return lowering accepts canonical nonzero SSA ids when `ret` uses the same const-def value (`vN = const ...`, `ret vN`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.

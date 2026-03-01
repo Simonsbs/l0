@@ -243,6 +243,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_trace_noop.out; then
   echo "FAIL: verify valid_trace_noop"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop_v7.l0" >/tmp/l0_ok_trace_noop_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_v7.out; then
+  echo "FAIL: verify valid_trace_noop_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop_mismatch_unlowered.l0" >/tmp/l0_ok_trace_noop_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_trace_noop_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_trace_multi.l0" >/tmp/l0_ok_trace_multi.out
 if ! grep -q '^ok$' /tmp/l0_ok_trace_multi.out; then
   echo "FAIL: verify valid_trace_multi"
@@ -1206,6 +1216,38 @@ fi
 "$BIN" tracecat /tmp/l0_run_trace_noop.err >/tmp/l0_tracecat.out
 if [ "$(cat /tmp/l0_tracecat.out)" != $'id 1\nval 123' ]; then
   echo "FAIL: tracecat decoded output"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_trace_noop_v7.l0" /tmp/l0_test_trace_noop_v7.img >/tmp/l0_build_trace_noop_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v7.out; then
+  echo "FAIL: build valid_trace_noop_v7"
+  exit 1
+fi
+trace_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop_v7.img | tr -d ' ')
+trace_v7_kernel_kind=$(od -An -t u8 -j "$((trace_v7_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop_v7.img | tr -d ' ')
+if [ "$trace_v7_kernel_kind" != "24" ]; then
+  echo "FAIL: trace v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_trace_noop_v7.img 123 >/tmp/l0_run_trace_noop_v7.out 2>/tmp/l0_run_trace_noop_v7.err
+if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_v7.out)" != "0" ]; then
+  echo "FAIL: run trace v7 image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_v7.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
+  echo "FAIL: run trace v7 emit bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_trace_noop_mismatch_unlowered.l0" /tmp/l0_test_trace_noop_mismatch_unlowered.img >/tmp/l0_build_trace_noop_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_mismatch_unlowered.out; then
+  echo "FAIL: build valid_trace_noop_mismatch_unlowered"
+  exit 1
+fi
+trace_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
+trace_mismatch_kernel_kind=$(od -An -t u8 -j "$((trace_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
+trace_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_trace_noop_mismatch_unlowered.img | tr -d ' ')
+if [ "$trace_mismatch_kernel_kind" != "0" ] || [ "$trace_mismatch_code_size" != "1" ]; then
+  echo "FAIL: trace mismatch unexpectedly lowered"
   exit 1
 fi
 cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_trace_truncated.err
