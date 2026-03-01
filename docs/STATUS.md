@@ -121,7 +121,11 @@ Last updated: 2026-03-01
 
 ### M6: Non-template backend and full general codegen
 
-- Status: planned
+- Status: in progress
+- Current incremental step completed:
+  - binary selector now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`) and normalizes dataflow by arg index
+  - commutative binary lowering remains valid under swapped arg-definition order
+  - non-commutative guardrail maintained under swapped arg-definition order (`sub.wrap` swapped operands remains intentionally unlowered)
 - Planned:
   - lower general multi-block SSA modules beyond canonical kernel templates
   - integrate a generalized instruction-selection pipeline instead of template matching

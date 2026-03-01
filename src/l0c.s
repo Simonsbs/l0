@@ -202,8 +202,12 @@ pat_bin_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v"
 pat_bin_head_len = . - pat_bin_head
 pat_bin_mid_a: .ascii " = arg 0 : t0\n  v"
 pat_bin_mid_a_len = . - pat_bin_mid_a
+pat_bin_mid_a_alt: .ascii " = arg 1 : t0\n  v"
+pat_bin_mid_a_alt_len = . - pat_bin_mid_a_alt
 pat_bin_mid_b: .ascii " = arg 1 : t0\n  v"
 pat_bin_mid_b_len = . - pat_bin_mid_b
+pat_bin_mid_b_alt: .ascii " = arg 0 : t0\n  v"
+pat_bin_mid_b_alt_len = . - pat_bin_mid_b_alt
 pat_bin_mid: .ascii " = "
 pat_bin_mid_len = . - pat_bin_mid
 pat_bin_tail_mid: .ascii " : t0\n  ret v"
@@ -9684,7 +9688,7 @@ try_select_bin_kernel_code:
     push r13
     push r14
     push r15
-    sub rsp, 88
+    sub rsp, 96
 
     mov r12, rdi
     mov r13, rsi
@@ -9732,8 +9736,25 @@ try_select_bin_kernel_code:
     mov rdx, pat_bin_mid_a_len
     call mem_eq
     cmp rax, 1
+    je .tsbk_arg_first_ok
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_bin_mid_a_alt_len
+    jb .tsbk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_mid_a_alt]
+    mov rdx, pat_bin_mid_a_alt_len
+    call mem_eq
+    cmp rax, 1
     jne .tsbk_no
-    add r10, pat_bin_mid_a_len        # arg1-id start
+    mov qword ptr [rsp+88], 1
+    add r10, pat_bin_mid_a_alt_len      # second arg-id start
+    jmp .tsbk_arg_first_done
+.tsbk_arg_first_ok:
+    mov qword ptr [rsp+88], 0
+    add r10, pat_bin_mid_a_len          # second arg-id start
+.tsbk_arg_first_done:
 
     mov r8, r10
     cmp r10, r13
@@ -9760,6 +9781,8 @@ try_select_bin_kernel_code:
     mov r10, r9
     mov rax, r13
     sub rax, r10
+    cmp qword ptr [rsp+88], 0
+    jne .tsbk_second_expect_arg0
     cmp rax, pat_bin_mid_b_len
     jb .tsbk_no
     mov rdi, r12
@@ -9769,7 +9792,33 @@ try_select_bin_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsbk_no
-    add r10, pat_bin_mid_b_len        # result-id start
+    add r10, pat_bin_mid_b_len
+    jmp .tsbk_second_line_done
+.tsbk_second_expect_arg0:
+    cmp rax, pat_bin_mid_b_alt_len
+    jb .tsbk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_bin_mid_b_alt]
+    mov rdx, pat_bin_mid_b_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_no
+    add r10, pat_bin_mid_b_alt_len
+.tsbk_second_line_done:
+    # Normalize slots: [rsp+0]/[rsp+8] = arg0 id, [rsp+16]/[rsp+24] = arg1 id.
+    cmp qword ptr [rsp+88], 0
+    je .tsbk_args_norm_done
+    mov rax, qword ptr [rsp+0]
+    mov rbx, qword ptr [rsp+8]
+    mov rcx, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    mov qword ptr [rsp+0], rcx
+    mov qword ptr [rsp+8], rdx
+    mov qword ptr [rsp+16], rax
+    mov qword ptr [rsp+24], rbx
+.tsbk_args_norm_done:
+    # result-id start
     cmp r10, r13
     jae .tsbk_no
 
@@ -10149,7 +10198,7 @@ try_select_bin_kernel_code:
 .tsbk_no:
     xor rax, rax
 .tsbk_done:
-    add rsp, 88
+    add rsp, 96
     pop rcx
     pop rdx
     cmp rax, 1
