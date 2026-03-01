@@ -846,12 +846,28 @@ do_build:
     mov qword ptr [rip+build_kernel_kind], 0
     lea rdi, [rip+file_buf]
     mov rsi, rbx
+    call try_select_general_trace_noop_kernel_code
+    cmp rax, 1
+    jne .build_try_trace_noop
+    jmp .build_code_selected
+
+.build_try_trace_noop:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
     call try_select_trace_noop_kernel_code
     cmp rax, 1
     jne .build_try_write_newline
     jmp .build_code_selected
 
 .build_try_write_newline:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_write_newline_kernel_code
+    cmp rax, 1
+    jne .build_try_write_newline_legacy
+    jmp .build_code_selected
+
+.build_try_write_newline_legacy:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_write_newline_kernel_code
@@ -892,6 +908,14 @@ do_build:
     jmp .build_code_selected
 
 .build_try_free_noop:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_free_noop_kernel_code
+    cmp rax, 1
+    jne .build_try_free_noop_legacy
+    jmp .build_code_selected
+
+.build_try_free_noop_legacy:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_free_noop_kernel_code
@@ -10677,6 +10701,141 @@ try_select_general_call_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgcall_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_trace_noop_kernel_code
+# generalized pre-lowering normalization for trace-noop kernel:
+# - strips only dead canonical const value lines
+# - reuses the existing trace-noop selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_trace_noop_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgtrace_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_trace_noop_kernel_code
+    cmp rax, 1
+    jne .tsgtrace_no
+    mov rax, 1
+    jmp .tsgtrace_done
+
+.tsgtrace_no:
+    xor rax, rax
+.tsgtrace_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgtrace_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgtrace_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_write_newline_kernel_code
+# generalized pre-lowering normalization for write-newline kernel:
+# - strips only dead canonical const value lines
+# - reuses the existing write-newline selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_write_newline_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgwrite_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_write_newline_kernel_code
+    cmp rax, 1
+    jne .tsgwrite_no
+    mov rax, 1
+    jmp .tsgwrite_done
+
+.tsgwrite_no:
+    xor rax, rax
+.tsgwrite_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgwrite_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgwrite_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_free_noop_kernel_code
+# generalized pre-lowering normalization for free-noop kernel:
+# - strips only dead canonical const value lines
+# - reuses the existing free-noop selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_free_noop_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgfree_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_free_noop_kernel_code
+    cmp rax, 1
+    jne .tsgfree_no
+    mov rax, 1
+    jmp .tsgfree_done
+
+.tsgfree_no:
+    xor rax, rax
+.tsgfree_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgfree_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgfree_keep_out:
     pop r13
     pop r12
     pop rbx

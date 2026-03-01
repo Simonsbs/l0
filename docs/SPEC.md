@@ -163,7 +163,7 @@ I also enforce a structural subset inside `fns`:
     - for bootstrap newline `write`, I also accept canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
-    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I still require exact canonical templates today; dataflow-aware dead-const normalization for these is tracked in M18
+    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I still require exact canonical templates as lowering authority today; I have staged generalized normalization hooks in the build chain and track dead-const lowering closure for these in M19
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

@@ -228,7 +228,16 @@ Last updated: 2026-03-01
   - retained generalized lowering behavior for already-completed normalization families (`bin`, `icmp`, `icmp+cbr`, `call`, `memory`, `memory-gep`, `malloc`, `exit`)
   - validated with full suite regression pass, including existing multi-function call dead-const coverage
 
-### M18: Non-template backend and full general codegen
+### M18: Backend-Readiness Integration
+
+- Status: complete
+- Scope completed:
+  - wired generalized normalization hook stages into `build` for remaining const-dependent intrinsic selector families (`trace`, `write`, `free`) ahead of legacy selector fallbacks
+  - kept existing selector behavior stable and deterministic under full regression-suite execution
+  - retained legacy canonical fallback behavior for const-dependent intrinsic dead-const-injected shapes while generalized normalization hook path is staged
+  - validated end-to-end with full-suite pass
+
+### M19: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
@@ -236,7 +245,7 @@ Last updated: 2026-03-01
   - integrate a generalized instruction-selection pipeline instead of template matching
   - integrate register allocation across generalized function bodies
   - widen type/memory ABI coverage toward the full MVP language spec
-  - extend dead-const normalization to const-dependent kernel families (`write`, `free`, `trace`) by preserving semantically-used const defs
+  - complete const-dependent intrinsic dead-const lowering closure for `write`, `free`, and `trace`
 
 ## Documentation status
 
