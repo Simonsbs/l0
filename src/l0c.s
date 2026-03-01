@@ -334,10 +334,14 @@ pat_call_tail_b_head: .ascii "\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n
 pat_call_tail_b_head_len = . - pat_call_tail_b_head
 pat_call_tail_b_mid_add: .ascii " = add.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_add_len = . - pat_call_tail_b_mid_add
+pat_call_tail_b_mid_add_swapped: .ascii " = add.wrap v1 v0 : t0\n  ret v"
+pat_call_tail_b_mid_add_swapped_len = . - pat_call_tail_b_mid_add_swapped
 pat_call_tail_b_mid_sub: .ascii " = sub.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_sub_len = . - pat_call_tail_b_mid_sub
 pat_call_tail_b_mid_mul: .ascii " = mul.wrap v0 v1 : t0\n  ret v"
 pat_call_tail_b_mid_mul_len = . - pat_call_tail_b_mid_mul
+pat_call_tail_b_mid_mul_swapped: .ascii " = mul.wrap v1 v0 : t0\n  ret v"
+pat_call_tail_b_mid_mul_swapped_len = . - pat_call_tail_b_mid_mul_swapped
 pat_call_tail_b_tail: .ascii "\n}\n"
 pat_call_tail_b_tail_len = . - pat_call_tail_b_tail
 pat_const_head: .ascii "fn f0 ()->t0 {\nb0:\n  v"
@@ -8572,7 +8576,15 @@ try_select_call_kernel_code:
     mov rdx, pat_call_tail_b_mid_add_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_add_mid_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_mid_add_swapped]
+    mov rdx, pat_call_tail_b_mid_add_swapped_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_add_swapped
+.tsck_call_add_mid_ok:
     add r8, pat_call_tail_b_mid_add_len
     mov rdi, r12
     add rdi, r8
@@ -8673,7 +8685,15 @@ try_select_call_kernel_code:
     mov rdx, pat_call_tail_b_mid_add_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_add_swapped_mid_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_mid_add_swapped]
+    mov rdx, pat_call_tail_b_mid_add_swapped_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_sub
+.tsck_call_add_swapped_mid_ok:
     add r8, pat_call_tail_b_mid_add_len
     mov rdi, r12
     add rdi, r8
@@ -8875,7 +8895,15 @@ try_select_call_kernel_code:
     mov rdx, pat_call_tail_b_mid_mul_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_mul_mid_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_mid_mul_swapped]
+    mov rdx, pat_call_tail_b_mid_mul_swapped_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_try_mul_swapped
+.tsck_call_mul_mid_ok:
     add r8, pat_call_tail_b_mid_mul_len
     mov rdi, r12
     add rdi, r8
@@ -8976,7 +9004,15 @@ try_select_call_kernel_code:
     mov rdx, pat_call_tail_b_mid_mul_len
     call mem_eq
     cmp rax, 1
+    je .tsck_call_mul_swapped_mid_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_mid_mul_swapped]
+    mov rdx, pat_call_tail_b_mid_mul_swapped_len
+    call mem_eq
+    cmp rax, 1
     jne .tsck_call_no
+.tsck_call_mul_swapped_mid_ok:
     add r8, pat_call_tail_b_mid_mul_len
     mov rdi, r12
     add rdi, r8

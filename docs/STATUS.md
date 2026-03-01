@@ -99,6 +99,8 @@ Last updated: 2026-03-01
   - call-kernel guardrail added: mismatch between call result id and returned id in `f0` remains intentionally unlowered
   - call-kernel selector now accepts canonical nonzero internal result ids in `f1` for `add.wrap`/`sub.wrap`/`mul.wrap` (`vN = <op> ...`, `ret vN`)
   - call-kernel guardrail added: mismatch between `f1` op-result id and `f1` returned id remains intentionally unlowered
+  - call-kernel selector now accepts canonical swapped operand order inside `f1` for commutative ops (`add.wrap`, `mul.wrap`)
+  - call-kernel guardrail added: swapped operand order inside `f1` for non-commutative `sub.wrap` remains intentionally unlowered
   - trace intrinsic selector now accepts canonical nonzero value ids for traced arg and returned const value (`trace 1 vN`, `ret vM` where `vM` matches the const-def id)
   - trace selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
   - malloc intrinsic selector now accepts canonical nonzero arg/result ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)

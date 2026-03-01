@@ -48,9 +48,11 @@ Current bootstrap status:
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - call-kernel lowering now accepts canonical nonzero internal result ids in `f1` when `ret` references the same value id (`vN = add.wrap|sub.wrap|mul.wrap ...`, `ret vN`)
+  - call-kernel lowering now accepts canonical swapped operand order inside `f1` for commutative ops (`add.wrap`, `mul.wrap`)
   - I regression-test multi-digit SSA id lowering paths (for example `v77`, `v123`) across const, intrinsic, and memory-selector families to catch digit-scan regressions
   - I keep mismatch call-result/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - I keep mismatch `f1` op-result/return-id call-kernel shapes outside current lowering and regression-test them as intentionally unlowered
+  - I keep swapped non-commutative `f1` call-kernel shapes (`sub.wrap v1 v0`) outside current lowering and regression-test them as intentionally unlowered
   - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` stderr-binary emit path)
   - malloc-kernel lowering now accepts canonical nonzero arg/result ids when `malloc` and `ret` reference the corresponding defined ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
   - I keep mismatched malloc result/return-id shapes outside current lowering and regression-test them as intentionally unlowered
