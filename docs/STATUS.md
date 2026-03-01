@@ -99,6 +99,7 @@ Last updated: 2026-03-01
   - memory roundtrip selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
   - memory-gep roundtrip selector now accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret dataflow
   - memory-gep selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
+  - expanded multi-digit SSA id regression coverage (`v77`/`v123`) for intrinsic selectors (`malloc`, `free`, `exit`) to lock digit-parse stability
 
 ## Documentation status
 

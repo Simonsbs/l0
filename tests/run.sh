@@ -248,6 +248,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_malloc_v7.out; then
   echo "FAIL: verify valid_malloc_v7"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_malloc_v123.l0" >/tmp/l0_ok_malloc_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_malloc_v123.out; then
+  echo "FAIL: verify valid_malloc_v123"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_malloc_mismatch_unlowered.l0" >/tmp/l0_ok_malloc_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_malloc_mismatch_unlowered.out; then
   echo "FAIL: verify valid_malloc_mismatch_unlowered"
@@ -263,6 +268,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_free_noop_v7.out; then
   echo "FAIL: verify valid_free_noop_v7"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_free_noop_v123.l0" >/tmp/l0_ok_free_noop_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop_v123.out; then
+  echo "FAIL: verify valid_free_noop_v123"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_free_noop_mismatch_unlowered.l0" >/tmp/l0_ok_free_noop_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_free_noop_mismatch_unlowered.out; then
   echo "FAIL: verify valid_free_noop_mismatch_unlowered"
@@ -276,6 +286,11 @@ fi
 "$BIN" verify "$ROOT/tests/valid_exit_v7.l0" >/tmp/l0_ok_exit_v7.out
 if ! grep -q '^ok$' /tmp/l0_ok_exit_v7.out; then
   echo "FAIL: verify valid_exit_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_exit_v123.l0" >/tmp/l0_ok_exit_v123.out
+if ! grep -q '^ok$' /tmp/l0_ok_exit_v123.out; then
+  echo "FAIL: verify valid_exit_v123"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_exit_mismatch_unlowered.l0" >/tmp/l0_ok_exit_mismatch_unlowered.out
@@ -1251,6 +1266,23 @@ if [ "$malloc_v7_out" = "0" ]; then
   echo "FAIL: run malloc_v7 returned null"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_malloc_v123.l0" /tmp/l0_test_malloc_v123.img >/tmp/l0_build_malloc_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_v123.out; then
+  echo "FAIL: build valid_malloc_v123"
+  exit 1
+fi
+malloc_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_malloc_v123.img | tr -d ' ')
+malloc_v123_kernel_kind=$(od -An -t u8 -j "$((malloc_v123_dbg_off + 32))" -N 8 /tmp/l0_test_malloc_v123.img | tr -d ' ')
+if [ "$malloc_v123_kernel_kind" != "20" ]; then
+  echo "FAIL: malloc v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_malloc_v123.img 4096 >/tmp/l0_run_malloc_v123.out
+malloc_v123_out="$(tr -d '\n' < /tmp/l0_run_malloc_v123.out)"
+if [ "$malloc_v123_out" = "0" ]; then
+  echo "FAIL: run malloc_v123 returned null"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_malloc_mismatch_unlowered.l0" /tmp/l0_test_malloc_mismatch_unlowered.img >/tmp/l0_build_malloc_mismatch_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_build_malloc_mismatch_unlowered.out; then
   echo "FAIL: build valid_malloc_mismatch_unlowered"
@@ -1293,6 +1325,22 @@ fi
 "$BIN" run /tmp/l0_test_free_noop_v7.img 123 >/tmp/l0_run_free_noop_v7.out
 if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_v7.out)" != "0" ]; then
   echo "FAIL: run free noop v7 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop_v123.l0" /tmp/l0_test_free_noop_v123.img >/tmp/l0_build_free_noop_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123.out; then
+  echo "FAIL: build valid_free_noop_v123"
+  exit 1
+fi
+free_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_free_noop_v123.img | tr -d ' ')
+free_v123_kernel_kind=$(od -An -t u8 -j "$((free_v123_dbg_off + 32))" -N 8 /tmp/l0_test_free_noop_v123.img | tr -d ' ')
+if [ "$free_v123_kernel_kind" != "21" ]; then
+  echo "FAIL: free noop v123 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_free_noop_v123.img 123 >/tmp/l0_run_free_noop_v123.out
+if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_v123.out)" != "0" ]; then
+  echo "FAIL: run free noop v123 image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_free_noop_mismatch_unlowered.l0" /tmp/l0_test_free_noop_mismatch_unlowered.img >/tmp/l0_build_free_noop_mismatch_unlowered.out
@@ -1343,6 +1391,25 @@ exit_v7_rc=$?
 set -e
 if [ "$exit_v7_rc" -ne 9 ]; then
   echo "FAIL: run exit v7 image status"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_exit_v123.l0" /tmp/l0_test_exit_v123.img >/tmp/l0_build_exit_v123.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_v123.out; then
+  echo "FAIL: build valid_exit_v123"
+  exit 1
+fi
+exit_v123_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_exit_v123.img | tr -d ' ')
+exit_v123_kernel_kind=$(od -An -t u8 -j "$((exit_v123_dbg_off + 32))" -N 8 /tmp/l0_test_exit_v123.img | tr -d ' ')
+if [ "$exit_v123_kernel_kind" != "23" ]; then
+  echo "FAIL: exit v123 debug kernel kind id"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit_v123.img 11 >/tmp/l0_run_exit_v123.out 2>/tmp/l0_run_exit_v123.err
+exit_v123_rc=$?
+set -e
+if [ "$exit_v123_rc" -ne 11 ]; then
+  echo "FAIL: run exit v123 image status"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_exit_mismatch_unlowered.l0" /tmp/l0_test_exit_mismatch_unlowered.img >/tmp/l0_build_exit_mismatch_unlowered.out
