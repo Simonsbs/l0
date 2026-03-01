@@ -537,6 +537,10 @@ if [ "$(tr -d '\n' < /tmp/l0_run_write_newline.out)" != "0" ]; then
   echo "FAIL: run write newline image result"
   exit 1
 fi
+if [ "$(od -An -t x1 /tmp/l0_run_write_newline.out | tr -d ' \n')" != "0a300a" ]; then
+  echo "FAIL: run write newline output bytes"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then

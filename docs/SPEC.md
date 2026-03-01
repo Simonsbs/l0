@@ -128,7 +128,7 @@ I also enforce a structural subset inside `fns`:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - `exit` kernel (`exit v0`) via syscall `exit` stub
-    - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline)
+    - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

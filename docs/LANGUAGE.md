@@ -182,7 +182,7 @@ Bootstrap build output currently also includes a compact 48-byte debug semantic 
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
-    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall)
+    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - I currently verify `ld/st/gep/alloca` but still route those modules through the fallback code stub until their lowering path is added.
