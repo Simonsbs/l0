@@ -72,7 +72,7 @@ Current bootstrap status:
   - free-noop kernel lowering now accepts canonical nonzero arg/const-ret ids when `free` and `ret` reference the corresponding defined ids (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
   - I keep mismatched free-noop const/return-id shapes outside current lowering and regression-test them as intentionally unlowered
   - exit-kernel lowering now accepts canonical nonzero arg/ret ids when `exit` and `ret` reference the same defined value id (`vN = arg ...`, `exit vN`, `ret vN`)
-  - I keep mismatched exit arg/return-id shapes outside current lowering and regression-test them as intentionally unlowered
+  - exit-kernel lowering also accepts canonical non-returning shapes where `exit vN` matches the arg id and trailing return-path lines are unreachable
   - write-newline kernel lowering now accepts canonical nonzero ids across alloca/const/store/write/return dataflow when each use references its matching defined value id
   - write-newline kernel lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - I keep mismatched write-newline const/return-id shapes outside current lowering and regression-test them as intentionally unlowered
@@ -116,7 +116,8 @@ Current bootstrap status:
 - I now consider my M38 non-commutative call generalization milestone complete: I extended deterministic reverse-mapping lowering for `call->sub.wrap` to cover reverse `f1` mapping shapes (including argdef-order-swapped and dead-const generalized variants) while keeping structural mismatch guardrails intact.
 - I now consider my M39 non-commutative binary generalization milestone complete: I extended direct binary `sub.wrap` lowering to canonical swapped operand forms (including nonzero-id, argdef-order-swapped, and dead-const variants) while preserving `sub.trap` non-commutative guardrails.
 - I now consider my M40 non-commutative shift-call generalization milestone complete: I extended `call->shl` and `call->shr` lowering to canonical swapped call-arg forms (`call f1 v1 v0`) with deterministic reverse-shift payloads while preserving existing structural mismatch guardrails.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M41).
+- I now consider my M41 non-returning-exit generalization milestone complete: I lower canonical `exit` shapes when arg-to-exit mapping is valid even if trailing return-path lines are unreachable, including dead-const variants.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M42).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

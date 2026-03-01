@@ -2982,9 +2982,16 @@ if ! grep -q '^ok$' /tmp/l0_build_exit_mismatch_unlowered.out; then
 fi
 exit_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
 exit_mismatch_kernel_kind=$(od -An -t u8 -j "$((exit_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
-exit_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_exit_mismatch_unlowered.img | tr -d ' ')
-if [ "$exit_mismatch_kernel_kind" != "0" ] || [ "$exit_mismatch_code_size" != "1" ]; then
-  echo "FAIL: exit mismatch unexpectedly lowered"
+if [ "$exit_mismatch_kernel_kind" != "23" ]; then
+  echo "FAIL: exit mismatch debug kernel kind id"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit_mismatch_unlowered.img 13 >/tmp/l0_run_exit_mismatch_unlowered.out 2>/tmp/l0_run_exit_mismatch_unlowered.err
+exit_mismatch_rc=$?
+set -e
+if [ "$exit_mismatch_rc" -ne 13 ]; then
+  echo "FAIL: run exit mismatch image status"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_write_newline.l0" /tmp/l0_test_write_newline.img >/tmp/l0_build_write_newline.out
@@ -3512,8 +3519,16 @@ if ! grep -q '^ok$' /tmp/l0_build_exit_mismatch_with_dead_const_unlowered.out; t
   echo "FAIL: build valid_exit_mismatch_with_dead_const_unlowered"
   exit 1
 fi
-if [ "$(get_kernel_kind /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "1" ]; then
-  echo "FAIL: exit mismatch dead-const unexpectedly lowered"
+if [ "$(get_kernel_kind /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img)" != "23" ]; then
+  echo "FAIL: exit mismatch dead-const generalized kernel kind"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit_mismatch_with_dead_const_unlowered.img 17 >/tmp/l0_run_exit_mismatch_with_dead_const_unlowered.out 2>/tmp/l0_run_exit_mismatch_with_dead_const_unlowered.err
+exit_mismatch_dead_const_rc=$?
+set -e
+if [ "$exit_mismatch_dead_const_rc" -ne 17 ]; then
+  echo "FAIL: run exit mismatch dead-const image status"
   exit 1
 fi
 

@@ -314,7 +314,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - mismatch trace-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch malloc result-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch free-noop const/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
-    - mismatch exit operand/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
+    - non-returning `exit` shapes now lower when `exit` operand matches the canonical arg id, even when trailing return-path lines are unreachable
     - mismatch write-newline const/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch memory-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch memory-gep-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested

@@ -8357,6 +8357,14 @@ try_select_exit_kernel_code:
     jne .tsek_no
     add r10, r11
 
+    # exit is non-returning in bootstrap runtime lowering; once canonical
+    # arg->exit id mapping is matched, trailing lines are unreachable.
+    lea r14, [rip+code_stub_exit]
+    mov r15, code_stub_exit_len
+    mov qword ptr [rip+build_kernel_kind], 23
+    mov rax, 1
+    jmp .tsek_done
+
     mov rax, r13
     sub rax, r10
     cmp rax, pat_exit_mid_b_len

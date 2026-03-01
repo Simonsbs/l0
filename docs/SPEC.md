@@ -164,6 +164,7 @@ I also enforce a structural subset inside `fns`:
     - `exit` kernel (`exit v0`) via syscall `exit` stub
     - before `exit` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering in this const-independent shape
     - for `exit`, I also accept canonical nonzero arg/return ids when dataflow matches (`vN = arg 0`, `exit vN`, `ret vN`)
+    - for `exit`, I also lower canonical non-returning shapes when `exit vN` matches the arg id even if trailing return-path lines are unreachable
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
     - for bootstrap newline `write`, I also accept canonical nonzero ids across alloca/const/store/write/return when all value-id uses match their corresponding defs
     - for bootstrap newline `write`, I also accept canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)

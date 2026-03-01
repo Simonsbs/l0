@@ -510,7 +510,20 @@ Last updated: 2026-03-01
   - preserved existing structural mismatch guardrails for unrelated call shapes
   - validated with full-suite pass
 
-### M41: Non-template backend and full general codegen completion
+### M41: Non-Returning Exit Generalization
+
+- Status: complete
+- Scope completed:
+  - relaxed `exit` selector matching to treat `exit` as non-returning in bootstrap runtime lowering
+  - once canonical arg-to-exit value-id mapping is matched, selector now lowers without requiring a matching trailing `ret` value-id path
+  - added lowered coverage for previously intentional unlowered fixtures:
+    - `valid_exit_mismatch_unlowered.l0`
+    - `valid_exit_mismatch_with_dead_const_unlowered.l0`
+  - converted those assertions from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 23`) plus deterministic exit-status runtime checks
+  - preserved existing mismatch guardrails for unrelated intrinsic families
+  - validated with full-suite pass
+
+### M42: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:
