@@ -173,6 +173,7 @@ Bootstrap build output currently also includes a compact 48-byte debug semantic 
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
+    - canonical two-function call->add kernel (`f0` calling `f1`)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - I currently verify `ld/st/gep/alloca` but still route those modules through the fallback code stub until their lowering path is added.
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)

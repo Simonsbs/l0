@@ -19,6 +19,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_call.out; then
   echo "FAIL: verify valid_call"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_lowered.l0" >/tmp/l0_ok_call_add_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_lowered.out; then
+  echo "FAIL: verify valid_call_add_lowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
 if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
   echo "FAIL: verify valid_ptr_type"
@@ -167,6 +172,22 @@ fi
 "$BIN" run /tmp/l0_test.img 7 5 >/tmp/l0_run_add2.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add2.out)" != "12" ]; then
   echo "FAIL: run add2 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_lowered.l0" /tmp/l0_test_call_add_lowered.img >/tmp/l0_build_call_add_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_lowered.out; then
+  echo "FAIL: build valid_call_add_lowered"
+  exit 1
+fi
+call_add_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_lowered.img | tr -d ' ')
+call_add_kernel_kind=$(od -An -t u8 -j "$((call_add_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_lowered.img | tr -d ' ')
+if [ "$call_add_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_lowered.img 21 21 >/tmp/l0_run_call_add_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_const.l0" /tmp/l0_test_const.img >/tmp/l0_build_const.out

@@ -18,6 +18,7 @@ Current bootstrap status:
   - two-arg compare kernel (`icmp.eq`) returning `i1`
   - canonical `icmp.eq + cbr` select kernel returning either arg0 or arg1
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
+  - canonical two-function call kernel (`f0` calls `f1` where `f1` is `add.wrap`)
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.

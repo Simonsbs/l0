@@ -137,6 +137,8 @@ pat_cbr_eq_select: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = a
 pat_cbr_eq_select_len = . - pat_cbr_eq_select
 pat_mem_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = ld v1 : t0\n  ret v2\n}\n"
 pat_mem_roundtrip_len = . - pat_mem_roundtrip
+pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_call_add_len = . - pat_call_add
 pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
 pat_const_prefix_len = . - pat_const_prefix
 pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
@@ -300,6 +302,7 @@ do_build:
 
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
+    # - canonical call->add.wrap two-function kernel lowering
     # - canonical alloca+st+ld memory roundtrip kernel lowering
     # - canonical icmp.eq + cbr select kernel lowering
     # - canonical icmp.eq kernel lowering
@@ -308,6 +311,19 @@ do_build:
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
     mov qword ptr [rip+build_kernel_kind], 0
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_call_add]
+    mov rcx, pat_call_add_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_mem_roundtrip
+    lea r14, [rip+code_stub_add]
+    mov r15, code_stub_add_len
+    mov qword ptr [rip+build_kernel_kind], 16
+    jmp .build_code_selected
+
+.build_try_mem_roundtrip:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_mem_roundtrip]

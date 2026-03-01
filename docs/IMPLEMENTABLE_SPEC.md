@@ -206,6 +206,7 @@ Current bootstrap `kernel kind id` mapping:
 - `13`: const-return kernel
 - `14`: memory roundtrip kernel (`alloca/st/ld`)
 - `15`: `mul.trap`
+- `16`: canonical call->add two-function kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 
