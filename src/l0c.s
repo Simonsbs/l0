@@ -236,10 +236,14 @@ pat_call_mul: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 
 pat_call_mul_len = . - pat_call_mul
 pat_call_mul_swapped: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v1 v0 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = mul.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_mul_swapped_len = . - pat_call_mul_swapped
-pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
-pat_const_prefix_len = . - pat_const_prefix
-pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
-pat_const_suffix_len = . - pat_const_suffix
+pat_const_head: .ascii "fn f0 ()->t0 {\nb0:\n  v"
+pat_const_head_len = . - pat_const_head
+pat_const_mid: .ascii " = const "
+pat_const_mid_len = . - pat_const_mid
+pat_const_tail_a: .ascii " : t0\n  ret v"
+pat_const_tail_a_len = . - pat_const_tail_a
+pat_const_tail_b: .ascii "\n}\n"
+pat_const_tail_b_len = . - pat_const_tail_b
 tok_add_wrap: .ascii "add.wrap"
 tok_add_wrap_len = . - tok_add_wrap
 tok_add_trap: .ascii "add.trap"
@@ -6934,6 +6938,7 @@ parse_digits:
 
 # rdi=a, rsi=b, rdx=len => rax=1 eq else 0
 mem_eq:
+    push rbx
     cmp rdx, 0
     je .mem_eq_eq
 .mem_eq_loop:
@@ -6947,9 +6952,11 @@ mem_eq:
     jne .mem_eq_loop
 .mem_eq_eq:
     mov rax, 1
+    pop rbx
     ret
 .mem_eq_ne:
     xor rax, rax
+    pop rbx
     ret
 
 # rdi=str1 rsi=str2 => rax=1 eq else 0
@@ -7280,8 +7287,8 @@ try_select_const_kernel_code:
 
     mov r12, rdi
     mov r13, rsi
-    lea rdx, [rip+pat_const_prefix]
-    mov rcx, pat_const_prefix_len
+    lea rdx, [rip+pat_const_head]
+    mov rcx, pat_const_head_len
     mov rdi, r12
     mov rsi, r13
     call find_substr_pos
@@ -7289,20 +7296,54 @@ try_select_const_kernel_code:
     je .tsck_no
 
     mov r8, rax
-    add r8, pat_const_prefix_len     # literal start
+    add r8, pat_const_head_len       # value-id start
     cmp r8, r13
     jae .tsck_no
-    mov r9, 0                        # sign flag
-    mov al, byte ptr [r12+r8]
+
+    mov rbx, r8                      # preserve value-id start
+    mov r10, r8
+.tsck_vid_loop:
+    cmp r10, r13
+    jae .tsck_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsck_done_vid
+    cmp al, '9'
+    ja .tsck_done_vid
+    inc r10
+    jmp .tsck_vid_loop
+.tsck_done_vid:
+    cmp r10, r8
+    je .tsck_no
+    mov r15, r10
+    sub r15, rbx                      # preserve value-id digit len
+
+    mov r11, r13
+    sub r11, r10
+    cmp r11, pat_const_mid_len
+    jb .tsck_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_const_mid]
+    mov rdx, pat_const_mid_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_no
+    add r10, pat_const_mid_len        # literal start
+    cmp r10, r13
+    jae .tsck_no
+
+    xor r9, r9                        # sign flag
+    mov al, byte ptr [r12+r10]
     cmp al, '-'
     jne .tsck_digits
     mov r9, 1
-    inc r8
-    cmp r8, r13
+    inc r10
+    cmp r10, r13
     jae .tsck_no
 .tsck_digits:
-    mov r10, r8
-    xor r14, r14                     # magnitude
+    mov r8, r10                       # literal digit start
+    xor r14, r14                      # magnitude
 .tsck_loop:
     cmp r10, r13
     jae .tsck_no
@@ -7312,9 +7353,9 @@ try_select_const_kernel_code:
     cmp al, '9'
     ja .tsck_done_digits
     imul r14, r14, 10
-    movzx r15, al
-    sub r15, '0'
-    add r14, r15
+    movzx rax, al
+    sub rax, '0'
+    add r14, rax
     inc r10
     jmp .tsck_loop
 .tsck_done_digits:
@@ -7323,12 +7364,42 @@ try_select_const_kernel_code:
 
     mov r11, r13
     sub r11, r10
-    cmp r11, pat_const_suffix_len
+    cmp r11, pat_const_tail_a_len
     jb .tsck_no
     mov rdi, r12
     add rdi, r10
-    lea rsi, [rip+pat_const_suffix]
-    mov rdx, pat_const_suffix_len
+    lea rsi, [rip+pat_const_tail_a]
+    mov rdx, pat_const_tail_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_no
+    add r10, pat_const_tail_a_len
+
+    mov r11, r15                      # value-id digit len
+    cmp r11, 0
+    je .tsck_no
+    mov rax, r13
+    sub rax, r10
+    cmp rax, r11
+    jb .tsck_no
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_const_tail_b_len
+    jb .tsck_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_const_tail_b]
+    mov rdx, pat_const_tail_b_len
     call mem_eq
     cmp rax, 1
     jne .tsck_no

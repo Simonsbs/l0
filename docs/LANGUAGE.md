@@ -274,6 +274,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
+    - const-return kernels also accept nonzero const-def value ids when the same id is returned (`vN = const ...`, `ret vN`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`

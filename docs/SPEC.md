@@ -140,6 +140,7 @@ I also enforce a structural subset inside `fns`:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`
     - `ret v0`
+  - I also accept canonical const-return with nonzero value ids when `ret` references the same defined const value (`vN = const ...`, `ret vN`)
   - I currently use `c3` (`ret`) as the fallback for other verified inputs
 - I then write a 64-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)
