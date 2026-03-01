@@ -193,6 +193,8 @@ I also enforce a structural subset inside `fns`:
   - `version <n>`
   - `src_size <bytes>`
   - `code_size <bytes>`
+  - `fn_count <n>`
+  - `type_count <n>`
   - `kernel_kind <id>`
   - `trace_schema_ver <n>`
   - `trace_record_size <bytes>`

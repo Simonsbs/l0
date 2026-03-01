@@ -182,6 +182,8 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `version`
 - `src_size`
 - `code_size`
+- `fn_count`
+- `type_count`
 - `kernel_kind`
 - `trace_schema_ver`
 - `trace_record_size`

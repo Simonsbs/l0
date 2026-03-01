@@ -338,7 +338,7 @@ if ! grep -q '^ok$' /tmp/l0_imgcheck.out; then
   exit 1
 fi
 "$BIN" imgmeta /tmp/l0_test.img >/tmp/l0_imgmeta.out
-if [ "$(cat /tmp/l0_imgmeta.out)" != $'version 1\nsrc_size '"$in_size"$'\ncode_size 7\nkernel_kind 1\ntrace_schema_ver 1\ntrace_record_size 16' ]; then
+if [ "$(cat /tmp/l0_imgmeta.out)" != $'version 1\nsrc_size '"$in_size"$'\ncode_size 7\nfn_count 1\ntype_count 1\nkernel_kind 1\ntrace_schema_ver 1\ntrace_record_size 16' ]; then
   echo "FAIL: imgmeta decoded output"
   exit 1
 fi

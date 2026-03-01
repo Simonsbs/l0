@@ -100,6 +100,10 @@ img_src_size_prefix: .ascii "src_size "
 img_src_size_prefix_len = . - img_src_size_prefix
 img_code_size_prefix: .ascii "code_size "
 img_code_size_prefix_len = . - img_code_size_prefix
+img_fn_count_prefix: .ascii "fn_count "
+img_fn_count_prefix_len = . - img_fn_count_prefix
+img_type_count_prefix: .ascii "type_count "
+img_type_count_prefix_len = . - img_type_count_prefix
 img_kernel_kind_prefix: .ascii "kernel_kind "
 img_kernel_kind_prefix_len = . - img_kernel_kind_prefix
 img_trace_schema_ver_prefix: .ascii "trace_schema_ver "
@@ -1242,6 +1246,20 @@ do_imgmeta:
     mov rdx, img_code_size_prefix_len
     call write_fd
     mov rdi, qword ptr [r8+56]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_fn_count_prefix]
+    mov rdx, img_fn_count_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+r9+16]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_type_count_prefix]
+    mov rdx, img_type_count_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+r9+24]
     call print_u64_nl
 
     mov rdi, 1
