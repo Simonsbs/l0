@@ -139,6 +139,7 @@ I also enforce a structural subset inside `fns`:
     - `f0` computes args and calls `f1`
     - `f1` is canonical `add.wrap`, `sub.wrap`, or `mul.wrap` kernel
     - current bootstrap lowering maps these shapes to corresponding direct arithmetic payloads
+    - before call-kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs in `f0`/`f1` do not block lowering
     - for `f1` in `add.wrap`/`mul.wrap`, I also accept swapped call-arg order in `f0` (`call f1 v1 v0`)
     - I also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for non-commutative call->`sub.wrap`, I only lower shapes where `f0` call-arg mapping is semantically arg0->arg1 under the parsed arg definitions

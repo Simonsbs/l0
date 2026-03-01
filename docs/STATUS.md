@@ -197,7 +197,18 @@ Last updated: 2026-03-01
     - lowered `icmp.eq + cbr` kernel with injected dead `const` value line
     - intentionally unlowered `icmp.eq + cbr` return-mismatch shape with injected dead `const` value line
 
-### M15: Non-template backend and full general codegen
+### M15: Generalized Call Normalization Path
+
+- Status: complete
+- Scope completed:
+  - added generalized pre-lowering normalization path for call kernels in `build`
+  - reused shared dead-const normalization so canonical interleaved `const` value lines in `f0`/`f1` do not block call-kernel lowering
+  - preserved existing call-family non-commutative guardrails by delegating final lowering decisions to existing call selector logic
+  - added regression coverage for:
+    - lowered call->add kernel with injected dead `const` value lines
+    - intentionally unlowered call->sub (swapped in `f1`) with injected dead `const` value lines
+
+### M16: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

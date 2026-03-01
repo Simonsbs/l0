@@ -153,6 +153,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_add_f1_ret_mismatch_unlowered.out; then
   echo "FAIL: verify valid_call_add_f1_ret_mismatch_unlowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_with_dead_const_general_lowered.l0" >/tmp/l0_ok_call_add_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_call_add_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_sub_f1_swapped_with_dead_const_unlowered.l0" >/tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_sub_f1_swapped_with_dead_const_unlowered.out; then
+  echo "FAIL: verify valid_call_sub_f1_swapped_with_dead_const_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
 if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
   echo "FAIL: verify valid_ptr_type"
@@ -970,6 +980,22 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_add_lowered.out)" != "42" ]; then
   echo "FAIL: run call->add lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_add_with_dead_const_general_lowered.l0" /tmp/l0_test_call_add_with_dead_const_general_lowered.img >/tmp/l0_build_call_add_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_with_dead_const_general_lowered.out; then
+  echo "FAIL: build valid_call_add_with_dead_const_general_lowered"
+  exit 1
+fi
+call_add_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_with_dead_const_general_lowered.img | tr -d ' ')
+call_add_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_add_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_with_dead_const_general_lowered.img | tr -d ' ')
+if [ "$call_add_dead_const_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add with dead const debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_with_dead_const_general_lowered.img 21 21 >/tmp/l0_run_call_add_with_dead_const_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_with_dead_const_general_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add with dead const lowered image result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_add_swapped_lowered.l0" /tmp/l0_test_call_add_swapped_lowered.img >/tmp/l0_build_call_add_swapped_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_add_swapped_lowered.out; then
   echo "FAIL: build valid_call_add_swapped_lowered"
@@ -1320,6 +1346,18 @@ call_sub_f1_swapped_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_swapped_dbg_of
 call_sub_f1_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_swapped_unlowered.img | tr -d ' ')
 if [ "$call_sub_f1_swapped_kernel_kind" != "0" ] || [ "$call_sub_f1_swapped_code_size" != "1" ]; then
   echo "FAIL: call sub f1 swapped unexpectedly lowered"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_sub_f1_swapped_with_dead_const_unlowered.l0" /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img >/tmp/l0_build_call_sub_f1_swapped_with_dead_const_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_swapped_with_dead_const_unlowered.out; then
+  echo "FAIL: build valid_call_sub_f1_swapped_with_dead_const_unlowered"
+  exit 1
+fi
+call_sub_f1_swapped_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
+call_sub_f1_swapped_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_swapped_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
+call_sub_f1_swapped_dead_const_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
+if [ "$call_sub_f1_swapped_dead_const_kernel_kind" != "0" ] || [ "$call_sub_f1_swapped_dead_const_code_size" != "1" ]; then
+  echo "FAIL: call sub f1 swapped with dead const unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_add_f1_ret_mismatch_unlowered.l0" /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img >/tmp/l0_build_call_add_f1_ret_mismatch_unlowered.out

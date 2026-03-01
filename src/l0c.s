@@ -880,6 +880,14 @@ do_build:
     mov rsi, rbx
     call try_select_free_noop_kernel_code
     cmp rax, 1
+    jne .build_try_general_call
+    jmp .build_code_selected
+
+.build_try_general_call:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_call_kernel_code
+    cmp rax, 1
     jne .build_try_call_sub
     jmp .build_code_selected
 
@@ -10518,6 +10526,52 @@ try_select_general_cbr_eq_select_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgck_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_call_kernel_code
+# generalized pre-lowering normalization for call kernels:
+# - removes canonical dead const value lines
+# - reuses the existing call selector on normalized text
+# - preserves existing call-family non-commutative guardrails
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_call_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgcall_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_call_kernel_code
+    cmp rax, 1
+    jne .tsgcall_no
+    mov rax, 1
+    jmp .tsgcall_done
+
+.tsgcall_no:
+    xor rax, rax
+.tsgcall_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgcall_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgcall_keep_out:
     pop r13
     pop r12
     pop rbx

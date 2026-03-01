@@ -290,6 +290,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
+    - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
     - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only when `f0` call-arg mapping remains semantically arg0->arg1
