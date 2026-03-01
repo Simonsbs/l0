@@ -143,6 +143,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_sub_swapped_unlowered.out; then
   echo "FAIL: verify valid_sub_swapped_unlowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_sub_argids_v7_v9_swapped_unlowered.l0" >/tmp/l0_ok_sub_argids_v7_v9_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sub_argids_v7_v9_swapped_unlowered.out; then
+  echo "FAIL: verify valid_sub_argids_v7_v9_swapped_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_add_swapped.l0" >/tmp/l0_ok_add_swapped.out
 if ! grep -q '^ok$' /tmp/l0_ok_add_swapped.out; then
   echo "FAIL: verify valid_add_swapped"
@@ -151,6 +156,16 @@ fi
 "$BIN" verify "$ROOT/tests/valid_add_v7.l0" >/tmp/l0_ok_add_v7.out
 if ! grep -q '^ok$' /tmp/l0_ok_add_v7.out; then
   echo "FAIL: verify valid_add_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_add_argids_v7_v9_lowered.l0" >/tmp/l0_ok_add_argids_v7_v9_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_add_argids_v7_v9_lowered.out; then
+  echo "FAIL: verify valid_add_argids_v7_v9_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_add_argids_v7_v9_swapped_lowered.l0" >/tmp/l0_ok_add_argids_v7_v9_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_add_argids_v7_v9_swapped_lowered.out; then
+  echo "FAIL: verify valid_add_argids_v7_v9_swapped_lowered"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_add_trap.l0" >/tmp/l0_ok_add_trap.out
@@ -1067,6 +1082,18 @@ if [ "$sub_swapped_unlowered_kernel_kind" != "0" ] || [ "$sub_swapped_unlowered_
   echo "FAIL: sub_swapped_unlowered unexpectedly lowered"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_sub_argids_v7_v9_swapped_unlowered.l0" /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img >/tmp/l0_build_sub_argids_v7_v9_swapped_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_sub_argids_v7_v9_swapped_unlowered.out; then
+  echo "FAIL: build valid_sub_argids_v7_v9_swapped_unlowered"
+  exit 1
+fi
+sub_argids_v7_v9_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
+sub_argids_v7_v9_swapped_kernel_kind=$(od -An -t u8 -j "$((sub_argids_v7_v9_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
+sub_argids_v7_v9_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_sub_argids_v7_v9_swapped_unlowered.img | tr -d ' ')
+if [ "$sub_argids_v7_v9_swapped_kernel_kind" != "0" ] || [ "$sub_argids_v7_v9_swapped_code_size" != "1" ]; then
+  echo "FAIL: sub_argids_v7_v9_swapped unexpectedly lowered"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_add_swapped.l0" /tmp/l0_test_add_swapped.img >/tmp/l0_build_add_swapped.out
 if ! grep -q '^ok$' /tmp/l0_build_add_swapped.out; then
   echo "FAIL: build valid_add_swapped"
@@ -1097,6 +1124,38 @@ fi
 "$BIN" run /tmp/l0_test_add_v7.img 7 5 >/tmp/l0_run_add_v7.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add_v7.out)" != "12" ]; then
   echo "FAIL: run add_v7 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_add_argids_v7_v9_lowered.l0" /tmp/l0_test_add_argids_v7_v9_lowered.img >/tmp/l0_build_add_argids_v7_v9_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_add_argids_v7_v9_lowered.out; then
+  echo "FAIL: build valid_add_argids_v7_v9_lowered"
+  exit 1
+fi
+add_argids_v7_v9_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_add_argids_v7_v9_lowered.img | tr -d ' ')
+add_argids_v7_v9_kernel_kind=$(od -An -t u8 -j "$((add_argids_v7_v9_dbg_off + 32))" -N 8 /tmp/l0_test_add_argids_v7_v9_lowered.img | tr -d ' ')
+if [ "$add_argids_v7_v9_kernel_kind" != "1" ]; then
+  echo "FAIL: add_argids_v7_v9 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_add_argids_v7_v9_lowered.img 7 5 >/tmp/l0_run_add_argids_v7_v9_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_add_argids_v7_v9_lowered.out)" != "12" ]; then
+  echo "FAIL: run add_argids_v7_v9 image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_add_argids_v7_v9_swapped_lowered.l0" /tmp/l0_test_add_argids_v7_v9_swapped_lowered.img >/tmp/l0_build_add_argids_v7_v9_swapped_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_add_argids_v7_v9_swapped_lowered.out; then
+  echo "FAIL: build valid_add_argids_v7_v9_swapped_lowered"
+  exit 1
+fi
+add_argids_v7_v9_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_add_argids_v7_v9_swapped_lowered.img | tr -d ' ')
+add_argids_v7_v9_swapped_kernel_kind=$(od -An -t u8 -j "$((add_argids_v7_v9_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_add_argids_v7_v9_swapped_lowered.img | tr -d ' ')
+if [ "$add_argids_v7_v9_swapped_kernel_kind" != "1" ]; then
+  echo "FAIL: add_argids_v7_v9_swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_add_argids_v7_v9_swapped_lowered.img 7 5 >/tmp/l0_run_add_argids_v7_v9_swapped_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_add_argids_v7_v9_swapped_lowered.out)" != "12" ]; then
+  echo "FAIL: run add_argids_v7_v9_swapped image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_add_trap.l0" /tmp/l0_test_add_trap.img >/tmp/l0_build_add_trap.out

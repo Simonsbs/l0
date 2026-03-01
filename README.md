@@ -31,7 +31,9 @@ Current bootstrap status:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
   - for commutative binary kernels (`add*`, `mul*`, `and`, `or`, `xor`), I also lower canonical swapped operand order (`v1 v0`) in the bootstrap selector
   - binary kernel lowering now accepts canonical nonzero result ids when `ret` references the same result value id (`vN = <op> ...`, `ret vN`)
+  - binary kernel lowering now accepts canonical nonzero `arg` value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when binary operands reference those exact defined ids
   - I keep swapped non-commutative forms (for example `sub.wrap v1 v0`) outside current lowering and covered by regression tests as intentionally unlowered
+  - I keep swapped non-commutative binary forms with nonzero arg ids outside current lowering and covered by regression tests as intentionally unlowered
   - two-arg compare kernel (`icmp.eq`) returning `i1`
   - canonical `icmp.eq + cbr` select kernel returning either arg0 or arg1
   - for `icmp.eq` and `icmp.eq + cbr`, I also lower canonical swapped compare order (`icmp.eq v1 v0`)

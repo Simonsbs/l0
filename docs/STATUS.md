@@ -92,6 +92,8 @@ Last updated: 2026-03-01
   - const-return selector path is regression-covered for both single-digit and multi-digit value ids
   - non-commutative guardrail test added: swapped `sub.wrap` remains intentionally unlowered in current bootstrap selector
   - binary kernel selector now accepts canonical nonzero result value ids (`vN = <op> ...`, `ret vN`)
+  - binary kernel selector now accepts canonical nonzero argument value ids in `f0` (`vA = arg 0`, `vB = arg 1`) when binary operands reference those exact defs
+  - binary selector guardrail added: swapped non-commutative `sub.wrap` with nonzero arg ids remains intentionally unlowered
   - `icmp.eq` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `ret vN`)
   - `icmp.eq + cbr` selector now accepts canonical nonzero compare-result ids (`vN = icmp.eq ...`, `cbr vN ...`)
   - guardrail added: `icmp.eq + cbr` path with mismatched compare-id/dataflow shape remains intentionally unlowered in bootstrap selector
