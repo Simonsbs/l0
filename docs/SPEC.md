@@ -198,7 +198,7 @@ I also enforce a structural subset inside `fns`:
 - `qword[5]`: code start offset (`0`)
 - `qword[6]`: code end offset (`code_size`)
 
-Current bootstrap parser accepts either side artifact independently or both together in one build command.
+Current bootstrap parser accepts either side artifact independently or both together in one build command, and rejects duplicate optional side-artifact flags.
 
 This is an interim image format to validate end-to-end native build flow.
 

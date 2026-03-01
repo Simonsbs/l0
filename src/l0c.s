@@ -362,6 +362,8 @@ _start:
     mov qword ptr [rip+debug_map_out_path_ptr], r11
     jmp .build_pos_two_pair2
 .build_pos_two_set_schema_1:
+    cmp qword ptr [rip+trace_schema_out_path_ptr], 0
+    jne usage
     mov r11, [r12+48]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
 .build_pos_two_pair2:
@@ -376,10 +378,14 @@ _start:
     call str_eq
     cmp rax, 1
     jne usage
+    cmp qword ptr [rip+debug_map_out_path_ptr], 0
+    jne usage
     mov r11, [r12+64]
     mov qword ptr [rip+debug_map_out_path_ptr], r11
     jmp do_build
 .build_pos_two_set_schema_2:
+    cmp qword ptr [rip+trace_schema_out_path_ptr], 0
+    jne usage
     mov r11, [r12+64]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
@@ -407,6 +413,8 @@ _start:
     mov qword ptr [rip+debug_map_out_path_ptr], r11
     jmp .build_flag_two_pair2
 .build_flag_two_set_schema_1:
+    cmp qword ptr [rip+trace_schema_out_path_ptr], 0
+    jne usage
     mov r11, [r12+56]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
 .build_flag_two_pair2:
@@ -421,10 +429,14 @@ _start:
     call str_eq
     cmp rax, 1
     jne usage
+    cmp qword ptr [rip+debug_map_out_path_ptr], 0
+    jne usage
     mov r11, [r12+72]
     mov qword ptr [rip+debug_map_out_path_ptr], r11
     jmp do_build
 .build_flag_two_set_schema_2:
+    cmp qword ptr [rip+trace_schema_out_path_ptr], 0
+    jne usage
     mov r11, [r12+72]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build

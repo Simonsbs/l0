@@ -208,6 +208,14 @@ if ! grep -q '^ok$' /tmp/l0_build_both_artifacts_flag_o.out; then
   echo "FAIL: build valid_min with -o --debug-map --trace-schema"
   exit 1
 fi
+if "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test_dup_schema.img --trace-schema /tmp/l0_trace_schema_dup1.bin --trace-schema /tmp/l0_trace_schema_dup2.bin >/tmp/l0_build_dup_schema.out 2>/tmp/l0_build_dup_schema.err; then
+  echo "FAIL: build accepted duplicate --trace-schema"
+  exit 1
+fi
+if "$BIN" build "$ROOT/tests/valid_min.l0" -o /tmp/l0_test_dup_map.img --debug-map /tmp/l0_debug_map_dup1.bin --debug-map /tmp/l0_debug_map_dup2.bin >/tmp/l0_build_dup_map.out 2>/tmp/l0_build_dup_map.err; then
+  echo "FAIL: build accepted duplicate --debug-map"
+  exit 1
+fi
 if [ "$(wc -c < /tmp/l0_trace_schema.bin)" -ne 32 ]; then
   echo "FAIL: trace schema size"
   exit 1
