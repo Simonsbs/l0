@@ -86,7 +86,7 @@ I also enforce a structural subset inside `fns`:
   - `qword[6]`: `code_off` (`src_off + src_size`)
   - `qword[7]`: `code_size` (bootstrap-selected code payload size)
   - `qword[8]`: `debug_off` (`code_off + code_size`)
-  - `qword[9]`: `debug_size` (`32` in bootstrap)
+  - `qword[9]`: `debug_size` (`48` in bootstrap)
 - I then write raw canonical source bytes at `src_off`
 - I then write bootstrap code section bytes at `code_off`:
   - I lower canonical two-arg kernels with the shape:
@@ -111,11 +111,13 @@ I also enforce a structural subset inside `fns`:
     - `v0 = const -N : t0`
     - `ret v0`
   - I currently use `c3` (`ret`) as the fallback for other verified inputs
-- I then write a 32-byte bootstrap debug semantic index (`L0IX`):
+- I then write a 48-byte bootstrap debug semantic index (`L0IX`):
   - `qword[0]`: magic (`L0IX`)
   - `qword[1]`: version (`1`)
   - `qword[2]`: function count
   - `qword[3]`: type count
+  - `qword[4]`: kernel kind id (bootstrap lowering selector output)
+  - `qword[5]`: emitted code size
 
 `l0c imgcheck <file.l0img>` validates bootstrap container integrity:
 - magic match

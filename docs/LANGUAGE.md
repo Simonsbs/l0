@@ -166,7 +166,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - I print the returned value as unsigned decimal with a newline.
 - I reject invalid numeric arguments.
 
-Bootstrap build output currently also includes a compact debug semantic index section:
+Bootstrap build output currently also includes a compact 48-byte debug semantic index section:
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
     - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
@@ -175,11 +175,13 @@ Bootstrap build output currently also includes a compact debug semantic index se
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
   - I currently verify `ld/st/gep/alloca` but still route those modules through the fallback code stub until their lowering path is added.
-  - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
+- fallback payload for other verified modules: single-byte `ret` (`0xC3`)
 - magic `L0IX`
 - version `1`
 - function count
 - type count
+- kernel kind id
+- code size
 
 ## Planned language expansion (next milestones)
 

@@ -9,7 +9,8 @@
 .lcomm codegen_buf, 65536
 .lcomm codegen_len, 8
 .lcomm img_header_buf, 80
-.lcomm img_debug_idx_buf, 32
+.lcomm img_debug_idx_buf, 48
+.lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
 .lcomm vfp_type_count, 8
@@ -302,6 +303,7 @@ do_build:
     # - otherwise 1-byte ret stub fallback
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
+    mov qword ptr [rip+build_kernel_kind], 0
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_mem_roundtrip]
@@ -311,6 +313,7 @@ do_build:
     jne .build_try_cbr_eq_select
     lea r14, [rip+code_stub_mem_roundtrip]
     mov r15, code_stub_mem_roundtrip_len
+    mov qword ptr [rip+build_kernel_kind], 14
     jmp .build_code_selected
 
 .build_try_cbr_eq_select:
@@ -323,6 +326,7 @@ do_build:
     jne .build_try_icmp_eq
     lea r14, [rip+code_stub_cbr_eq_select]
     mov r15, code_stub_cbr_eq_select_len
+    mov qword ptr [rip+build_kernel_kind], 12
     jmp .build_code_selected
 
 .build_try_icmp_eq:
@@ -335,6 +339,7 @@ do_build:
     jne .build_try_bin_kernel
     lea r14, [rip+code_stub_icmp_eq]
     mov r15, code_stub_icmp_eq_len
+    mov qword ptr [rip+build_kernel_kind], 11
     jmp .build_code_selected
 
 .build_try_bin_kernel:
@@ -353,6 +358,7 @@ do_build:
     jne .build_code_selected
     lea r14, [rip+codegen_buf]
     mov r15, qword ptr [rip+codegen_len]
+    mov qword ptr [rip+build_kernel_kind], 13
 .build_code_selected:
 
     # open output path argv[3]
@@ -366,7 +372,7 @@ do_build:
     mov r10, rax               # out fd
 
     # Build structured 80-byte L0IMG header in-memory.
-    # Also emit a bootstrap code stub and 32-byte debug semantic index (L0IX).
+    # Also emit a bootstrap code stub and 48-byte debug semantic index (L0IX).
     # qword[0]  = magic "L0IM"
     # qword[1]  = version
     # qword[2]  = header size
@@ -376,7 +382,7 @@ do_build:
     # qword[6]  = code offset (after source payload)
     # qword[7]  = code size   (bootstrap-selected payload size)
     # qword[8]  = debug offset (after code payload)
-    # qword[9]  = debug size   (32 in bootstrap)
+    # qword[9]  = debug size   (48 in bootstrap)
     mov r8, img_header_len
     add r8, rbx                 # code_off
     mov r9, r8
@@ -392,10 +398,11 @@ do_build:
     mov qword ptr [r11+48], r8
     mov qword ptr [r11+56], r15
     mov qword ptr [r11+64], r9
-    mov qword ptr [r11+72], 32
+    mov qword ptr [r11+72], 48
 
     # Build debug semantic index qwords:
     # [0]=magic "L0IX" [1]=version [2]=fn_count [3]=type_count
+    # [4]=kernel_kind [5]=code_size
     lea r11, [rip+img_debug_idx_buf]
     mov rax, 0x000000005849304c
     mov qword ptr [r11+0], rax
@@ -405,6 +412,9 @@ do_build:
     mov qword ptr [r11+16], rax
     mov rax, qword ptr [rip+vfp_type_count]
     mov qword ptr [r11+24], rax
+    mov rax, qword ptr [rip+build_kernel_kind]
+    mov qword ptr [r11+32], rax
+    mov qword ptr [r11+40], r15
 
     mov rdi, r10
     lea rsi, [rip+img_header_buf]
@@ -429,7 +439,7 @@ do_build:
 
     mov rdi, r10
     lea rsi, [rip+img_debug_idx_buf]
-    mov rdx, 32
+    mov rdx, 48
     call write_all
     cmp rax, 0
     jne .build_write_fail
@@ -4946,6 +4956,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_sub
     lea r14, [rip+code_stub_add]
     mov r15, code_stub_add_len
+    mov qword ptr [rip+build_kernel_kind], 1
     jmp .tsbk_yes
 
 .tsbk_chk_sub:
@@ -4960,6 +4971,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_sub_real
     lea r14, [rip+code_stub_add_trap]
     mov r15, code_stub_add_trap_len
+    mov qword ptr [rip+build_kernel_kind], 2
     jmp .tsbk_yes
 
 .tsbk_chk_sub_real:
@@ -4974,6 +4986,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_sub_wrap_real
     lea r14, [rip+code_stub_sub_trap]
     mov r15, code_stub_sub_trap_len
+    mov qword ptr [rip+build_kernel_kind], 4
     jmp .tsbk_yes
 
 .tsbk_chk_sub_wrap_real:
@@ -4988,6 +5001,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_mul
     lea r14, [rip+code_stub_sub]
     mov r15, code_stub_sub_len
+    mov qword ptr [rip+build_kernel_kind], 3
     jmp .tsbk_yes
 
 .tsbk_chk_mul:
@@ -5002,6 +5016,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_and
     lea r14, [rip+code_stub_mul]
     mov r15, code_stub_mul_len
+    mov qword ptr [rip+build_kernel_kind], 5
     jmp .tsbk_yes
 
 .tsbk_chk_and:
@@ -5016,6 +5031,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_or
     lea r14, [rip+code_stub_and]
     mov r15, code_stub_and_len
+    mov qword ptr [rip+build_kernel_kind], 6
     jmp .tsbk_yes
 
 .tsbk_chk_or:
@@ -5030,6 +5046,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_xor
     lea r14, [rip+code_stub_or]
     mov r15, code_stub_or_len
+    mov qword ptr [rip+build_kernel_kind], 7
     jmp .tsbk_yes
 
 .tsbk_chk_xor:
@@ -5044,6 +5061,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_shl
     lea r14, [rip+code_stub_xor]
     mov r15, code_stub_xor_len
+    mov qword ptr [rip+build_kernel_kind], 8
     jmp .tsbk_yes
 
 .tsbk_chk_shl:
@@ -5058,6 +5076,7 @@ try_select_bin_kernel_code:
     jne .tsbk_chk_shr
     lea r14, [rip+code_stub_shl]
     mov r15, code_stub_shl_len
+    mov qword ptr [rip+build_kernel_kind], 9
     jmp .tsbk_yes
 
 .tsbk_chk_shr:
@@ -5072,6 +5091,7 @@ try_select_bin_kernel_code:
     jne .tsbk_no
     lea r14, [rip+code_stub_shr]
     mov r15, code_stub_shr_len
+    mov qword ptr [rip+build_kernel_kind], 10
     jmp .tsbk_yes
 
 .tsbk_yes:
