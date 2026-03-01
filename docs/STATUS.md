@@ -423,7 +423,21 @@ Last updated: 2026-03-01
     - swapped call-arg call->`shr` intentional unlowered guardrail shape
   - validated with full-suite pass
 
-### M35: Non-template backend and full general codegen completion
+### M35: Multi-Block Backend Kickoff (Branch-Identity Lowering)
+
+- Status: complete
+- Scope completed:
+  - added a generalized normalized selector path for canonical multi-block branch-identity modules:
+    - `fn f0 (t0)->t0` with `cbr vN b1 b2` in `b0`
+    - both `b1` and `b2` returning the same `vN`
+  - added direct lowering for that shape to a deterministic `arg0 -> ret` machine payload (no fallback stub)
+  - integrated the new selector into the generalized build selector chain
+  - extended kernel-kind range handling to include the new lowered branch-identity kernel kind (`25`) in image validation and metadata decode paths
+  - updated debug-map kernel-kind routing so existing trace kernel map layouts remain stable while the new branch-identity kernel gets deterministic debug-map emission
+  - updated regression assertions so `valid_branch.l0` now verifies lowered code bytes and runtime behavior instead of fallback stub behavior
+  - validated with full-suite pass
+
+### M36: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

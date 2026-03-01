@@ -198,6 +198,8 @@ code_stub_write_newline: .byte 0x48,0x83,0xec,0x08,0x48,0xc7,0x04,0x24,0x0a,0x00
 code_stub_write_newline_len = . - code_stub_write_newline
 code_stub_trace_emit: .byte 0x48,0x83,0xec,0x10,0x48,0xc7,0x04,0x24,0x01,0x00,0x00,0x00,0x48,0x89,0x7c,0x24,0x08,0x48,0xc7,0xc0,0x01,0x00,0x00,0x00,0x48,0xc7,0xc7,0x02,0x00,0x00,0x00,0x48,0x89,0xe6,0x48,0xc7,0xc2,0x10,0x00,0x00,0x00,0x0f,0x05,0x48,0x31,0xc0,0x48,0x83,0xc4,0x10,0xc3
 code_stub_trace_emit_len = . - code_stub_trace_emit
+code_stub_argret: .byte 0x48,0x89,0xf8,0xc3
+code_stub_argret_len = . - code_stub_argret
 pat_bin_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v"
 pat_bin_head_len = . - pat_bin_head
 pat_bin_mid_a: .ascii " = arg 0 : t0\n  v"
@@ -364,6 +366,16 @@ pat_trace_mid_c: .ascii " = const 0 : t0\n  ret v"
 pat_trace_mid_c_len = . - pat_trace_mid_c
 pat_trace_tail: .ascii "\n}\n"
 pat_trace_tail_len = . - pat_trace_tail
+pat_branch_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
+pat_branch_head_len = . - pat_branch_head
+pat_branch_mid_a: .ascii " = arg 0 : t0\n  cbr v"
+pat_branch_mid_a_len = . - pat_branch_mid_a
+pat_branch_mid_b: .ascii " b1 b2\nb1:\n  ret v"
+pat_branch_mid_b_len = . - pat_branch_mid_b
+pat_branch_mid_c: .ascii "\nb2:\n  ret v"
+pat_branch_mid_c_len = . - pat_branch_mid_c
+pat_branch_tail: .ascii "\n}\n"
+pat_branch_tail_len = . - pat_branch_tail
 pat_call_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_head_len = . - pat_call_head
 pat_call_head_alt: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v1 = arg 0 : t0\n  v0 = arg 1 : t0\n  v"
@@ -924,6 +936,14 @@ do_build:
     mov rsi, rbx
     call try_select_general_mem_roundtrip_kernel_code
     cmp rax, 1
+    jne .build_try_general_branch_identity
+    jmp .build_code_selected
+
+.build_try_general_branch_identity:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_branch_identity_kernel_code
+    cmp rax, 1
     jne .build_try_general_cbr_eq_select
     jmp .build_code_selected
 
@@ -1147,6 +1167,8 @@ do_build:
     je .build_dbg_map_case_two_7
     cmp rax, 24
     je .build_dbg_map_case_two_17
+    cmp rax, 25
+    je .build_dbg_map_case_single_full
     jmp .build_dbg_map_case_synth
 
 .build_dbg_map_case_single_full:
@@ -1521,9 +1543,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
-    # L0IX kernel kind id must be within known bootstrap range [0,24]
+    # L0IX kernel kind id must be within known bootstrap range [0,25]
     mov rax, qword ptr [r8+r9+32]
-    cmp rax, 24
+    cmp rax, 25
     ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
@@ -1622,7 +1644,7 @@ do_imgmeta:
     cmp rax, 1
     jne fail_img
     mov rax, qword ptr [r8+r9+32]  # kernel kind
-    cmp rax, 24
+    cmp rax, 25
     ja fail_img
     mov rax, qword ptr [r8+r9+40]  # debug code_size
     cmp rax, qword ptr [r8+56]
@@ -11439,6 +11461,196 @@ normalize_strip_const_value_lines:
     add rsp, 48
     pop r15
     pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_branch_identity_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_branch_identity_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_branch_head]
+    mov rcx, pat_branch_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsbi_no
+
+    mov r8, rax
+    add r8, pat_branch_head_len      # arg value-id start
+    cmp r8, r13
+    jae .tsbi_no
+    mov r9, r8
+.tsbi_arg_vid_loop:
+    cmp r9, r13
+    jae .tsbi_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbi_arg_vid_done
+    cmp al, '9'
+    ja .tsbi_arg_vid_done
+    inc r9
+    jmp .tsbi_arg_vid_loop
+.tsbi_arg_vid_done:
+    cmp r9, r8
+    je .tsbi_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # value-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_mid_a_len
+    jb .tsbi_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_mid_a]
+    mov rdx, pat_branch_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, pat_branch_mid_a_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_mid_b_len
+    jb .tsbi_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_mid_b]
+    mov rdx, pat_branch_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, pat_branch_mid_b_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_mid_c_len
+    jb .tsbi_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_mid_c]
+    mov rdx, pat_branch_mid_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, pat_branch_mid_c_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_tail_len
+    jb .tsbi_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_tail]
+    mov rdx, pat_branch_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbi_no
+
+    lea r14, [rip+code_stub_argret]
+    mov r15, code_stub_argret_len
+    mov qword ptr [rip+build_kernel_kind], 25
+    mov rax, 1
+    jmp .tsbi_done
+
+.tsbi_no:
+    xor rax, rax
+.tsbi_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsbi_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsbi_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_branch_identity_kernel_code
+# generalized pre-lowering normalization for branch-identity kernel:
+# - removes canonical dead const value lines
+# - reuses the existing branch-identity selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_branch_identity_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgbi_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_branch_identity_kernel_code
+    cmp rax, 1
+    jne .tsgbi_no
+    mov rax, 1
+    jmp .tsgbi_done
+
+.tsgbi_no:
+    xor rax, rax
+.tsgbi_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgbi_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgbi_keep_out:
     pop r13
     pop r12
     pop rbx

@@ -111,7 +111,8 @@ Current bootstrap status:
 - I now consider my M32 call-family backend expansion milestone complete: I extended two-function call lowering to include canonical `or` kernels (including swapped call-arg order and dead-const generalized variants) with full regression coverage.
 - I now consider my M33 call-family backend expansion milestone complete: I extended two-function call lowering to include canonical `xor` kernels (including swapped call-arg order and dead-const generalized variants) with full regression coverage.
 - I now consider my M34 call-family backend expansion milestone complete: I extended two-function call lowering to include canonical non-commutative `shl` and `shr` kernels (including dead-const generalized variants), while keeping swapped call-arg guardrails intentionally unlowered.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M35).
+- I now consider my M35 multi-block backend kickoff milestone complete: I added direct lowering for canonical branch-identity modules (`cbr` with both branches returning the same SSA arg) so this shape no longer falls back to the single-byte `ret` stub.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M36).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

@@ -3177,12 +3177,24 @@ fi
 branch_in_size=$(wc -c < "$ROOT/tests/valid_branch.l0")
 branch_code_off=$(od -An -t u8 -j 48 -N 8 /tmp/l0_test_branch.img | tr -d ' ')
 branch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_branch.img | tr -d ' ')
-if [ "$branch_code_off" != "$((80 + branch_in_size))" ] || [ "$branch_code_size" != "1" ]; then
-  echo "FAIL: build valid_branch fallback code header fields"
+branch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_branch.img | tr -d ' ')
+branch_kernel_kind=$(od -An -t u8 -j "$((branch_dbg_off + 32))" -N 8 /tmp/l0_test_branch.img | tr -d ' ')
+if [ "$branch_code_off" != "$((80 + branch_in_size))" ] || [ "$branch_code_size" != "4" ] || [ "$branch_kernel_kind" != "25" ]; then
+  echo "FAIL: build valid_branch lowered code header fields"
   exit 1
 fi
-if [ "$(od -An -t x1 -j "$branch_code_off" -N 1 /tmp/l0_test_branch.img | tr -d ' \n')" != "c3" ]; then
-  echo "FAIL: build valid_branch fallback code bytes"
+if [ "$(od -An -t x1 -j "$branch_code_off" -N 4 /tmp/l0_test_branch.img | tr -d ' \n')" != "4889f8c3" ]; then
+  echo "FAIL: build valid_branch lowered code bytes"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_branch.img 0 >/tmp/l0_run_branch_0.out
+if [ "$(tr -d '\n' < /tmp/l0_run_branch_0.out)" != "0" ]; then
+  echo "FAIL: run branch lowered result for 0"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_branch.img 1 >/tmp/l0_run_branch_1.out
+if [ "$(tr -d '\n' < /tmp/l0_run_branch_1.out)" != "1" ]; then
+  echo "FAIL: run branch lowered result for 1"
   exit 1
 fi
 if "$BIN" run /tmp/l0_test.img X 5 >/tmp/l0_run_badarg.out 2>/tmp/l0_run_badarg.err; then

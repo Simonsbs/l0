@@ -166,6 +166,11 @@ I also enforce a structural subset inside `fns`:
     - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I now run the same dead-const normalization path before selector matching and lower valid dead-const-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
+  - I now lower canonical branch-identity multi-block shape:
+    - `fn f0 (t0)->t0`
+    - `b0` has `vN = arg 0 : t0` then `cbr vN b1 b2`
+    - `b1` and `b2` both `ret vN`
+    - this shape now emits direct lowered code instead of fallback
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`
