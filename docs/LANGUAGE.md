@@ -119,7 +119,7 @@ Current bootstrap opcode-aware checks:
 - `gep` requires `vN <signed_decimal>` operand shape and enforces `p0<i8>` pointer typing on operand and result
 - `alloca` requires `tN, N` operand shape and enforces `p0<i8>` result typing
 - `st` is accepted as a canonical non-value instruction (`st vPtr vVal`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
-- binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
+- binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 
 Current bootstrap SSA check:
@@ -169,7 +169,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 Bootstrap build output currently also includes a compact 48-byte debug semantic index section:
 - I currently emit one of two bootstrap code payloads:
   - canonical lowered kernel payloads for:
-    - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+    - `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)

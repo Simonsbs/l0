@@ -115,6 +115,8 @@ code_stub_xor: .byte 0x48,0x89,0xf8,0x48,0x31,0xf0,0xc3
 code_stub_xor_len = . - code_stub_xor
 code_stub_mul: .byte 0x48,0x89,0xf8,0x48,0x0f,0xaf,0xc6,0xc3
 code_stub_mul_len = . - code_stub_mul
+code_stub_mul_trap: .byte 0x48,0x89,0xf8,0x48,0x0f,0xaf,0xc6,0x70,0x01,0xc3,0x0f,0x0b
+code_stub_mul_trap_len = . - code_stub_mul_trap
 code_stub_shl: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe0,0xc3
 code_stub_shl_len = . - code_stub_shl
 code_stub_shr: .byte 0x48,0x89,0xf8,0x48,0x89,0xf1,0x48,0xd3,0xe8,0xc3
@@ -149,6 +151,8 @@ tok_sub_trap: .ascii "sub.trap"
 tok_sub_trap_len = . - tok_sub_trap
 tok_mul_wrap: .ascii "mul.wrap"
 tok_mul_wrap_len = . - tok_mul_wrap
+tok_mul_trap: .ascii "mul.trap"
+tok_mul_trap_len = . - tok_mul_trap
 tok_and: .ascii "and"
 tok_and_len = . - tok_and
 tok_or: .ascii "or"
@@ -2876,6 +2880,22 @@ validate_value_uses_defined:
     cmp al, '.'
     jne .vvud_bin_short
     mov al, byte ptr [r12+r14+4]
+    cmp al, 't'
+    jne .vvud_chk_mul_wrap_variant_wrap
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'r'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+6]
+    cmp al, 'a'
+    jne .vvud_bin_short
+    mov al, byte ptr [r12+r14+7]
+    cmp al, 'p'
+    jne .vvud_bin_short
+    mov rdx, 1
+    jmp .vvud_bin_done
+
+.vvud_chk_mul_wrap_variant_wrap:
+    mov al, byte ptr [r12+r14+4]
     cmp al, 'w'
     jne .vvud_bin_short
     mov al, byte ptr [r12+r14+5]
@@ -4400,6 +4420,22 @@ line_is_value_instruction:
     cmp al, '.'
     jne .lvi_bin_short_ops
     mov al, byte ptr [rdi+r12+4]
+    cmp al, 't'
+    jne .lvi_chk_mul_wrap_variant_wrap
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'r'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+6]
+    cmp al, 'a'
+    jne .lvi_bin_short_ops
+    mov al, byte ptr [rdi+r12+7]
+    cmp al, 'p'
+    jne .lvi_bin_short_ops
+    mov r11, 1
+    jmp .lvi_bin_checked
+
+.lvi_chk_mul_wrap_variant_wrap:
+    mov al, byte ptr [rdi+r12+4]
     cmp al, 'w'
     jne .lvi_bin_short_ops
     mov al, byte ptr [rdi+r12+5]
@@ -5005,6 +5041,21 @@ try_select_bin_kernel_code:
     jmp .tsbk_yes
 
 .tsbk_chk_mul:
+    cmp r15, tok_mul_trap_len
+    jne .tsbk_chk_mul_wrap_real
+    mov rdi, r12
+    add rdi, r14
+    lea rsi, [rip+tok_mul_trap]
+    mov rdx, tok_mul_trap_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbk_chk_mul_wrap_real
+    lea r14, [rip+code_stub_mul_trap]
+    mov r15, code_stub_mul_trap_len
+    mov qword ptr [rip+build_kernel_kind], 15
+    jmp .tsbk_yes
+
+.tsbk_chk_mul_wrap_real:
     cmp r15, tok_mul_wrap_len
     jne .tsbk_chk_and
     mov rdi, r12

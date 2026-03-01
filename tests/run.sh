@@ -59,6 +59,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_mul.out; then
   echo "FAIL: verify valid_mul"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_mul_trap.l0" >/tmp/l0_ok_mul_trap.out
+if ! grep -q '^ok$' /tmp/l0_ok_mul_trap.out; then
+  echo "FAIL: verify valid_mul_trap"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_and.l0" >/tmp/l0_ok_and.out
 if ! grep -q '^ok$' /tmp/l0_ok_and.out; then
   echo "FAIL: verify valid_and"
@@ -240,6 +245,20 @@ fi
 "$BIN" run /tmp/l0_test_mul.img 7 6 >/tmp/l0_run_mul.out
 if [ "$(tr -d '\n' < /tmp/l0_run_mul.out)" != "42" ]; then
   echo "FAIL: run mul image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_mul_trap.l0" /tmp/l0_test_mul_trap.img >/tmp/l0_build_mul_trap.out
+if ! grep -q '^ok$' /tmp/l0_build_mul_trap.out; then
+  echo "FAIL: build valid_mul_trap"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mul_trap.img 7 6 >/tmp/l0_run_mul_trap.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mul_trap.out)" != "42" ]; then
+  echo "FAIL: run mul.trap image result"
+  exit 1
+fi
+if "$BIN" run /tmp/l0_test_mul_trap.img 9223372036854775807 2 >/tmp/l0_run_mul_trap_ovf.out 2>/tmp/l0_run_mul_trap_ovf.err; then
+  echo "FAIL: run mul.trap overflow unexpectedly returned"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_and.l0" /tmp/l0_test_and.img >/tmp/l0_build_and.out
