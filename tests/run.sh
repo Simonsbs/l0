@@ -587,6 +587,39 @@ if "$BIN" tracejoin /tmp/l0_bad_trace_unknown_id_second.err /tmp/l0_trace_noop_d
   echo "FAIL: tracejoin accepted unknown trace id in later record"
   exit 1
 fi
+cat /tmp/l0_run_trace_noop.err /tmp/l0_run_trace_noop.err /tmp/l0_run_trace_noop.err >/tmp/l0_trace_triple.err
+cp /tmp/l0_trace_triple.err /tmp/l0_bad_trace_unknown_id_middle.err
+printf '\x09\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_unknown_id_middle.err bs=1 seek=16 conv=notrunc status=none
+"$BIN" tracecat /tmp/l0_bad_trace_unknown_id_middle.err >/tmp/l0_tracecat_unknown_id_middle.out
+if [ "$(cat /tmp/l0_tracecat_unknown_id_middle.out)" != $'id 1\nval 123\nid 9\nval 123\nid 1\nval 123' ]; then
+  echo "FAIL: tracecat triple-record mixed-id decode output"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_bad_trace_unknown_id_middle.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_trace_unknown_id_middle.out 2>/tmp/l0_bad_trace_unknown_id_middle.errlog; then
+  echo "FAIL: tracejoin accepted unknown trace id in middle record"
+  exit 1
+fi
+cp /tmp/l0_trace_triple.err /tmp/l0_bad_trace_zero_id_third.err
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_zero_id_third.err bs=1 seek=32 conv=notrunc status=none
+"$BIN" tracecat /tmp/l0_bad_trace_zero_id_third.err >/tmp/l0_tracecat_zero_id_third.out
+if [ "$(cat /tmp/l0_tracecat_zero_id_third.out)" != $'id 1\nval 123\nid 1\nval 123\nid 0\nval 123' ]; then
+  echo "FAIL: tracecat triple-record zero-id decode output"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_bad_trace_zero_id_third.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_trace_zero_id_third.out 2>/tmp/l0_bad_trace_zero_id_third.errlog; then
+  echo "FAIL: tracejoin accepted zero trace id in later record"
+  exit 1
+fi
+cp /tmp/l0_trace_triple.err /tmp/l0_bad_trace_triple_truncated.err
+truncate -s 40 /tmp/l0_bad_trace_triple_truncated.err
+if "$BIN" tracecat /tmp/l0_bad_trace_triple_truncated.err >/tmp/l0_bad_trace_triple_truncated.out 2>/tmp/l0_bad_trace_triple_truncated.errlog; then
+  echo "FAIL: tracecat accepted truncated multi-record trace payload"
+  exit 1
+fi
+if "$BIN" tracejoin /tmp/l0_bad_trace_triple_truncated.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_tracejoin_triple_truncated.out 2>/tmp/l0_bad_tracejoin_triple_truncated.errlog; then
+  echo "FAIL: tracejoin accepted truncated multi-record trace payload"
+  exit 1
+fi
 if [ ! -s /tmp/l0_test.img ]; then
   echo "FAIL: build output missing"
   exit 1
@@ -1865,6 +1898,28 @@ cp /tmp/l0_test.img /tmp/l0_bad_dbg_trace_record_size.img
 printf '\x08\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_dbg_trace_record_size.img bs=1 seek="$((dbg_off_main + 56))" conv=notrunc status=none
 if "$BIN" imgcheck /tmp/l0_bad_dbg_trace_record_size.img >/tmp/l0_bad_dbg_trace_record_size.out 2>/tmp/l0_bad_dbg_trace_record_size.err; then
   echo "FAIL: imgcheck accepted bad debug trace record size"
+  exit 1
+fi
+for off in 8 16 32 40 48 56 64 72; do
+  cp /tmp/l0_test.img "/tmp/l0_fuzz_header_ff_${off}.img"
+  printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of="/tmp/l0_fuzz_header_ff_${off}.img" bs=1 seek="$off" conv=notrunc status=none
+  if "$BIN" imgcheck "/tmp/l0_fuzz_header_ff_${off}.img" >"/tmp/l0_fuzz_header_ff_${off}.out" 2>"/tmp/l0_fuzz_header_ff_${off}.err"; then
+    echo "FAIL: imgcheck accepted fuzzed header field offset $off"
+    exit 1
+  fi
+done
+for rel in 32 40 48 56; do
+  cp /tmp/l0_test.img "/tmp/l0_fuzz_debug_ff_${rel}.img"
+  printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of="/tmp/l0_fuzz_debug_ff_${rel}.img" bs=1 seek="$((dbg_off_main + rel))" conv=notrunc status=none
+  if "$BIN" imgcheck "/tmp/l0_fuzz_debug_ff_${rel}.img" >"/tmp/l0_fuzz_debug_ff_${rel}.out" 2>"/tmp/l0_fuzz_debug_ff_${rel}.err"; then
+    echo "FAIL: imgcheck accepted fuzzed debug-index field offset +$rel"
+    exit 1
+  fi
+done
+cp /tmp/l0_test.img /tmp/l0_fuzz_header_flags_nonzero.img
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_fuzz_header_flags_nonzero.img bs=1 seek=24 conv=notrunc status=none
+if "$BIN" imgcheck /tmp/l0_fuzz_header_flags_nonzero.img >/tmp/l0_fuzz_header_flags_nonzero.out 2>/tmp/l0_fuzz_header_flags_nonzero.err; then
+  echo "FAIL: imgcheck accepted fuzzed nonzero flags field"
   exit 1
 fi
 printf 'BADIMG' >/tmp/l0_bad.img

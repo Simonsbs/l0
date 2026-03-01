@@ -49,7 +49,7 @@ Last updated: 2026-03-01
 
 ### M4: Reliability hardening
 
-- Status: in progress
+- Status: complete
 - Scope completed:
   - duplicate optional flag rejection in `build`
   - debug-map entry bounds validation and clamping
@@ -61,15 +61,21 @@ Last updated: 2026-03-01
   - explicit oversized debug-map entry-count tests: `mapcat` rejects oversized count payload artifacts and `tracejoin` rejects `entry_count > 64`
   - explicit malformed trace-schema tests: `schemacat` rejects bad schema version, bad record size, bad field count, and truncated payload size
   - expanded multi-record trace corruption coverage: `tracejoin` rejects unknown `trace_id` appearing in later records while `tracecat` still decodes the mixed payload deterministically
+  - expanded multi-record trace corruption matrix:
+    - `tracejoin` rejects unknown `trace_id` in middle records
+    - `tracejoin` rejects zero `trace_id` in later records
+    - `tracecat` deterministic decode coverage for triple-record mixed-id payloads
+    - both `tracecat` and `tracejoin` reject truncated multi-record payloads
+  - deterministic automated malformed-image tamper matrix for `imgcheck`:
+    - fixed-header u64 field fuzz pass (`version`, `header_size`, `src_off`, `src_size`, `code_off`, `code_size`, `debug_off`, `debug_size`)
+    - debug-index u64 field fuzz pass (`kernel_kind`, `code_size`, `trace_schema_ver`, `trace_record_size`)
+    - explicit nonzero flags tamper case in the fuzz block
   - cross-kernel debug-map layout assertions in regression tests (`add.trap`, `mul.trap`, `cbr`, `malloc`, `write`, `trace`)
   - expanded malformed-image tamper coverage for `imgcheck` (header size, source offset, code/debug pair consistency)
   - overflow-style image tamper checks for `imgcheck` (`src_size`/`code_size`/`code_off`/`debug_off` set to max u64 values)
   - explicit `debug_size != 64` tamper rejection checks
   - `imgmeta` schema-hardening parity with `imgcheck` plus negative tamper tests
   - negative-path tests for malformed artifacts
-- Remaining:
-  - broader malformed-image fuzz-style tests (randomized/automated generation)
-  - broader multi-record trace corruption patterns beyond truncation/alignment checks
 
 ### M5: Full language/general codegen
 

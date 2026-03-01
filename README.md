@@ -21,9 +21,11 @@ Current bootstrap status:
 - I require `tracejoin` to resolve every trace record `id` against the debug map; unknown ids are rejected.
 - I reject truncated/non-16-byte-aligned trace payloads in both `tracecat` and `tracejoin`.
 - I treat empty trace payloads as valid in `tracecat`/`tracejoin` and emit no output for them.
+- I now cover broader multi-record trace corruption patterns: I test unknown/zero ids in middle/later records and explicit multi-record truncation paths.
 - I keep `imgcheck` tamper coverage broad in tests (header-size/offset corruption and code/debug section-pair consistency failures).
 - I include overflow-style `imgcheck` tamper tests where `code_off`/`debug_off` are forced to max `u64`.
 - I also tamper-test `src_size`/`code_size` overflow and `debug_size != 64` rejection in `imgcheck`.
+- I now run deterministic fuzz-style tamper loops over image header/debug u64 fields and require `imgcheck` to reject every mutated artifact.
 - I enforce `imgmeta` schema checks (kernel-kind range, debug code-size match, trace schema constants) and test tampered-image rejection for them.
 - I currently lower canonical single-block kernel shapes to concrete x86-64 payloads:
   - two-arg arithmetic/bitwise kernels (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`)
