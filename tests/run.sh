@@ -198,6 +198,16 @@ if ! grep -q '^ok$' /tmp/l0_build_debug_map_flag_o.out; then
   echo "FAIL: build valid_min with -o --debug-map"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test_both_artifacts.img --trace-schema /tmp/l0_trace_schema_both.bin --debug-map /tmp/l0_debug_map_both.bin >/tmp/l0_build_both_artifacts.out
+if ! grep -q '^ok$' /tmp/l0_build_both_artifacts.out; then
+  echo "FAIL: build valid_min with --trace-schema --debug-map"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_min.l0" -o /tmp/l0_test_both_artifacts_flag_o.img --debug-map /tmp/l0_debug_map_both_flag_o.bin --trace-schema /tmp/l0_trace_schema_both_flag_o.bin >/tmp/l0_build_both_artifacts_flag_o.out
+if ! grep -q '^ok$' /tmp/l0_build_both_artifacts_flag_o.out; then
+  echo "FAIL: build valid_min with -o --debug-map --trace-schema"
+  exit 1
+fi
 if [ "$(wc -c < /tmp/l0_trace_schema.bin)" -ne 32 ]; then
   echo "FAIL: trace schema size"
   exit 1
@@ -208,6 +218,14 @@ if [ "$(wc -c < /tmp/l0_trace_schema_flag_o.bin)" -ne 32 ]; then
 fi
 if [ "$(wc -c < /tmp/l0_debug_map.bin)" -ne 32 ] || [ "$(wc -c < /tmp/l0_debug_map_flag_o.bin)" -ne 32 ]; then
   echo "FAIL: debug map size"
+  exit 1
+fi
+if [ "$(wc -c < /tmp/l0_trace_schema_both.bin)" -ne 32 ] || [ "$(wc -c < /tmp/l0_trace_schema_both_flag_o.bin)" -ne 32 ]; then
+  echo "FAIL: trace schema size (both flags)"
+  exit 1
+fi
+if [ "$(wc -c < /tmp/l0_debug_map_both.bin)" -ne 32 ] || [ "$(wc -c < /tmp/l0_debug_map_both_flag_o.bin)" -ne 32 ]; then
+  echo "FAIL: debug map size (both flags)"
   exit 1
 fi
 if [ "$(head -c 4 /tmp/l0_trace_schema.bin)" != "L0TS" ]; then

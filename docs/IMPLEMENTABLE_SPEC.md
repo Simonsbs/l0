@@ -272,6 +272,7 @@ Optional build-side bootstrap artifacts:
   - 32-byte payload: `L0TS`, version `1`, record size `16`, field count `2`
 - `--debug-map <out.bin>`:
   - 32-byte payload: `L0DM`, version `1`, entry count `1`, code size
+- current bootstrap parser accepts either option independently or both together
 
 ## 9) Near-Term Completion Steps
 

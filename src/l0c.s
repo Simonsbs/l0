@@ -37,7 +37,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>|--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>|--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -260,6 +260,10 @@ _start:
     je .build_positional_with_opt
     cmp r13, 7
     je .build_flag_o_with_opt
+    cmp r13, 8
+    je .build_positional_two_opts
+    cmp r13, 9
+    je .build_flag_o_two_opts
     jne usage
 .build_flag_o_no_opt:
     mov rdi, [r12+32]         # argv[3] should be "-o"
@@ -319,6 +323,91 @@ _start:
     jmp do_build
 .build_flag_o_set_schema:
     mov r11, [r12+56]         # argv[6] schema path
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
+    jmp do_build
+
+.build_positional_two_opts:
+    mov r11, [r12+32]         # argv[3] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    # option pair 1: argv[4] flag, argv[5] path
+    mov rdi, [r12+40]
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    je .build_pos_two_set_schema_1
+    mov rdi, [r12+40]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+48]
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp .build_pos_two_pair2
+.build_pos_two_set_schema_1:
+    mov r11, [r12+48]
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
+.build_pos_two_pair2:
+    # option pair 2: argv[6] flag, argv[7] path
+    mov rdi, [r12+56]
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    je .build_pos_two_set_schema_2
+    mov rdi, [r12+56]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+64]
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp do_build
+.build_pos_two_set_schema_2:
+    mov r11, [r12+64]
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
+    jmp do_build
+
+.build_flag_o_two_opts:
+    mov rdi, [r12+32]         # argv[3] should be "-o"
+    lea rsi, [rip+flag_o]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+40]         # argv[4] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    # option pair 1: argv[5] flag, argv[6] path
+    mov rdi, [r12+48]
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    je .build_flag_two_set_schema_1
+    mov rdi, [r12+48]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+56]
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp .build_flag_two_pair2
+.build_flag_two_set_schema_1:
+    mov r11, [r12+56]
+    mov qword ptr [rip+trace_schema_out_path_ptr], r11
+.build_flag_two_pair2:
+    # option pair 2: argv[7] flag, argv[8] path
+    mov rdi, [r12+64]
+    lea rsi, [rip+flag_trace_schema]
+    call str_eq
+    cmp rax, 1
+    je .build_flag_two_set_schema_2
+    mov rdi, [r12+64]
+    lea rsi, [rip+flag_debug_map]
+    call str_eq
+    cmp rax, 1
+    jne usage
+    mov r11, [r12+72]
+    mov qword ptr [rip+debug_map_out_path_ptr], r11
+    jmp do_build
+.build_flag_two_set_schema_2:
+    mov r11, [r12+72]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
 

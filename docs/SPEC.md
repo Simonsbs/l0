@@ -187,6 +187,8 @@ I also enforce a structural subset inside `fns`:
 - `qword[2]`: instruction-entry count (`1`)
 - `qword[3]`: code size (`code_size` from emitted image)
 
+Current bootstrap parser accepts either side artifact independently or both together in one build command.
+
 This is an interim image format to validate end-to-end native build flow.
 
 ## Canonical policy
