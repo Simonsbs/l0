@@ -1243,6 +1243,34 @@ do_build:
     jmp .build_dbg_map_loop
 
 .build_dbg_map_finish:
+    # Clamp all emitted ranges to [0, code_size] and enforce start <= end.
+    xor rcx, rcx
+.build_dbg_map_clamp_loop:
+    cmp rcx, r12
+    jae .build_dbg_map_header
+    mov rdx, rcx
+    imul rdx, 24
+    add rdx, 32
+    mov rax, qword ptr [r11+rdx+8]   # start
+    cmp rax, r15
+    jbe .build_dbg_map_start_ok
+    mov rax, r15
+.build_dbg_map_start_ok:
+    mov qword ptr [r11+rdx+8], rax
+    mov r8, qword ptr [r11+rdx+16]   # end
+    cmp r8, r15
+    jbe .build_dbg_map_end_bound_ok
+    mov r8, r15
+.build_dbg_map_end_bound_ok:
+    cmp r8, rax
+    jae .build_dbg_map_end_ok
+    mov r8, rax
+.build_dbg_map_end_ok:
+    mov qword ptr [r11+rdx+16], r8
+    inc rcx
+    jmp .build_dbg_map_clamp_loop
+
+.build_dbg_map_header:
     mov qword ptr [r11+16], r12
     mov qword ptr [r11+24], r15
     mov rax, r12
@@ -1688,6 +1716,28 @@ do_mapcat:
     add rax, 32
     cmp rax, rbx
     jne fail_parse
+    mov r13, qword ptr [r12+24]    # code_size
+    xor r14, r14
+.mapcat_validate_loop:
+    cmp r14, r15
+    jae .mapcat_validate_done
+    mov r11, r14
+    imul r11, 24
+    add r11, 32
+    mov rax, qword ptr [r12+r11+0] # inst_id
+    cmp rax, 0
+    je fail_parse
+    mov rax, qword ptr [r12+r11+8] # start
+    cmp rax, r13
+    ja fail_parse
+    mov rcx, qword ptr [r12+r11+16] # end
+    cmp rcx, r13
+    ja fail_parse
+    cmp rax, rcx
+    ja fail_parse
+    inc r14
+    jmp .mapcat_validate_loop
+.mapcat_validate_done:
     mov rdi, 1
     lea rsi, [rip+map_entries_prefix]
     mov rdx, map_entries_prefix_len
@@ -1698,7 +1748,7 @@ do_mapcat:
     lea rsi, [rip+map_code_size_prefix]
     mov rdx, map_code_size_prefix_len
     call write_fd
-    mov rdi, qword ptr [r12+24]
+    mov rdi, r13
     call print_u64_nl
     xor r14, r14
 .mapcat_entry_loop:
@@ -1806,6 +1856,7 @@ do_tracejoin:
     add rax, 32
     cmp rax, rbx
     jne fail_parse
+    mov r13, qword ptr [r8+24]    # code_size
     mov qword ptr [rip+tracejoin_map_count], r10
     xor r14, r14
 .tj_copy_map_loop:
@@ -1815,19 +1866,27 @@ do_tracejoin:
     imul r11, 24
     add r11, 32
     mov rax, qword ptr [r8+r11+0]
+    cmp rax, 0
+    je fail_parse
     mov rcx, r14
     shl rcx, 3
     lea rdx, [rip+tracejoin_map_inst_id]
     add rdx, rcx
     mov qword ptr [rdx], rax
     mov rax, qword ptr [r8+r11+8]
+    cmp rax, r13
+    ja fail_parse
     lea rdx, [rip+tracejoin_map_start]
     add rdx, rcx
     mov qword ptr [rdx], rax
-    mov rax, qword ptr [r8+r11+16]
+    mov r9, qword ptr [r8+r11+16]
+    cmp r9, r13
+    ja fail_parse
+    cmp rax, r9
+    ja fail_parse
     lea rdx, [rip+tracejoin_map_end]
     add rdx, rcx
-    mov qword ptr [rdx], rax
+    mov qword ptr [rdx], r9
     inc r14
     jmp .tj_copy_map_loop
 

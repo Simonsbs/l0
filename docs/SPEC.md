@@ -181,6 +181,8 @@ I also enforce a structural subset inside `fns`:
   - exact size `32 + (entry_count * 24)`
   - magic `L0DM`
   - version `2`
+  - each entry has non-zero `inst_id`
+  - each entry range satisfies `start <= end <= code_size`
 - I print deterministic text lines: `entries <count>`, `code_size <bytes>`, then one `(inst_id,start,end)` triplet per entry.
 
 `l0c schemacat <trace_schema.bin>` currently:
@@ -189,6 +191,7 @@ I also enforce a structural subset inside `fns`:
 
 `l0c tracejoin <trace.bin> <debug_map.bin>` currently:
 - I load and validate debug-map payload (`L0DM`, version `2`).
+- I enforce debug-map entry validity (non-zero `inst_id`, `start <= end <= code_size`).
 - I load and decode trace payload as fixed 16-byte records.
 - For each trace record, I join by `trace_id == inst_id` and print:
   - `id <trace_id>`

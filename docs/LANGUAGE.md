@@ -230,6 +230,7 @@ Current bootstrap debug map payload is variable-size:
 - `entries <count>`
 - `code_size <bytes>`
 - then one `inst_id/start/end` triplet per entry
+- it rejects entries with `inst_id = 0` or invalid ranges (`start > end` or `end > code_size`)
 
 `schemacat` decodes the bootstrap trace-schema format and prints:
 - `version <n>`
@@ -241,6 +242,7 @@ Current bootstrap debug map payload is variable-size:
 - `val <value>`
 - `start <offset>`
 - `end <offset>`
+- it rejects invalid debug-map entries (`inst_id = 0` or ranges outside `code_size`)
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

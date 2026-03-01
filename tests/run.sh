@@ -289,8 +289,20 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_debug_map_versio
   echo "FAIL: mapcat accepted bad map version"
   exit 1
 fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_range.bin
+printf '\xff\xff\xff\xff\xff\xff\xff\xff' | dd of=/tmp/l0_bad_debug_map_range.bin bs=1 seek=40 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_debug_map_range.bin >/tmp/l0_bad_debug_map_range.out 2>/tmp/l0_bad_debug_map_range.err; then
+  echo "FAIL: mapcat accepted out-of-bounds range entry"
+  exit 1
+fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
   echo "FAIL: tracejoin accepted invalid map file"
+  exit 1
+fi
+cp /tmp/l0_debug_map.bin /tmp/l0_bad_debug_map_inst_id.bin
+printf '\x00\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_debug_map_inst_id.bin bs=1 seek=32 conv=notrunc status=none
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_inst_id.bin >/tmp/l0_bad_tracejoin_inst_id.out 2>/tmp/l0_bad_tracejoin_inst_id.err; then
+  echo "FAIL: tracejoin accepted zero inst_id entry"
   exit 1
 fi
 if [ ! -s /tmp/l0_test.img ]; then
