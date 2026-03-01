@@ -79,12 +79,8 @@ Last updated: 2026-03-01
 
 ### M5: Full language/general codegen
 
-- Status: started (initial bootstrap selector broadening)
-- Planned:
-  - lower general multi-block SSA modules (not only canonical kernel templates)
-  - integrate a generalized instruction-selection and register allocation path
-  - widen type/memory ABI coverage toward full MVP spec
-- Current incremental step completed:
+- Status: complete for bootstrap generalized-selector scope
+- Scope completed:
   - commutative binary bootstrap selector now accepts canonical swapped operand order (`v1 v0`) for `add*`, `mul*`, `and`, `or`, `xor`
   - commutative call-lowering selector now accepts swapped call-arg order in `f0` for call->`add.wrap` and call->`mul.wrap`
   - compare/select bootstrap selector now accepts swapped `icmp.eq` operand order for both `icmp.eq` and `icmp.eq + cbr` kernel templates
@@ -122,6 +118,15 @@ Last updated: 2026-03-01
   - memory-gep roundtrip selector now accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret dataflow
   - memory-gep selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
   - expanded multi-digit SSA id regression coverage (`v77`/`v123`) for intrinsic selectors (`malloc`, `free`, `exit`) plus `write`, `trace`, `mem_roundtrip`, and `mem_gep_roundtrip` selector paths to lock digit-parse stability
+
+### M6: Non-template backend and full general codegen
+
+- Status: planned
+- Planned:
+  - lower general multi-block SSA modules beyond canonical kernel templates
+  - integrate a generalized instruction-selection pipeline instead of template matching
+  - integrate register allocation across generalized function bodies
+  - widen type/memory ABI coverage toward the full MVP language spec
 
 ## Documentation status
 

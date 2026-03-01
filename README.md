@@ -73,6 +73,7 @@ Current bootstrap status:
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
   - const-return lowering accepts canonical nonzero SSA ids when `ret` uses the same const-def value (`vN = const ...`, `ret vN`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.
+- I now consider my M5 bootstrap selector-broadening milestone complete, and I track true non-template generalized backend/codegen work as my next milestone (M6).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
