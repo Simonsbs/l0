@@ -129,6 +129,7 @@ I also enforce a structural subset inside `fns`:
     - `v2 = gep v1 0 : t1`
     - `v3 = ld v2 : t0`
     - `ret v3`
+  - for `gep` memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/gep/ld/ret when all uses reference the corresponding defs
   - I lower canonical two-function call kernel shapes:
     - `f0` computes args and calls `f1`
     - `f1` is canonical `add.wrap`, `sub.wrap`, or `mul.wrap` kernel

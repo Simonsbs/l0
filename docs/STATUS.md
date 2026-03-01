@@ -97,6 +97,8 @@ Last updated: 2026-03-01
   - write selector guardrail added: mismatch between final const id and returned id remains intentionally unlowered
   - memory roundtrip selector now accepts canonical nonzero ids across arg/alloca/st/ld/ret dataflow
   - memory roundtrip selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
+  - memory-gep roundtrip selector now accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret dataflow
+  - memory-gep selector guardrail added: mismatch between load result id and returned id remains intentionally unlowered
 
 ## Documentation status
 

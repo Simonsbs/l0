@@ -274,6 +274,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
+    - memory-gep-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret when ids/dataflow match
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
     - `malloc` intrinsic kernel also accepts canonical nonzero arg/result ids when ids/dataflow match (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
     - `free` intrinsic kernel also accepts canonical nonzero arg/const-ret ids when ids/dataflow match (`vN = arg ...`, `free vN`, `vM = const 0`, `ret vM`)
@@ -289,6 +290,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - mismatch exit operand/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch write-newline const/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch memory-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
+    - mismatch memory-gep-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
     - const-return kernels also accept nonzero const-def value ids when the same id is returned (`vN = const ...`, `ret vN`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)
