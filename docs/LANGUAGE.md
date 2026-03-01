@@ -304,9 +304,9 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - for call->`sub.wrap`, I now lower canonical semantic arg0->arg1 shapes and one deterministic reverse-mapping shape where `f0` provides arg1->arg0 mapping while `f1` remains canonical
     - non-matching non-commutative call shapes remain intentionally unlowered guardrails in current bootstrap lowering
     - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only canonical and explicit reverse-mapping forms
+    - for call->`sub.wrap`, I keep non-commutative guardrails by lowering canonical and explicit reverse-mapping forms under supported `f0`/`f1` mapping combinations
     - call-kernel templates also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for call->`sub.wrap`, reverse mapping currently requires canonical `f1` mapping while other non-matching `f1` mappings remain guardrailed
+    - for call->`sub.wrap`, I now also lower reverse `f1` mapping variants (including argdef-order-swapped and dead-const-normalized forms); non-matching structural mismatch shapes remain guardrailed
     - call-kernel templates also accept nonzero call-result ids in `f0` when `ret` references the same value id
     - mismatch trace-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch malloc result-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested

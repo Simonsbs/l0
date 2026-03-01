@@ -1456,9 +1456,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_argdef_order_swapped_unlowered.out
 fi
 call_sub_f1_argdef_order_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
 call_sub_f1_argdef_order_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_argdef_order_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
-call_sub_f1_argdef_order_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img | tr -d ' ')
-if [ "$call_sub_f1_argdef_order_swapped_unlowered_kernel_kind" != "0" ] || [ "$call_sub_f1_argdef_order_swapped_unlowered_code_size" != "1" ]; then
-  echo "FAIL: call->sub f1 argdef-order-swapped unlowered unexpectedly lowered"
+if [ "$call_sub_f1_argdef_order_swapped_unlowered_kernel_kind" != "17" ]; then
+  echo "FAIL: call->sub f1 argdef-order-swapped reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img 9 21 >/tmp/l0_run_call_sub_f1_argdef_order_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1_argdef_order_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run call->sub f1 argdef-order-swapped reverse lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_mul_lowered.l0" /tmp/l0_test_call_mul_lowered.img >/tmp/l0_build_call_mul_lowered.out
@@ -1664,9 +1668,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_swapped_unlowered.out; then
 fi
 call_sub_f1_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_swapped_unlowered.img | tr -d ' ')
 call_sub_f1_swapped_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_swapped_unlowered.img | tr -d ' ')
-call_sub_f1_swapped_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_swapped_unlowered.img | tr -d ' ')
-if [ "$call_sub_f1_swapped_kernel_kind" != "0" ] || [ "$call_sub_f1_swapped_code_size" != "1" ]; then
-  echo "FAIL: call sub f1 swapped unexpectedly lowered"
+if [ "$call_sub_f1_swapped_kernel_kind" != "17" ]; then
+  echo "FAIL: call sub f1 swapped reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_f1_swapped_unlowered.img 9 21 >/tmp/l0_run_call_sub_f1_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run call sub f1 swapped reverse lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_sub_f1_swapped_with_dead_const_unlowered.l0" /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img >/tmp/l0_build_call_sub_f1_swapped_with_dead_const_unlowered.out
@@ -1676,9 +1684,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_sub_f1_swapped_with_dead_const_unlowered.
 fi
 call_sub_f1_swapped_dead_const_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
 call_sub_f1_swapped_dead_const_kernel_kind=$(od -An -t u8 -j "$((call_sub_f1_swapped_dead_const_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
-call_sub_f1_swapped_dead_const_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img | tr -d ' ')
-if [ "$call_sub_f1_swapped_dead_const_kernel_kind" != "0" ] || [ "$call_sub_f1_swapped_dead_const_code_size" != "1" ]; then
-  echo "FAIL: call sub f1 swapped with dead const unexpectedly lowered"
+if [ "$call_sub_f1_swapped_dead_const_kernel_kind" != "17" ]; then
+  echo "FAIL: call sub f1 swapped with dead const reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_f1_swapped_with_dead_const_unlowered.img 9 21 >/tmp/l0_run_call_sub_f1_swapped_with_dead_const_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1_swapped_with_dead_const_unlowered.out)" != "12" ]; then
+  echo "FAIL: run call sub f1 swapped with dead const reverse lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_add_f1_ret_mismatch_unlowered.l0" /tmp/l0_test_call_add_f1_ret_mismatch_unlowered.img >/tmp/l0_build_call_add_f1_ret_mismatch_unlowered.out

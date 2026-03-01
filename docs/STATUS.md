@@ -468,7 +468,20 @@ Last updated: 2026-03-01
   - preserved existing intentional unlowered behavior for non-canonical mismatch shapes (for example extra compare/dataflow divergence cases)
   - validated with full-suite pass
 
-### M38: Non-template backend and full general codegen completion
+### M38: Non-Commutative Call Generalization (`sub.wrap` f1 reverse mapping)
+
+- Status: complete
+- Scope completed:
+  - extended `call->sub.wrap` selector lowering to support deterministic reverse `f1` mapping variants under canonical call structure
+  - added lowered coverage for previously intentional unlowered `f1` reverse-mapping fixtures:
+    - `valid_call_sub_f1_argdef_order_swapped_unlowered.l0`
+    - `valid_call_sub_f1_swapped_unlowered.l0`
+    - `valid_call_sub_f1_swapped_with_dead_const_unlowered.l0`
+  - updated regression assertions for those fixtures from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered behavior checks (`kernel_kind 17` + deterministic runtime outputs)
+  - preserved existing structural mismatch guardrails for unrelated call shapes (for example call-result/id mismatches and non-canonical mismatches)
+  - validated with full-suite pass
+
+### M39: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

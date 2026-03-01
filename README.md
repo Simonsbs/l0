@@ -114,7 +114,8 @@ Current bootstrap status:
 - I now consider my M35 multi-block backend kickoff milestone complete: I added direct lowering for canonical branch-identity modules (`cbr` with both branches returning the same SSA arg) so this shape no longer falls back to the single-byte `ret` stub.
 - I now consider my M36 non-commutative call generalization milestone complete: I added deterministic reverse-mapping lowering for `call->sub.wrap` when `f0` provides arg1->arg0 mapping under parsed arg-definition order and `f1` keeps canonical `sub.wrap` mapping, including dead-const generalized coverage.
 - I now consider my M37 compare/select branch-mapping generalization milestone complete: I added deterministic reverse return-mapping lowering for `icmp.eq + cbr` select shapes (`b1` returns arg1, `b2` returns arg0), including dead-const generalized variants.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M38).
+- I now consider my M38 non-commutative call generalization milestone complete: I extended deterministic reverse-mapping lowering for `call->sub.wrap` to cover reverse `f1` mapping shapes (including argdef-order-swapped and dead-const generalized variants) while keeping structural mismatch guardrails intact.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M39).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

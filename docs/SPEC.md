@@ -147,10 +147,10 @@ I also enforce a structural subset inside `fns`:
     - for `f1` commutative targets (`add.wrap`/`mul.wrap`/`and`/`or`/`xor`), I also accept swapped call-arg order in `f0` (`call f1 v1 v0`)
     - I also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for non-commutative call->`shl`/`shr`, I only lower shapes where `f0` call-arg mapping is semantically arg0->arg1 under the parsed arg definitions
-    - for call->`sub.wrap`, I lower semantic arg0->arg1 shapes and one deterministic reverse-mapping shape where `f0` provides arg1->arg0 mapping under parsed arg definitions
+    - for call->`sub.wrap`, I lower semantic arg0->arg1 shapes and deterministic reverse-mapping shapes (including reverse `f1` mapping variants under supported canonical structure)
     - I also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for non-commutative call->`shl`/`shr`, I only lower shapes where `f1` operation mapping is semantically arg0->arg1 under the parsed arg definitions
-    - for call->`sub.wrap`, the reverse-mapping lowering path currently requires canonical `f1` operation mapping under parsed arg definitions
+    - for call->`sub.wrap`, reverse-mapping lowering also covers argdef-order-swapped and dead-const-normalized `f1` reverse variants when the overall call structure remains canonical
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub

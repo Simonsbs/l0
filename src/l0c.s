@@ -8889,12 +8889,13 @@ try_select_call_kernel_code:
     push r13
     push r14
     push r15
-    sub rsp, 16
+    sub rsp, 24
 
     mov r12, rdi
     mov r13, rsi
     mov qword ptr [rsp], 0
     mov qword ptr [rsp+8], 0
+    mov qword ptr [rsp+16], 0
     lea rdx, [rip+pat_call_head]
     mov rcx, pat_call_head_len
     mov rdi, r12
@@ -9290,17 +9291,41 @@ try_select_call_kernel_code:
     mov rdi, r12
     add rdi, r8
     cmp qword ptr [rsp+8], 1
-    jne .tsck_call_sub_f1_mid_canon
+    jne .tsck_call_sub_f1_head_canon
+    # f1 argdefs swapped: swapped op is canonical semantics; plain op is reverse semantics
     lea rsi, [rip+pat_call_tail_b_mid_sub_swapped]
     mov rdx, pat_call_tail_b_mid_sub_swapped_len
-    jmp .tsck_call_sub_f1_mid_ready
-.tsck_call_sub_f1_mid_canon:
+    call mem_eq
+    cmp rax, 1
+    je .tsck_call_sub_f1_mid_sem_canon
+    mov rdi, r12
+    add rdi, r8
     lea rsi, [rip+pat_call_tail_b_mid_sub]
     mov rdx, pat_call_tail_b_mid_sub_len
-.tsck_call_sub_f1_mid_ready:
     call mem_eq
     cmp rax, 1
     jne .tsck_call_try_mul
+    mov qword ptr [rsp+16], 1
+    jmp .tsck_call_sub_f1_mid_ready
+.tsck_call_sub_f1_head_canon:
+    # f1 argdefs canonical: plain op is canonical semantics; swapped op is reverse semantics
+    lea rsi, [rip+pat_call_tail_b_mid_sub]
+    mov rdx, pat_call_tail_b_mid_sub_len
+    call mem_eq
+    cmp rax, 1
+    je .tsck_call_sub_f1_mid_sem_canon
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_mid_sub_swapped]
+    mov rdx, pat_call_tail_b_mid_sub_swapped_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul
+    mov qword ptr [rsp+16], 1
+    jmp .tsck_call_sub_f1_mid_ready
+.tsck_call_sub_f1_mid_sem_canon:
+    mov qword ptr [rsp+16], 0
+.tsck_call_sub_f1_mid_ready:
     add r8, pat_call_tail_b_mid_sub_len
     mov rdi, r12
     add rdi, r8
@@ -9322,8 +9347,15 @@ try_select_call_kernel_code:
     call mem_eq
     cmp rax, 1
     jne .tsck_call_try_mul
+    cmp qword ptr [rsp+16], 0
+    jne .tsck_call_sub_rev_codegen
     lea r14, [rip+code_stub_sub]
     mov r15, code_stub_sub_len
+    jmp .tsck_call_sub_codegen_done
+.tsck_call_sub_rev_codegen:
+    lea r14, [rip+code_stub_sub_rev]
+    mov r15, code_stub_sub_rev_len
+.tsck_call_sub_codegen_done:
     mov qword ptr [rip+build_kernel_kind], 17
     mov rax, 1
     jmp .tsck_call_done
@@ -10695,9 +10727,9 @@ try_select_call_kernel_code:
 .tsck_call_no:
     xor rax, rax
 .tsck_call_done:
-    mov rcx, qword ptr [rsp+16]
-    mov rdx, qword ptr [rsp+24]
-    add rsp, 32
+    mov rcx, qword ptr [rsp+24]
+    mov rdx, qword ptr [rsp+32]
+    add rsp, 40
     cmp rax, 1
     je .tsck_call_keep_out
     mov r14, rdx
