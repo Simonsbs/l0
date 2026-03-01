@@ -159,6 +159,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> <out.l0img> --debug-map <out.bin>`
 - `l0c build <input.l0> <out.l0img> --trace-schema <out.bin> --debug-map <out.bin>`
 - `l0c imgcheck <out.l0img>`
+- `l0c imgmeta <out.l0img>`
 - `l0c run <out.l0img> [u64_a] [u64_b]`
 - `l0c tracecat <trace.bin>`
 - `l0c mapcat <debug_map.bin>`
@@ -174,6 +175,16 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - source section bounds/size consistency
 - code/debug section pair consistency (both zero or both valid in-bounds ranges)
 - debug schema consistency for non-zero debug section (`L0IX` magic/version, kernel kind range, code-size match, trace schema/version constants)
+
+### `imgmeta` bootstrap output rules
+
+`imgmeta` currently prints selected validated image metadata fields:
+- `version`
+- `src_size`
+- `code_size`
+- `kernel_kind`
+- `trace_schema_ver`
+- `trace_record_size`
 
 ### `run` bootstrap execution rules
 

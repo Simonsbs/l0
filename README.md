@@ -78,6 +78,7 @@ make
 ./bin/l0c build <module.l0> <out.l0img> --debug-map <debug_map.bin>
 ./bin/l0c build <module.l0> <out.l0img> --trace-schema <trace_schema.bin> --debug-map <debug_map.bin>
 ./bin/l0c imgcheck <out.l0img>
+./bin/l0c imgmeta <out.l0img>
 ./bin/l0c run <out.l0img> [u64_a] [u64_b]
 ./bin/l0c tracecat <trace.bin>
 ./bin/l0c mapcat <debug_map.bin>

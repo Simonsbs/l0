@@ -37,7 +37,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -67,6 +67,7 @@ flag_o: .ascii "-o\0"
 flag_trace_schema: .ascii "--trace-schema\0"
 flag_debug_map: .ascii "--debug-map\0"
 cmd_imgcheck: .ascii "imgcheck\0"
+cmd_imgmeta: .ascii "imgmeta\0"
 cmd_run: .ascii "run\0"
 cmd_tracecat: .ascii "tracecat\0"
 cmd_mapcat: .ascii "mapcat\0"
@@ -91,6 +92,18 @@ schema_record_size_prefix: .ascii "record_size "
 schema_record_size_prefix_len = . - schema_record_size_prefix
 schema_fields_prefix: .ascii "fields "
 schema_fields_prefix_len = . - schema_fields_prefix
+img_version_prefix: .ascii "version "
+img_version_prefix_len = . - img_version_prefix
+img_src_size_prefix: .ascii "src_size "
+img_src_size_prefix_len = . - img_src_size_prefix
+img_code_size_prefix: .ascii "code_size "
+img_code_size_prefix_len = . - img_code_size_prefix
+img_kernel_kind_prefix: .ascii "kernel_kind "
+img_kernel_kind_prefix_len = . - img_kernel_kind_prefix
+img_trace_schema_ver_prefix: .ascii "trace_schema_ver "
+img_trace_schema_ver_prefix_len = . - img_trace_schema_ver_prefix
+img_trace_record_size_prefix: .ascii "trace_record_size "
+img_trace_record_size_prefix_len = . - img_trace_record_size_prefix
 img_header_len = 80
 
 kw_ver: .ascii "ver "
@@ -446,10 +459,20 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne .check_run
+    jne .check_imgmeta
     cmp r13, 3
     jne usage
     jmp do_imgcheck
+
+.check_imgmeta:
+    lea rsi, [rip+cmd_imgmeta]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne .check_run
+    cmp r13, 3
+    jne usage
+    jmp do_imgmeta
 
 .check_run:
     lea rsi, [rip+cmd_run]
@@ -1075,6 +1098,128 @@ do_imgcheck:
     mov rdx, ok_len
     mov rdi, 1
     call write_fd
+    mov rdi, 0
+    call exit
+
+do_imgmeta:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    cmp rbx, img_header_len
+    jb fail_img
+
+    lea r8, [rip+file_buf]
+    mov rax, qword ptr [r8+0]
+    mov r9, 0x000000004d49304c
+    cmp rax, r9
+    jne fail_img
+    mov rax, qword ptr [r8+8]     # version
+    cmp rax, 1
+    jne fail_img
+    mov rax, qword ptr [r8+16]    # header_size
+    cmp rax, img_header_len
+    jne fail_img
+    mov rax, qword ptr [r8+24]    # flags
+    cmp rax, 0
+    jne fail_img
+
+    mov r10, qword ptr [r8+16]    # header_size
+    mov r11, qword ptr [r8+32]    # src_off
+    cmp r11, r10
+    jb fail_img
+    cmp r11, rbx
+    ja fail_img
+    mov rax, qword ptr [r8+40]    # src_size
+    add rax, r11
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+    mov r12, qword ptr [r8+48]    # code_off
+    mov r13, qword ptr [r8+56]    # code_size
+    cmp r12, 0
+    je fail_img
+    cmp r13, 0
+    je fail_img
+    cmp r12, r10
+    jb fail_img
+    cmp r12, rbx
+    ja fail_img
+    mov rax, r12
+    add rax, r13
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+    mov r12, qword ptr [r8+64]    # debug_off
+    mov r13, qword ptr [r8+72]    # debug_size
+    cmp r12, 0
+    je fail_img
+    cmp r13, 64
+    jne fail_img
+    cmp r12, r10
+    jb fail_img
+    cmp r12, rbx
+    ja fail_img
+    mov rax, r12
+    add rax, r13
+    jc fail_img
+    cmp rax, rbx
+    ja fail_img
+
+    mov r9, qword ptr [r8+64]     # debug_off
+    mov rax, qword ptr [r8+r9+0]
+    mov r11, 0x000000005849304c
+    cmp rax, r11
+    jne fail_img
+    mov rax, qword ptr [r8+r9+8]
+    cmp rax, 1
+    jne fail_img
+
+    mov rdi, 1
+    lea rsi, [rip+img_version_prefix]
+    mov rdx, img_version_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+8]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_src_size_prefix]
+    mov rdx, img_src_size_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+40]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_code_size_prefix]
+    mov rdx, img_code_size_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+56]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_kernel_kind_prefix]
+    mov rdx, img_kernel_kind_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+r9+32]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_trace_schema_ver_prefix]
+    mov rdx, img_trace_schema_ver_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+r9+48]
+    call print_u64_nl
+
+    mov rdi, 1
+    lea rsi, [rip+img_trace_record_size_prefix]
+    mov rdx, img_trace_record_size_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+r9+56]
+    call print_u64_nl
+
     mov rdi, 0
     call exit
 
