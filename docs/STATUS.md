@@ -278,7 +278,18 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these staged-hook nonzero-id cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M23: Non-template backend and full general codegen completion
+### M23: Staged Intrinsic Mixed-Variant Fallback Matrix Expansion
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixtures for mixed canonical variant staged-hook cases:
+    - `write` with non-unit `alloca` count + dead const
+    - `free` with nonzero/multi-digit ids + multi-dead-const injection
+    - `trace` with nonzero/multi-digit ids + multi-dead-const injection
+  - added deterministic build assertions proving these mixed staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M24: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

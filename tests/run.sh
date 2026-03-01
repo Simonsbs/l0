@@ -2985,7 +2985,10 @@ for f in \
   valid_trace_noop_with_two_dead_consts_general_unlowered.l0 \
   valid_write_newline_v123_with_dead_const_general_unlowered.l0 \
   valid_free_noop_v123_with_dead_const_general_unlowered.l0 \
-  valid_trace_noop_v123_with_dead_const_general_unlowered.l0
+  valid_trace_noop_v123_with_dead_const_general_unlowered.l0 \
+  valid_write_newline_alloca16_with_dead_const_general_unlowered.l0 \
+  valid_free_noop_v123_with_two_dead_consts_general_unlowered.l0 \
+  valid_trace_noop_v123_with_two_dead_consts_general_unlowered.l0
 do
   "$BIN" verify "$ROOT/tests/$f" >/tmp/l0_ok_m16_"$f".out
   if ! grep -q '^ok$' /tmp/l0_ok_m16_"$f".out; then
@@ -3183,6 +3186,36 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_dead_const_general_unlowe
 fi
 if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_dead_const_general_unlowered.img)" != "1" ]; then
   echo "FAIL: trace noop v123 dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_write_newline_alloca16_with_dead_const_general_unlowered.l0" /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img >/tmp/l0_build_write_newline_alloca16_with_dead_const_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca16_with_dead_const_general_unlowered.out; then
+  echo "FAIL: build valid_write_newline_alloca16_with_dead_const_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: write newline alloca16 dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_free_noop_v123_with_two_dead_consts_general_unlowered.l0" /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img >/tmp/l0_build_free_noop_v123_with_two_dead_consts_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_v123_with_two_dead_consts_general_unlowered.out; then
+  echo "FAIL: build valid_free_noop_v123_with_two_dead_consts_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_free_noop_v123_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: free noop v123 two-dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_trace_noop_v123_with_two_dead_consts_general_unlowered.l0" /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img >/tmp/l0_build_trace_noop_v123_with_two_dead_consts_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_v123_with_two_dead_consts_general_unlowered.out; then
+  echo "FAIL: build valid_trace_noop_v123_with_two_dead_consts_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_trace_noop_v123_with_two_dead_consts_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: trace noop v123 two-dead-const generalized hook fallback violated"
   exit 1
 fi
 
