@@ -20,7 +20,7 @@ Current bootstrap status:
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
-  - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path)
+  - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` no-op debug path)
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
@@ -31,7 +31,7 @@ Current bootstrap status:
 - I enforce contiguous canonical block ordering (`b0`, `b1`, `b2`, ...).
 - I enforce bootstrap opcode-operand checks for `arg`, `const`, and common binary ops.
 - I enforce bootstrap memory-op checks for `ld`, `gep`, and `alloca`, plus non-value `st`.
-- I enforce bootstrap intrinsic checks for `malloc` (value op), `free`/`exit`/`write` (non-value ops), including non-pointer operand constraints for intrinsic size/code/length values.
+- I enforce bootstrap intrinsic checks for `malloc` (value op), `free`/`exit`/`write`/`trace` (non-value ops), including non-pointer operand constraints for intrinsic size/code/length values and def-before-use checks for traced values.
 - I reject unknown opcode tokens in the bootstrap subset.
 - I reject duplicate SSA value definitions (`vN`) within a function.
 - I enforce `arg` index bounds against the function argument count.

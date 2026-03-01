@@ -42,7 +42,8 @@ value_instr = IND value_id SP "=" SP opcode SP args SP ":" SP type_id ;
 nonvalue_instr = (IND "st" SP value_id SP value_id)
               | (IND "free" SP value_id)
               | (IND "exit" SP value_id)
-              | (IND "write" SP value_id SP value_id) ;
+              | (IND "write" SP value_id SP value_id)
+              | (IND "trace" SP dec_u SP value_id) ;
 
 opcode      = "arg" | "const" | "call"
             | "add.wrap" | "add.trap" | "sub.wrap" | "sub.trap" | "mul.wrap" | "mul.trap"
@@ -157,6 +158,10 @@ digit       = "0".."9" ;
   - both operands must be defined before use
   - `vPtr` must be typed `p0<i8>`
   - `vLen` must not be pointer-typed
+- `trace` (non-value):
+  - shape: `trace N vVal`
+  - `N` is unsigned decimal
+  - `vVal` must be defined before use
 
 ## 4) Core Semantics (Bootstrap Contract)
 
@@ -185,6 +190,7 @@ I currently lower deterministic canonical kernels:
   - canonical `free` kernel (defined no-op returning zero in current slice)
   - canonical `exit` kernel (syscall-backed process exit path)
   - canonical `write` kernel (syscall-backed stdout write path)
+  - canonical `trace` kernel (defined no-op debug path in current slice)
 - Const-return kernel:
   - `const N` / `const -N` then `ret`
 
@@ -245,9 +251,9 @@ Current bootstrap `kernel kind id` mapping:
 - `19`: canonical `gep` memory roundtrip kernel
 - `20`: canonical `malloc` kernel
 - `21`: canonical `free` no-op kernel
-- `22`: reserved (unused in current bootstrap)
 - `22`: canonical `write` newline kernel
 - `23`: canonical `exit` kernel
+- `24`: canonical `trace` no-op kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 

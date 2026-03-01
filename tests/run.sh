@@ -144,6 +144,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_write_newline.out; then
   echo "FAIL: verify valid_write_newline"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop.l0" >/tmp/l0_ok_trace_noop.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop.out; then
+  echo "FAIL: verify valid_trace_noop"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -541,6 +546,22 @@ if [ "$(od -An -t x1 /tmp/l0_run_write_newline.out | tr -d ' \n')" != "0a300a" ]
   echo "FAIL: run write newline output bytes"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_trace_noop.l0" /tmp/l0_test_trace_noop.img >/tmp/l0_build_trace_noop.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop.out; then
+  echo "FAIL: build valid_trace_noop"
+  exit 1
+fi
+trace_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
+trace_kernel_kind=$(od -An -t u8 -j "$((trace_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
+if [ "$trace_kernel_kind" != "24" ]; then
+  echo "FAIL: trace debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_trace_noop.img 123 >/tmp/l0_run_trace_noop.out
+if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop.out)" != "0" ]; then
+  echo "FAIL: run trace noop image result"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
@@ -801,6 +822,10 @@ if "$BIN" verify "$ROOT/tests/invalid_write_len_undefined.l0" >/tmp/l0_bad38f.ou
 fi
 if "$BIN" verify "$ROOT/tests/invalid_write_len_pointer.l0" >/tmp/l0_bad38g.out 2>/tmp/l0_bad38g.err; then
   echo "FAIL: invalid_write_len_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_trace_undefined.l0" >/tmp/l0_bad38h.out 2>/tmp/l0_bad38h.err; then
+  echo "FAIL: invalid_trace_undefined unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then
