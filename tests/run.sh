@@ -68,6 +68,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_mul_v7_swapped_lowered.out; then
   echo "FAIL: verify valid_call_mul_v7_swapped_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_mismatch_unlowered.l0" >/tmp/l0_ok_call_add_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_call_add_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
 if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
   echo "FAIL: verify valid_ptr_type"
@@ -627,6 +632,18 @@ fi
 "$BIN" run /tmp/l0_test_call_mul_v7_swapped_lowered.img 7 6 >/tmp/l0_run_call_mul_v7_swapped_lowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_call_mul_v7_swapped_lowered.out)" != "42" ]; then
   echo "FAIL: run call->mul v7 swapped lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_mismatch_unlowered.l0" /tmp/l0_test_call_add_mismatch_unlowered.img >/tmp/l0_build_call_add_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_mismatch_unlowered.out; then
+  echo "FAIL: build valid_call_add_mismatch_unlowered"
+  exit 1
+fi
+call_add_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_mismatch_unlowered.img | tr -d ' ')
+call_add_mismatch_kernel_kind=$(od -An -t u8 -j "$((call_add_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_mismatch_unlowered.img | tr -d ' ')
+call_add_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_add_mismatch_unlowered.img | tr -d ' ')
+if [ "$call_add_mismatch_kernel_kind" != "0" ] || [ "$call_add_mismatch_code_size" != "1" ]; then
+  echo "FAIL: call add mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_const.l0" /tmp/l0_test_const.img >/tmp/l0_build_const.out

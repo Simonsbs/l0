@@ -41,6 +41,7 @@ Current bootstrap status:
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
   - for call->`add.wrap` and call->`mul.wrap`, I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
+  - I keep mismatch call-result/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` stderr-binary emit path)
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
   - const-return lowering accepts canonical nonzero SSA ids when `ret` uses the same const-def value (`vN = const ...`, `ret vN`)
