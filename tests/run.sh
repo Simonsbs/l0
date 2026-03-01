@@ -149,6 +149,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_trace_noop.out; then
   echo "FAIL: verify valid_trace_noop"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_trace_multi.l0" >/tmp/l0_ok_trace_multi.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_multi.out; then
+  echo "FAIL: verify valid_trace_multi"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -839,6 +844,10 @@ if "$BIN" verify "$ROOT/tests/invalid_write_len_pointer.l0" >/tmp/l0_bad38g.out 
 fi
 if "$BIN" verify "$ROOT/tests/invalid_trace_undefined.l0" >/tmp/l0_bad38h.out 2>/tmp/l0_bad38h.err; then
   echo "FAIL: invalid_trace_undefined unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_trace_second_undefined.l0" >/tmp/l0_bad38i.out 2>/tmp/l0_bad38i.err; then
+  echo "FAIL: invalid_trace_second_undefined unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then

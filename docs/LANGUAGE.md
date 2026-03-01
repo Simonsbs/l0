@@ -123,7 +123,7 @@ Current bootstrap opcode-aware checks:
 - `free` is accepted as a canonical non-value instruction (`free vPtr`) with def-before-use and `p0<i8>` pointer typing checks on `vPtr`
 - `exit` is accepted as a canonical non-value instruction (`exit vCode`) with def-before-use checks and non-pointer typing checks on `vCode`
 - `write` is accepted as a canonical non-value instruction (`write vPtr vLen`) with def-before-use checks, `p0<i8>` pointer typing on `vPtr`, and non-pointer typing checks on `vLen`
-- `trace` is accepted as a canonical non-value instruction (`trace N vVal`) with decimal trace-id `N` and def-before-use checks on `vVal`
+- `trace` is accepted as a canonical non-value instruction (`trace N vA vB ...`) with decimal trace-id `N` and def-before-use checks on each traced value
 - binary ops (`add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`) require `vN vN` operands
 - binary ops require both operand value types to match the explicit result type suffix
 

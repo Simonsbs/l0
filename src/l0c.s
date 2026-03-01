@@ -2212,6 +2212,7 @@ validate_nonvalue_uses_defined:
     inc rcx
     cmp rcx, r13
     jae .vnud_try_write
+.vnud_trace_v_loop:
     mov al, byte ptr [r12+rcx]
     cmp al, 'v'
     jne .vnud_try_write
@@ -2221,8 +2222,6 @@ validate_nonvalue_uses_defined:
     mov rsi, r13
     call parse_digits
     cmp rax, 1
-    jne .vnud_try_write
-    cmp rcx, r13
     jne .vnud_try_write
     xor rbx, rbx
 .vnud_trace_v_conv:
@@ -2236,10 +2235,27 @@ validate_nonvalue_uses_defined:
     inc r8
     jmp .vnud_trace_v_conv
 .vnud_trace_v_check:
+    push rcx
     mov rdi, rbx
     call value_seen_exists
     cmp rax, 1
-    jne .vnud_bad
+    je .vnud_trace_v_seen
+    pop rcx
+    jmp .vnud_bad
+.vnud_trace_v_seen:
+    pop rcx
+    cmp rcx, r13
+    jne .vnud_trace_more
+    mov rax, 1
+    jmp .vnud_done
+.vnud_trace_more:
+    mov al, byte ptr [r12+rcx]
+    cmp al, ' '
+    jne .vnud_try_write
+    inc rcx
+    cmp rcx, r13
+    jae .vnud_try_write
+    jmp .vnud_trace_v_loop
     mov rax, 1
     jmp .vnud_done
 
@@ -4382,6 +4398,7 @@ line_is_nonvalue_instruction:
     cmp al, ' '
     jne .lnvi_try_write
     inc rcx
+.lnvi_trace_v_loop:
     cmp rcx, rsi
     jae .lnvi_try_write
     mov al, byte ptr [rdi+rcx]
@@ -4393,6 +4410,11 @@ line_is_nonvalue_instruction:
     jne .lnvi_try_write
     cmp rcx, rsi
     je .lnvi_yes
+    mov al, byte ptr [rdi+rcx]
+    cmp al, ' '
+    jne .lnvi_try_write
+    inc rcx
+    jmp .lnvi_trace_v_loop
 
 .lnvi_try_write:
     # write vN vN

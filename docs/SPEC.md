@@ -68,7 +68,7 @@ I also enforce a structural subset inside `fns`:
   - non-value instruction `free vPtr` is accepted and requires `vPtr` to be `p0<i8>` and defined
   - non-value instruction `exit vCode` is accepted and requires `vCode` to be defined and non-pointer typed
   - non-value instruction `write vPtr vLen` is accepted and requires both operands defined, `vPtr` typed as `p0<i8>`, and `vLen` non-pointer typed
-  - non-value instruction `trace N vVal` is accepted and requires decimal `N` plus defined `vVal`
+  - non-value instruction `trace N vVal...` is accepted and requires decimal `N` plus one-or-more defined traced values
 - SSA bootstrap check:
   - each `vN` may be defined only once per function
   - def-before-use is enforced for currently validated uses:
@@ -79,7 +79,7 @@ I also enforce a structural subset inside `fns`:
     - `malloc vN` and `free vPtr` value operands
     - `exit vCode` value operands
     - `write vPtr vLen` value operands
-    - `trace N vVal` value operands
+    - `trace N vVal...` value operands
     - bootstrap binary op operands (`vN vN`)
 
 ## Current build artifact subset

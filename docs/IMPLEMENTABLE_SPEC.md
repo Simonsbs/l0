@@ -43,7 +43,7 @@ nonvalue_instr = (IND "st" SP value_id SP value_id)
               | (IND "free" SP value_id)
               | (IND "exit" SP value_id)
               | (IND "write" SP value_id SP value_id)
-              | (IND "trace" SP dec_u SP value_id) ;
+              | (IND "trace" SP dec_u (SP value_id)+) ;
 
 opcode      = "arg" | "const" | "call"
             | "add.wrap" | "add.trap" | "sub.wrap" | "sub.trap" | "mul.wrap" | "mul.trap"
@@ -159,9 +159,10 @@ digit       = "0".."9" ;
   - `vPtr` must be typed `p0<i8>`
   - `vLen` must not be pointer-typed
 - `trace` (non-value):
-  - shape: `trace N vVal`
+  - shape: `trace N vVal...`
   - `N` is unsigned decimal
-  - `vVal` must be defined before use
+  - one-or-more traced values are required
+  - each traced value must be defined before use
 
 ## 4) Core Semantics (Bootstrap Contract)
 
