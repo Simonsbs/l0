@@ -20,7 +20,7 @@ Current bootstrap status:
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
-  - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` no-op debug path)
+  - canonical intrinsic kernels (`malloc` allocator syscall path, `free` no-op path, `exit` syscall path, `write` syscall path, `trace` stderr-binary emit path)
   - zero-arg constant-return kernel (`const N` or `const -N` then `ret v0`)
 - I keep a deterministic `ret` fallback stub for other verified inputs.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.

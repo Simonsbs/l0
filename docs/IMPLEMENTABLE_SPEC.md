@@ -190,7 +190,7 @@ I currently lower deterministic canonical kernels:
   - canonical `free` kernel (defined no-op returning zero in current slice)
   - canonical `exit` kernel (syscall-backed process exit path)
   - canonical `write` kernel (syscall-backed stdout write path)
-  - canonical `trace` kernel (defined no-op debug path in current slice)
+  - canonical `trace` kernel (fixed 16-byte binary trace emission to stderr in current slice)
 - Const-return kernel:
   - `const N` / `const -N` then `ret`
 
@@ -253,7 +253,7 @@ Current bootstrap `kernel kind id` mapping:
 - `21`: canonical `free` no-op kernel
 - `22`: canonical `write` newline kernel
 - `23`: canonical `exit` kernel
-- `24`: canonical `trace` no-op kernel
+- `24`: canonical `trace` emit kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 

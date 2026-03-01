@@ -131,7 +131,7 @@ I also enforce a structural subset inside `fns`:
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - `exit` kernel (`exit v0`) via syscall `exit` stub
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
-    - `trace` kernel (`trace 1 v0`) via defined no-op debug stub in current bootstrap slice
+    - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

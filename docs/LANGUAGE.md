@@ -184,7 +184,7 @@ Bootstrap build output currently also includes a compact 48-byte debug semantic 
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
-    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to a defined no-op debug stub)
+    - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)

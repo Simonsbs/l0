@@ -557,9 +557,13 @@ if [ "$trace_kernel_kind" != "24" ]; then
   echo "FAIL: trace debug kernel kind id"
   exit 1
 fi
-"$BIN" run /tmp/l0_test_trace_noop.img 123 >/tmp/l0_run_trace_noop.out
+"$BIN" run /tmp/l0_test_trace_noop.img 123 >/tmp/l0_run_trace_noop.out 2>/tmp/l0_run_trace_noop.err
 if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop.out)" != "0" ]; then
-  echo "FAIL: run trace noop image result"
+  echo "FAIL: run trace emit image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_trace_noop.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
+  echo "FAIL: run trace emit bytes"
   exit 1
 fi
 
