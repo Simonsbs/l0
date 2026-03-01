@@ -137,7 +137,7 @@ digit       = "0".."9" ;
 
 ## 4) Core Semantics (Bootstrap Contract)
 
-- Integer ops currently implemented in lowering are wrap semantics on 64-bit registers, except `add.trap` / `sub.trap` which trap on signed overflow (`jo` -> `ud2`).
+- Integer ops currently implemented in lowering are wrap semantics on 64-bit registers, except `add.trap` / `sub.trap` which trap on signed overflow (`jo` -> `ud2`, process-terminating trap in current runtime path).
 - `icmp.eq` returns `0` or `1`.
 - Pointer arithmetic and memory instruction semantics are defined at verifier level; full lowering/runtime semantics are still incremental.
 - I keep behavior defined by default and avoid UB contracts.

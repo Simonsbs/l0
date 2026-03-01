@@ -95,6 +95,7 @@ I also enforce a structural subset inside `fns`:
     - `v2 = <op> v0 v1 : t0`
     - `ret v2`
   - I currently lower these ops: `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+  - `add.trap`/`sub.trap` currently trap via `jo` to `ud2` on signed overflow
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
   - I lower canonical `icmp.eq + cbr` select kernel shape:
     - `v2 = icmp.eq v0 v1 : t1`

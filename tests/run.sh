@@ -204,6 +204,10 @@ if [ "$(tr -d '\n' < /tmp/l0_run_add_trap.out)" != "12" ]; then
   echo "FAIL: run add.trap image result"
   exit 1
 fi
+if "$BIN" run /tmp/l0_test_add_trap.img 9223372036854775807 1 >/tmp/l0_run_add_trap_ovf.out 2>/tmp/l0_run_add_trap_ovf.err; then
+  echo "FAIL: run add.trap overflow unexpectedly returned"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_sub_trap.l0" /tmp/l0_test_sub_trap.img >/tmp/l0_build_sub_trap.out
 if ! grep -q '^ok$' /tmp/l0_build_sub_trap.out; then
   echo "FAIL: build valid_sub_trap"
@@ -212,6 +216,10 @@ fi
 "$BIN" run /tmp/l0_test_sub_trap.img 9 2 >/tmp/l0_run_sub_trap.out
 if [ "$(tr -d '\n' < /tmp/l0_run_sub_trap.out)" != "7" ]; then
   echo "FAIL: run sub.trap image result"
+  exit 1
+fi
+if "$BIN" run /tmp/l0_test_sub_trap.img 9223372036854775808 1 >/tmp/l0_run_sub_trap_ovf.out 2>/tmp/l0_run_sub_trap_ovf.err; then
+  echo "FAIL: run sub.trap overflow unexpectedly returned"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_shl.l0" /tmp/l0_test_shl.img >/tmp/l0_build_shl.out
