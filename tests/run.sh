@@ -124,6 +124,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_mem_gep_roundtrip.out; then
   echo "FAIL: verify valid_mem_gep_roundtrip"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_malloc.l0" >/tmp/l0_ok_malloc.out
+if ! grep -q '^ok$' /tmp/l0_ok_malloc.out; then
+  echo "FAIL: verify valid_malloc"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_free_noop.l0" >/tmp/l0_ok_free_noop.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop.out; then
+  echo "FAIL: verify valid_free_noop"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -449,6 +459,39 @@ if [ "$(tr -d '\n' < /tmp/l0_run_mem_gep_roundtrip.out)" != "456" ]; then
   echo "FAIL: run mem gep roundtrip result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_malloc.l0" /tmp/l0_test_malloc.img >/tmp/l0_build_malloc.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc.out; then
+  echo "FAIL: build valid_malloc"
+  exit 1
+fi
+malloc_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_malloc.img | tr -d ' ')
+malloc_kernel_kind=$(od -An -t u8 -j "$((malloc_dbg_off + 32))" -N 8 /tmp/l0_test_malloc.img | tr -d ' ')
+if [ "$malloc_kernel_kind" != "20" ]; then
+  echo "FAIL: malloc debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_malloc.img 4096 >/tmp/l0_run_malloc.out
+malloc_out="$(tr -d '\n' < /tmp/l0_run_malloc.out)"
+if [ "$malloc_out" = "0" ]; then
+  echo "FAIL: run malloc returned null"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop.l0" /tmp/l0_test_free_noop.img >/tmp/l0_build_free_noop.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop.out; then
+  echo "FAIL: build valid_free_noop"
+  exit 1
+fi
+free_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_free_noop.img | tr -d ' ')
+free_kernel_kind=$(od -An -t u8 -j "$((free_dbg_off + 32))" -N 8 /tmp/l0_test_free_noop.img | tr -d ' ')
+if [ "$free_kernel_kind" != "21" ]; then
+  echo "FAIL: free noop debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_free_noop.img 123 >/tmp/l0_run_free_noop.out
+if [ "$(tr -d '\n' < /tmp/l0_run_free_noop.out)" != "0" ]; then
+  echo "FAIL: run free noop image result"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then
@@ -654,6 +697,14 @@ if "$BIN" verify "$ROOT/tests/invalid_icmp_operand_type_mismatch.l0" >/tmp/l0_ba
 fi
 if "$BIN" verify "$ROOT/tests/invalid_unknown_opcode.l0" >/tmp/l0_bad38.out 2>/tmp/l0_bad38.err; then
   echo "FAIL: invalid_unknown_opcode unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_malloc_result_not_pointer.l0" >/tmp/l0_bad38a.out 2>/tmp/l0_bad38a.err; then
+  echo "FAIL: invalid_malloc_result_not_pointer unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_free_ptr_not_pointer.l0" >/tmp/l0_bad38b.out 2>/tmp/l0_bad38b.err; then
+  echo "FAIL: invalid_free_ptr_not_pointer unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_ld_ptr_not_pointer.l0" >/tmp/l0_bad39.out 2>/tmp/l0_bad39.err; then

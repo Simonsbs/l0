@@ -127,6 +127,10 @@ code_stub_cbr_eq_select: .byte 0x48,0x89,0xf0,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc7
 code_stub_cbr_eq_select_len = . - code_stub_cbr_eq_select
 code_stub_mem_roundtrip: .byte 0x48,0x83,0xec,0x08,0x48,0x89,0x3c,0x24,0x48,0x8b,0x04,0x24,0x48,0x83,0xc4,0x08,0xc3
 code_stub_mem_roundtrip_len = . - code_stub_mem_roundtrip
+code_stub_malloc: .byte 0x48,0x89,0xfe,0x48,0x31,0xff,0x48,0xc7,0xc0,0x09,0x00,0x00,0x00,0x48,0xc7,0xc2,0x03,0x00,0x00,0x00,0x49,0xc7,0xc2,0x22,0x00,0x00,0x00,0x49,0xc7,0xc0,0xff,0xff,0xff,0xff,0x4d,0x31,0xc9,0x0f,0x05,0xc3
+code_stub_malloc_len = . - code_stub_malloc
+code_stub_free_noop: .byte 0x48,0x31,0xc0,0xc3
+code_stub_free_noop_len = . - code_stub_free_noop
 pat_bin_prefix: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = "
 pat_bin_prefix_len = . - pat_bin_prefix
 pat_bin_suffix: .ascii "v0 v1 : t0\n  ret v2\n}\n"
@@ -139,6 +143,10 @@ pat_mem_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = allo
 pat_mem_roundtrip_len = . - pat_mem_roundtrip
 pat_mem_gep_roundtrip: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = alloca t0, 1 : t1\n  st v1 v0\n  v2 = gep v1 0 : t1\n  v3 = ld v2 : t0\n  ret v3\n}\n"
 pat_mem_gep_roundtrip_len = . - pat_mem_gep_roundtrip
+pat_malloc: .ascii "fn f0 (t0)->t1 {\nb0:\n  v0 = arg 0 : t0\n  v1 = malloc v0 : t1\n  ret v1\n}\n"
+pat_malloc_len = . - pat_malloc
+pat_free_noop: .ascii "fn f0 (t1)->t0 {\nb0:\n  v0 = arg 0 : t1\n  free v0\n  v1 = const 0 : t0\n  ret v1\n}\n"
+pat_free_noop_len = . - pat_free_noop
 pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_add_len = . - pat_call_add
 pat_call_sub: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = sub.wrap v0 v1 : t0\n  ret v2\n}\n"
@@ -309,6 +317,7 @@ do_build:
     # select bootstrap code payload:
     # - canonical arg2 binary kernel lowering for supported ops
     # - canonical call->{add,sub,mul}.wrap two-function kernel lowering
+    # - canonical malloc and free intrinsic kernel lowering
     # - canonical alloca+st+ld memory roundtrip kernel lowering
     # - canonical icmp.eq + cbr select kernel lowering
     # - canonical icmp.eq kernel lowering
@@ -317,6 +326,32 @@ do_build:
     lea r14, [rip+code_stub_ret]
     mov r15, code_stub_ret_len
     mov qword ptr [rip+build_kernel_kind], 0
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_malloc]
+    mov rcx, pat_malloc_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_free_noop
+    lea r14, [rip+code_stub_malloc]
+    mov r15, code_stub_malloc_len
+    mov qword ptr [rip+build_kernel_kind], 20
+    jmp .build_code_selected
+
+.build_try_free_noop:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_free_noop]
+    mov rcx, pat_free_noop_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_call_sub
+    lea r14, [rip+code_stub_free_noop]
+    mov r15, code_stub_free_noop_len
+    mov qword ptr [rip+build_kernel_kind], 21
+    jmp .build_code_selected
+
+.build_try_call_sub:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     lea rdx, [rip+pat_call_sub]
@@ -2050,7 +2085,75 @@ validate_nonvalue_uses_defined:
     mov r12, rdi
     mov r13, rsi
 
-    # bootstrap non-value set: st vPtr vVal
+    # bootstrap non-value set: free vPtr | st vPtr vVal
+    cmp r13, 9
+    jb .vnud_bad
+    mov al, byte ptr [r12]
+    cmp al, ' '
+    jne .vnud_try_st
+    mov al, byte ptr [r12+1]
+    cmp al, ' '
+    jne .vnud_try_st
+    mov al, byte ptr [r12+2]
+    cmp al, 'f'
+    jne .vnud_try_st
+    mov al, byte ptr [r12+3]
+    cmp al, 'r'
+    jne .vnud_try_st
+    mov al, byte ptr [r12+4]
+    cmp al, 'e'
+    jne .vnud_try_st
+    mov al, byte ptr [r12+5]
+    cmp al, 'e'
+    jne .vnud_try_st
+    mov al, byte ptr [r12+6]
+    cmp al, ' '
+    jne .vnud_try_st
+    mov al, byte ptr [r12+7]
+    cmp al, 'v'
+    jne .vnud_try_st
+    mov rcx, 8
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vnud_try_st
+    cmp rcx, r13
+    jne .vnud_try_st
+    xor rbx, rbx
+    mov r8, 8
+.vnud_free_ptr_conv:
+    cmp r8, rcx
+    jae .vnud_free_ptr_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vnud_free_ptr_conv
+.vnud_free_ptr_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vnud_bad
+    mov r8, rbx
+    shl r8, 3
+    lea r9, [rip+vfp_value_type_map]
+    add r9, r8
+    mov r10, qword ptr [r9]
+    cmp r10, 4096
+    jae .vnud_bad
+    mov r11, r10
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    jne .vnud_bad
+    mov rax, 1
+    jmp .vnud_done
+
+.vnud_try_st:
     cmp r13, 10
     jb .vnud_bad
     mov al, byte ptr [r12]
@@ -2588,25 +2691,25 @@ validate_value_uses_defined:
     mov r10, r15
     sub r10, r14                 # opcode length
     cmp r10, 6
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14]
     cmp al, 'a'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14+1]
     cmp al, 'l'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14+2]
     cmp al, 'l'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14+3]
     cmp al, 'o'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14+4]
     cmp al, 'c'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
     mov al, byte ptr [r12+r14+5]
     cmp al, 'a'
-    jne .vvud_detect_icmp
+    jne .vvud_detect_malloc
 
     push r8
     push r11
@@ -2683,6 +2786,89 @@ validate_value_uses_defined:
     jmp .vvud_ok
 
 .vvud_alloca_type_bad:
+    pop r11
+    pop r8
+    jmp .vvud_bad
+
+.vvud_detect_malloc:
+    # malloc def-use/type checks:
+    # - result type suffix must be p0<i8>
+    # - args must be "vN"
+    # - size operand must be defined
+    mov r10, r15
+    sub r10, r14                 # opcode length
+    cmp r10, 6
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14]
+    cmp al, 'm'
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14+1]
+    cmp al, 'a'
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14+2]
+    cmp al, 'l'
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14+3]
+    cmp al, 'l'
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14+4]
+    cmp al, 'o'
+    jne .vvud_detect_icmp
+    mov al, byte ptr [r12+r14+5]
+    cmp al, 'c'
+    jne .vvud_detect_icmp
+
+    push r8
+    push r11
+    mov rdi, r12
+    mov rsi, r13
+    call parse_value_result_type_id
+    cmp rax, 0
+    jl .vvud_malloc_type_bad
+    mov r15, rax
+    cmp r15, 4096
+    jae .vvud_malloc_type_bad
+    mov r9, r15
+    shl r9, 3
+    lea r10, [rip+vfp_type_is_p0_i8_map]
+    add r10, r9
+    cmp qword ptr [r10], 1
+    jne .vvud_malloc_type_bad
+    pop r11
+    pop r8
+
+    mov rcx, r8
+    mov al, byte ptr [r12+rcx]
+    cmp al, 'v'
+    jne .vvud_bad
+    inc rcx
+    mov r8, rcx
+    mov rdi, r12
+    mov rsi, r13
+    call parse_digits
+    cmp rax, 1
+    jne .vvud_bad
+    cmp rcx, r11
+    jne .vvud_bad
+    xor rbx, rbx
+.vvud_malloc_v_conv:
+    cmp r8, rcx
+    jae .vvud_malloc_v_check
+    mov al, byte ptr [r12+r8]
+    sub al, '0'
+    imul rbx, rbx, 10
+    movzx r9, al
+    add rbx, r9
+    inc r8
+    jmp .vvud_malloc_v_conv
+.vvud_malloc_v_check:
+    mov rdi, rbx
+    call value_seen_exists
+    cmp rax, 1
+    jne .vvud_bad
+    jmp .vvud_ok
+
+.vvud_malloc_type_bad:
     pop r11
     pop r8
     jmp .vvud_bad
@@ -3797,7 +3983,43 @@ line_is_terminator:
 # rdi=line_ptr, rsi=line_len -> rax=1 if canonical non-value instruction
 # currently accepted:
 # "  st vN vN"
+# "  free vN"
 line_is_nonvalue_instruction:
+    # free vN
+    cmp rsi, 9
+    jb .lnvi_try_st
+    mov al, byte ptr [rdi]
+    cmp al, ' '
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+1]
+    cmp al, ' '
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+2]
+    cmp al, 'f'
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+3]
+    cmp al, 'r'
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+4]
+    cmp al, 'e'
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+5]
+    cmp al, 'e'
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+6]
+    cmp al, ' '
+    jne .lnvi_try_st
+    mov al, byte ptr [rdi+7]
+    cmp al, 'v'
+    jne .lnvi_try_st
+    mov rcx, 8
+    call parse_digits
+    cmp rax, 1
+    jne .lnvi_try_st
+    cmp rcx, rsi
+    je .lnvi_yes
+
+.lnvi_try_st:
     cmp rsi, 10
     jb .lnvi_no
     mov al, byte ptr [rdi]
@@ -3843,6 +4065,9 @@ line_is_nonvalue_instruction:
     ret
 .lnvi_no:
     xor rax, rax
+    ret
+.lnvi_yes:
+    mov rax, 1
     ret
 
 # rdi=line_ptr, rsi=line_len -> rax=1 if canonical value instruction:
@@ -4214,25 +4439,25 @@ line_is_value_instruction:
 .lvi_check_alloca:
     # alloca args must be "tN, N", result type must be p0<i8>
     cmp r10, 6
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12]
     cmp al, 'a'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12+1]
     cmp al, 'l'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12+2]
     cmp al, 'l'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12+3]
     cmp al, 'o'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12+4]
     cmp al, 'c'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
     mov al, byte ptr [rdi+r12+5]
     cmp al, 'a'
-    jne .lvi_check_icmp
+    jne .lvi_check_malloc
 
     cmp r8, 4096
     jae .lvi_no
@@ -4294,6 +4519,50 @@ line_is_value_instruction:
     ja .lvi_no
     inc rcx
     jmp .lvi_alloca_n_loop
+
+.lvi_check_malloc:
+    # malloc args must be "vN", result type must be p0<i8>
+    cmp r10, 6
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12]
+    cmp al, 'm'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+1]
+    cmp al, 'a'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+2]
+    cmp al, 'l'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+3]
+    cmp al, 'l'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+4]
+    cmp al, 'o'
+    jne .lvi_check_icmp
+    mov al, byte ptr [rdi+r12+5]
+    cmp al, 'c'
+    jne .lvi_check_icmp
+    cmp r8, 4096
+    jae .lvi_no
+    mov r11, r8
+    shl r11, 3
+    lea r9, [rip+vfp_type_is_p0_i8_map]
+    add r9, r11
+    cmp qword ptr [r9], 1
+    jne .lvi_no
+    mov rcx, r14
+    cmp rcx, r15
+    jae .lvi_no
+    mov al, byte ptr [rdi+rcx]
+    cmp al, 'v'
+    jne .lvi_no
+    inc rcx
+    call parse_digits
+    cmp rax, 1
+    jne .lvi_no
+    cmp rcx, r15
+    jne .lvi_no
+    jmp .lvi_yes
 
 .lvi_check_icmp:
     # icmp.eq args must be "vN vN" and result type suffix must be i1

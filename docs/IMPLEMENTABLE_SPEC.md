@@ -39,13 +39,14 @@ term_instr  = IND "ret"
             | IND "cbr" SP value_id SP block_id SP block_id ;
 
 value_instr = IND value_id SP "=" SP opcode SP args SP ":" SP type_id ;
-nonvalue_instr = IND "st" SP value_id SP value_id ;
+nonvalue_instr = (IND "st" SP value_id SP value_id)
+              | (IND "free" SP value_id) ;
 
 opcode      = "arg" | "const" | "call"
             | "add.wrap" | "add.trap" | "sub.wrap" | "sub.trap" | "mul.wrap" | "mul.trap"
             | "and" | "or" | "xor" | "shl" | "shr"
             | "icmp.eq"
-            | "ld" | "gep" | "alloca" ;
+            | "ld" | "gep" | "alloca" | "malloc" ;
 
 args        = arg_args
             | const_args
@@ -54,7 +55,8 @@ args        = arg_args
             | icmp_eq_args
             | ld_args
             | gep_args
-            | alloca_args ;
+            | alloca_args
+            | malloc_args ;
 
 arg_args    = dec_u ;
 const_args  = dec_s ;
@@ -64,6 +66,7 @@ icmp_eq_args= value_id SP value_id ;
 ld_args     = value_id ;
 gep_args    = value_id SP dec_s ;
 alloca_args = type_id "," SP dec_u ;
+malloc_args = value_id ;
 
 fn_id       = "f" dec_u ;
 block_id    = "b" dec_u ;
@@ -130,9 +133,17 @@ digit       = "0".."9" ;
   - `tElem` must exist
   - `N` is unsigned decimal
   - explicit result type suffix must be `p0<i8>`
+- `malloc`:
+  - shape: `malloc vSize`
+  - `vSize` must be defined before use
+  - explicit result type suffix must be `p0<i8>`
 - `st` (non-value):
   - shape: `st vPtr vVal`
   - both operands must be defined before use
+  - `vPtr` must be typed `p0<i8>`
+- `free` (non-value):
+  - shape: `free vPtr`
+  - operand must be defined before use
   - `vPtr` must be typed `p0<i8>`
 
 ## 4) Core Semantics (Bootstrap Contract)
@@ -157,6 +168,9 @@ I currently lower deterministic canonical kernels:
 - Memory kernels:
   - canonical `alloca + st + ld` roundtrip
   - canonical `alloca + st + gep + ld` roundtrip
+- Intrinsic kernels:
+  - canonical `malloc` kernel (syscall-backed `mmap` allocator path)
+  - canonical `free` kernel (defined no-op returning zero in current slice)
 - Const-return kernel:
   - `const N` / `const -N` then `ret`
 
@@ -215,6 +229,8 @@ Current bootstrap `kernel kind id` mapping:
 - `17`: canonical call->sub two-function kernel
 - `18`: canonical call->mul two-function kernel
 - `19`: canonical `gep` memory roundtrip kernel
+- `20`: canonical `malloc` kernel
+- `21`: canonical `free` no-op kernel
 
 ## 8) Runtime Execution Contract (Bootstrap-Implemented)
 
@@ -229,6 +245,6 @@ Current bootstrap `kernel kind id` mapping:
 
 To complete the M1 scope, I still need to finish:
 - lowering for verified `ld/st/gep/alloca` modules (not only verify)
-- intrinsic/runtime surface for `write`, `exit`, `malloc`, `free`
+- intrinsic/runtime surface for `write` and `exit` plus non-kernel generalization of `malloc`/`free`
 - richer debug map (`inst_id -> code range`) and trace record emission
 - broader canonical rewrite mode (optional `--fix` path)
