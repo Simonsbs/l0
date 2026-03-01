@@ -136,6 +136,7 @@ I also enforce a structural subset inside `fns`:
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
+    - for `malloc`, I also accept canonical nonzero arg/result ids when dataflow matches (`vN = arg 0`, `vM = malloc vN`, `ret vM`)
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - `exit` kernel (`exit v0`) via syscall `exit` stub
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)

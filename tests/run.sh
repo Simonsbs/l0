@@ -223,6 +223,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_malloc.out; then
   echo "FAIL: verify valid_malloc"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_malloc_v7.l0" >/tmp/l0_ok_malloc_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_malloc_v7.out; then
+  echo "FAIL: verify valid_malloc_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_malloc_mismatch_unlowered.l0" >/tmp/l0_ok_malloc_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_malloc_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_malloc_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_free_noop.l0" >/tmp/l0_ok_free_noop.out
 if ! grep -q '^ok$' /tmp/l0_ok_free_noop.out; then
   echo "FAIL: verify valid_free_noop"
@@ -1116,6 +1126,35 @@ fi
 malloc_out="$(tr -d '\n' < /tmp/l0_run_malloc.out)"
 if [ "$malloc_out" = "0" ]; then
   echo "FAIL: run malloc returned null"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_malloc_v7.l0" /tmp/l0_test_malloc_v7.img >/tmp/l0_build_malloc_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_v7.out; then
+  echo "FAIL: build valid_malloc_v7"
+  exit 1
+fi
+malloc_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_malloc_v7.img | tr -d ' ')
+malloc_v7_kernel_kind=$(od -An -t u8 -j "$((malloc_v7_dbg_off + 32))" -N 8 /tmp/l0_test_malloc_v7.img | tr -d ' ')
+if [ "$malloc_v7_kernel_kind" != "20" ]; then
+  echo "FAIL: malloc v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_malloc_v7.img 4096 >/tmp/l0_run_malloc_v7.out
+malloc_v7_out="$(tr -d '\n' < /tmp/l0_run_malloc_v7.out)"
+if [ "$malloc_v7_out" = "0" ]; then
+  echo "FAIL: run malloc_v7 returned null"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_malloc_mismatch_unlowered.l0" /tmp/l0_test_malloc_mismatch_unlowered.img >/tmp/l0_build_malloc_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_mismatch_unlowered.out; then
+  echo "FAIL: build valid_malloc_mismatch_unlowered"
+  exit 1
+fi
+malloc_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_malloc_mismatch_unlowered.img | tr -d ' ')
+malloc_mismatch_kernel_kind=$(od -An -t u8 -j "$((malloc_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_malloc_mismatch_unlowered.img | tr -d ' ')
+malloc_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_malloc_mismatch_unlowered.img | tr -d ' ')
+if [ "$malloc_mismatch_kernel_kind" != "0" ] || [ "$malloc_mismatch_code_size" != "1" ]; then
+  echo "FAIL: malloc mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_free_noop.l0" /tmp/l0_test_free_noop.img >/tmp/l0_build_free_noop.out

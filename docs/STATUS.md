@@ -87,6 +87,8 @@ Last updated: 2026-03-01
   - call-kernel guardrail added: mismatch between call result id and returned id in `f0` remains intentionally unlowered
   - trace intrinsic selector now accepts canonical nonzero value ids for traced arg and returned const value (`trace 1 vN`, `ret vM` where `vM` matches the const-def id)
   - trace selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
+  - malloc intrinsic selector now accepts canonical nonzero arg/result ids (`vN = arg ...`, `vM = malloc vN`, `ret vM`)
+  - malloc selector guardrail added: mismatch between malloc result id and returned id remains intentionally unlowered
 
 ## Documentation status
 
