@@ -105,7 +105,8 @@ Current bootstrap status:
 - I now consider my M26 staged intrinsic cross-function fallback-matrix milestone complete: I expanded deterministic fallback coverage for dead-const-injected `write`/`free`/`trace` shapes into cross-function mixed variants and locked those invariants in the automated suite.
 - I now consider my M27 const-dependent intrinsic dead-const lowering-closure milestone complete: I fixed dead-const normalization id-length matching and now lower valid dead-const-injected `write`/`free`/`trace` shapes (including nonzero-id, multi-dead-const, and cross-function variants) while preserving intentional write `alloca 0` guardrail fallback.
 - I now consider my M28 generalized intrinsic-selector pipeline cutoff milestone complete: in `build` I removed legacy direct fallback stages for `trace`/`write`/`free` and route those families through generalized normalized selector paths only, with full regression stability preserved.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M29).
+- I now consider my M29 generalized selector-chain unification milestone complete: in `build` I removed the remaining legacy direct fallback stages for generalized families (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, and binary), so all generalized families now route through normalization+selector stages only.
+- I track full non-template multi-block backend/codegen completion as my next milestone (M30).
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

@@ -864,14 +864,6 @@ do_build:
     mov rsi, rbx
     call try_select_general_exit_kernel_code
     cmp rax, 1
-    jne .build_try_exit
-    jmp .build_code_selected
-
-.build_try_exit:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_exit_kernel_code
-    cmp rax, 1
     jne .build_try_general_malloc
     jmp .build_code_selected
 
@@ -879,14 +871,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_malloc_kernel_code
-    cmp rax, 1
-    jne .build_try_malloc
-    jmp .build_code_selected
-
-.build_try_malloc:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_malloc_kernel_code
     cmp rax, 1
     jne .build_try_free_noop
     jmp .build_code_selected
@@ -904,14 +888,6 @@ do_build:
     mov rsi, rbx
     call try_select_general_call_kernel_code
     cmp rax, 1
-    jne .build_try_call_sub
-    jmp .build_code_selected
-
-.build_try_call_sub:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_call_kernel_code
-    cmp rax, 1
     jne .build_try_mem_gep_roundtrip
     jmp .build_code_selected
 
@@ -919,14 +895,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_mem_gep_roundtrip_kernel_code
-    cmp rax, 1
-    jne .build_try_mem_gep_roundtrip_legacy
-    jmp .build_code_selected
-
-.build_try_mem_gep_roundtrip_legacy:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_mem_gep_roundtrip_kernel_code
     cmp rax, 1
     jne .build_try_mem_roundtrip
     jmp .build_code_selected
@@ -936,14 +904,6 @@ do_build:
     mov rsi, rbx
     call try_select_general_mem_roundtrip_kernel_code
     cmp rax, 1
-    jne .build_try_mem_roundtrip_legacy
-    jmp .build_code_selected
-
-.build_try_mem_roundtrip_legacy:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_mem_roundtrip_kernel_code
-    cmp rax, 1
     jne .build_try_general_cbr_eq_select
     jmp .build_code_selected
 
@@ -951,14 +911,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_cbr_eq_select_kernel_code
-    cmp rax, 1
-    jne .build_try_cbr_eq_select
-    jmp .build_code_selected
-
-.build_try_cbr_eq_select:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_cbr_eq_select_kernel_code
     cmp rax, 1
     jne .build_try_general_icmp_eq
     jmp .build_code_selected
@@ -968,14 +920,6 @@ do_build:
     mov rsi, rbx
     call try_select_general_icmp_eq_kernel_code
     cmp rax, 1
-    jne .build_try_icmp_eq
-    jmp .build_code_selected
-
-.build_try_icmp_eq:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_icmp_eq_kernel_code
-    cmp rax, 1
     jne .build_try_general_bin
     jmp .build_code_selected
 
@@ -983,14 +927,6 @@ do_build:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
     call try_select_general_bin_kernel_code
-    cmp rax, 1
-    jne .build_try_bin_kernel
-    jmp .build_code_selected
-
-.build_try_bin_kernel:
-    lea rdi, [rip+file_buf]
-    mov rsi, rbx
-    call try_select_bin_kernel_code
     cmp rax, 1
     jne .build_try_const_kernel
     jmp .build_code_selected

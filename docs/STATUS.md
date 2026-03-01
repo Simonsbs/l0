@@ -343,7 +343,22 @@ Last updated: 2026-03-01
   - kept these families routed through generalized normalization+selector paths only
   - validated deterministic behavior and full regression-suite stability under the generalized-only routing
 
-### M29: Non-template backend and full general codegen completion
+### M29: Generalized Selector-Chain Unification
+
+- Status: complete
+- Scope completed:
+  - removed remaining legacy direct selector fallback stages in `build` for generalized families:
+    - `exit`
+    - `malloc`
+    - `call`
+    - memory roundtrip families (`mem_roundtrip`, `mem_gep_roundtrip`)
+    - compare/select (`icmp.eq`, `icmp.eq + cbr`)
+    - binary ops
+  - kept these families routed through generalized normalization+selector paths only
+  - preserved fallback behavior for unsupported verified modules through the existing single-byte `ret` stub path
+  - validated deterministic behavior and full regression-suite stability under the generalized-only routing
+
+### M30: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

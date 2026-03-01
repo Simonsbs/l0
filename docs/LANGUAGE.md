@@ -295,6 +295,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
     - for const-dependent kernels (`free`, `write`, `trace`), I now run the same dead-const normalization path before selector matching and lower valid dead-const-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
+    - I now apply the same generalized-only routing to the other generalized families (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, and binary); only const-return keeps its dedicated direct selector stage
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
