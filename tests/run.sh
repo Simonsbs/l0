@@ -178,6 +178,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_v7_swapped.out; then
   echo "FAIL: verify valid_cbr_eq_select_v7_swapped"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_mismatch_unlowered.l0" >/tmp/l0_ok_cbr_eq_select_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
 if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
   echo "FAIL: verify valid_memory_ops"
@@ -950,6 +955,18 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select_v7_swapped.img 9 8 >/tmp/l0_run_cbr_eq_select_v7_swapped_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_v7_swapped_f.out)" != "8" ]; then
   echo "FAIL: run cbr eq-select v7 swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_mismatch_unlowered.l0" /tmp/l0_test_cbr_eq_select_mismatch_unlowered.img >/tmp/l0_build_cbr_eq_select_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_mismatch_unlowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_mismatch_unlowered"
+  exit 1
+fi
+cbr_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_mismatch_unlowered.img | tr -d ' ')
+cbr_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_mismatch_unlowered.img | tr -d ' ')
+cbr_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_mismatch_unlowered.img | tr -d ' ')
+if [ "$cbr_mismatch_kernel_kind" != "0" ] || [ "$cbr_mismatch_code_size" != "1" ]; then
+  echo "FAIL: cbr eq-select mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out

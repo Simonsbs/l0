@@ -35,6 +35,7 @@ Current bootstrap status:
   - for `icmp.eq` and `icmp.eq + cbr`, I also lower canonical swapped compare order (`icmp.eq v1 v0`)
   - `icmp.eq` lowering now accepts canonical nonzero compare-result ids when `ret` uses the same value id (`vN = icmp.eq ...`, `ret vN`)
   - `icmp.eq + cbr` lowering now accepts canonical nonzero compare-result ids when `cbr` uses the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
+  - I keep mismatched `icmp.eq + cbr` id/dataflow shapes outside current lowering and regression-test them as intentionally unlowered
   - canonical memory roundtrip kernel (`alloca` + `st` + `ld` + `ret`)
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, or `mul.wrap`)
