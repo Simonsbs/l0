@@ -511,6 +511,10 @@ if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_overlap.bin
   echo "FAIL: tracejoin accepted overlapping map ranges"
   exit 1
 fi
+if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_inst_order.bin >/tmp/l0_bad_tracejoin_inst_order.out 2>/tmp/l0_bad_tracejoin_inst_order.err; then
+  echo "FAIL: tracejoin accepted non-increasing inst_id order"
+  exit 1
+fi
 cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_trace_unknown_id.err
 printf '\x09\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_unknown_id.err bs=1 seek=0 conv=notrunc status=none
 if "$BIN" tracejoin /tmp/l0_bad_trace_unknown_id.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_trace_unknown_id.out 2>/tmp/l0_bad_trace_unknown_id.errlog; then
