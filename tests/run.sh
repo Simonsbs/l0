@@ -44,6 +44,11 @@ if ! grep -q '^ok$' /tmp/l0_ok_add_trap.out; then
   echo "FAIL: verify valid_add_trap"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_sub_trap.l0" >/tmp/l0_ok_sub_trap.out
+if ! grep -q '^ok$' /tmp/l0_ok_sub_trap.out; then
+  echo "FAIL: verify valid_sub_trap"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_shl.l0" >/tmp/l0_ok_shl.out
 if ! grep -q '^ok$' /tmp/l0_ok_shl.out; then
   echo "FAIL: verify valid_shl"
@@ -191,6 +196,16 @@ fi
 "$BIN" run /tmp/l0_test_add_trap.img 7 5 >/tmp/l0_run_add_trap.out
 if [ "$(tr -d '\n' < /tmp/l0_run_add_trap.out)" != "12" ]; then
   echo "FAIL: run add.trap image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sub_trap.l0" /tmp/l0_test_sub_trap.img >/tmp/l0_build_sub_trap.out
+if ! grep -q '^ok$' /tmp/l0_build_sub_trap.out; then
+  echo "FAIL: build valid_sub_trap"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sub_trap.img 9 2 >/tmp/l0_run_sub_trap.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sub_trap.out)" != "7" ]; then
+  echo "FAIL: run sub.trap image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_shl.l0" /tmp/l0_test_shl.img >/tmp/l0_build_shl.out
