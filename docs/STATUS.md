@@ -289,7 +289,15 @@ Last updated: 2026-03-01
   - added deterministic build assertions proving these mixed staged-hook cases remain intentionally unlowered (`kernel_kind 0`, `code_size 1`)
   - validated with full-suite pass
 
-### M24: Non-template backend and full general codegen completion
+### M24: Staged Intrinsic Write-Guardrail Fallback Closure
+
+- Status: complete
+- Scope completed:
+  - added explicit regression fixture for dead-const-injected write guardrail shape with `alloca 0`
+  - added deterministic build assertion proving this staged-hook guardrail case remains intentionally unlowered (`kernel_kind 0`, `code_size 1`)
+  - validated with full-suite pass
+
+### M25: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

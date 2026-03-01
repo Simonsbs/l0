@@ -2987,6 +2987,7 @@ for f in \
   valid_free_noop_v123_with_dead_const_general_unlowered.l0 \
   valid_trace_noop_v123_with_dead_const_general_unlowered.l0 \
   valid_write_newline_alloca16_with_dead_const_general_unlowered.l0 \
+  valid_write_newline_alloca0_with_dead_const_general_unlowered.l0 \
   valid_free_noop_v123_with_two_dead_consts_general_unlowered.l0 \
   valid_trace_noop_v123_with_two_dead_consts_general_unlowered.l0
 do
@@ -3196,6 +3197,16 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca16_with_dead_const_general
 fi
 if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca16_with_dead_const_general_unlowered.img)" != "1" ]; then
   echo "FAIL: write newline alloca16 dead-const generalized hook fallback violated"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_write_newline_alloca0_with_dead_const_general_unlowered.l0" /tmp/l0_test_write_newline_alloca0_with_dead_const_general_unlowered.img >/tmp/l0_build_write_newline_alloca0_with_dead_const_general_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca0_with_dead_const_general_unlowered.out; then
+  echo "FAIL: build valid_write_newline_alloca0_with_dead_const_general_unlowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca0_with_dead_const_general_unlowered.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca0_with_dead_const_general_unlowered.img)" != "1" ]; then
+  echo "FAIL: write newline alloca0 dead-const generalized hook fallback violated"
   exit 1
 fi
 
