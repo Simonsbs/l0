@@ -37,7 +37,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -70,6 +70,7 @@ cmd_imgcheck: .ascii "imgcheck\0"
 cmd_run: .ascii "run\0"
 cmd_tracecat: .ascii "tracecat\0"
 cmd_mapcat: .ascii "mapcat\0"
+cmd_schemacat: .ascii "schemacat\0"
 trace_id_prefix: .ascii "id "
 trace_id_prefix_len = . - trace_id_prefix
 trace_val_prefix: .ascii "val "
@@ -78,6 +79,12 @@ map_entries_prefix: .ascii "entries "
 map_entries_prefix_len = . - map_entries_prefix
 map_code_size_prefix: .ascii "code_size "
 map_code_size_prefix_len = . - map_code_size_prefix
+schema_version_prefix: .ascii "version "
+schema_version_prefix_len = . - schema_version_prefix
+schema_record_size_prefix: .ascii "record_size "
+schema_record_size_prefix_len = . - schema_record_size_prefix
+schema_fields_prefix: .ascii "fields "
+schema_fields_prefix_len = . - schema_fields_prefix
 img_header_len = 80
 
 kw_ver: .ascii "ver "
@@ -464,10 +471,20 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne usage
+    jne .check_schemacat
     cmp r13, 3
     jne usage
     jmp do_mapcat
+
+.check_schemacat:
+    lea rsi, [rip+cmd_schemacat]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne usage
+    cmp r13, 3
+    jne usage
+    jmp do_schemacat
 
 usage:
     lea rsi, [rip+usage_msg]
@@ -1188,6 +1205,43 @@ do_mapcat:
     mov rdi, 1
     lea rsi, [rip+map_code_size_prefix]
     mov rdx, map_code_size_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+24]
+    call print_u64_nl
+    mov rdi, 0
+    call exit
+
+do_schemacat:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    cmp rbx, 32
+    jne fail_parse
+    lea r8, [rip+file_buf]
+    mov rax, qword ptr [r8+0]
+    mov r9, 0x000000005354304c
+    cmp rax, r9
+    jne fail_parse
+    mov rax, qword ptr [r8+8]
+    cmp rax, 1
+    jne fail_parse
+    mov rdi, 1
+    lea rsi, [rip+schema_version_prefix]
+    mov rdx, schema_version_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+8]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+schema_record_size_prefix]
+    mov rdx, schema_record_size_prefix_len
+    call write_fd
+    mov rdi, qword ptr [r8+16]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+schema_fields_prefix]
+    mov rdx, schema_fields_prefix_len
     call write_fd
     mov rdi, qword ptr [r8+24]
     call print_u64_nl

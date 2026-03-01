@@ -162,6 +162,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c run <out.l0img> [u64_a] [u64_b]`
 - `l0c tracecat <trace.bin>`
 - `l0c mapcat <debug_map.bin>`
+- `l0c schemacat <trace_schema.bin>`
 
 ### `imgcheck` bootstrap integrity rules
 
@@ -206,6 +207,11 @@ Current bootstrap debug map payload is 32 bytes:
 `mapcat` decodes this bootstrap debug map format and prints:
 - `entries <count>`
 - `code_size <bytes>`
+
+`schemacat` decodes the bootstrap trace-schema format and prints:
+- `version <n>`
+- `record_size <bytes>`
+- `fields <count>`
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

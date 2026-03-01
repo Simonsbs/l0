@@ -179,6 +179,10 @@ I also enforce a structural subset inside `fns`:
 - I load a 32-byte bootstrap debug-map payload and validate magic/version.
 - I print deterministic text lines: `entries <count>` and `code_size <bytes>`.
 
+`l0c schemacat <trace_schema.bin>` currently:
+- I load a 32-byte trace-schema payload and validate magic/version.
+- I print deterministic text lines: `version <n>`, `record_size <bytes>`, `fields <count>`.
+
 `l0c build ... --trace-schema <out.bin>` currently writes a 32-byte schema payload:
 - `qword[0]`: magic (`L0TS`)
 - `qword[1]`: version (`1`)

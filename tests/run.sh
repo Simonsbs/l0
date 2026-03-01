@@ -243,6 +243,11 @@ if [ "$schema_version" != "1" ] || [ "$schema_record_size" != "16" ] || [ "$sche
   echo "FAIL: trace schema fields"
   exit 1
 fi
+"$BIN" schemacat /tmp/l0_trace_schema.bin >/tmp/l0_schemacat.out
+if [ "$(cat /tmp/l0_schemacat.out)" != $'version 1\nrecord_size 16\nfields 2' ]; then
+  echo "FAIL: schemacat decoded output"
+  exit 1
+fi
 dbg_map_version=$(od -An -t u8 -j 8 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_inst_count=$(od -An -t u8 -j 16 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
 dbg_map_code_size=$(od -An -t u8 -j 24 -N 8 /tmp/l0_debug_map.bin | tr -d ' ')
