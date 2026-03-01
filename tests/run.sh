@@ -268,6 +268,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_write_newline.out; then
   echo "FAIL: verify valid_write_newline"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_v7.l0" >/tmp/l0_ok_write_newline_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_v7.out; then
+  echo "FAIL: verify valid_write_newline_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_mismatch_unlowered.l0" >/tmp/l0_ok_write_newline_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_mismatch_unlowered.out; then
+  echo "FAIL: verify valid_write_newline_mismatch_unlowered"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_trace_noop.l0" >/tmp/l0_ok_trace_noop.out
 if ! grep -q '^ok$' /tmp/l0_ok_trace_noop.out; then
   echo "FAIL: verify valid_trace_noop"
@@ -1299,6 +1309,38 @@ if [ "$(tr -d '\n' < /tmp/l0_run_write_newline.out)" != "0" ]; then
 fi
 if [ "$(od -An -t x1 /tmp/l0_run_write_newline.out | tr -d ' \n')" != "0a300a" ]; then
   echo "FAIL: run write newline output bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline_v7.l0" /tmp/l0_test_write_newline_v7.img >/tmp/l0_build_write_newline_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_v7.out; then
+  echo "FAIL: build valid_write_newline_v7"
+  exit 1
+fi
+write_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_v7.img | tr -d ' ')
+write_v7_kernel_kind=$(od -An -t u8 -j "$((write_v7_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_v7.img | tr -d ' ')
+if [ "$write_v7_kernel_kind" != "22" ]; then
+  echo "FAIL: write newline v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_write_newline_v7.img >/tmp/l0_run_write_newline_v7.out
+if [ "$(tr -d '\n' < /tmp/l0_run_write_newline_v7.out)" != "0" ]; then
+  echo "FAIL: run write newline v7 image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_write_newline_v7.out | tr -d ' \n')" != "0a300a" ]; then
+  echo "FAIL: run write newline v7 output bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline_mismatch_unlowered.l0" /tmp/l0_test_write_newline_mismatch_unlowered.img >/tmp/l0_build_write_newline_mismatch_unlowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_mismatch_unlowered.out; then
+  echo "FAIL: build valid_write_newline_mismatch_unlowered"
+  exit 1
+fi
+write_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
+write_mismatch_kernel_kind=$(od -An -t u8 -j "$((write_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
+write_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_write_newline_mismatch_unlowered.img | tr -d ' ')
+if [ "$write_mismatch_kernel_kind" != "0" ] || [ "$write_mismatch_code_size" != "1" ]; then
+  echo "FAIL: write newline mismatch unexpectedly lowered"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_trace_noop.l0" /tmp/l0_test_trace_noop.img >/tmp/l0_build_trace_noop.out

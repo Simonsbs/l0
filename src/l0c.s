@@ -260,8 +260,26 @@ pat_exit_mid_b: .ascii "\n  ret v"
 pat_exit_mid_b_len = . - pat_exit_mid_b
 pat_exit_tail: .ascii "\n}\n"
 pat_exit_tail_len = . - pat_exit_tail
-pat_write_newline: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = alloca t0, 1 : t1\n  v1 = const 10 : t0\n  st v0 v1\n  v2 = const 1 : t0\n  write v0 v2\n  v3 = const 0 : t0\n  ret v3\n}\n"
-pat_write_newline_len = . - pat_write_newline
+pat_write_head: .ascii "fn f0 ()->t0 {\nb0:\n  v"
+pat_write_head_len = . - pat_write_head
+pat_write_mid_a: .ascii " = alloca t0, 1 : t1\n  v"
+pat_write_mid_a_len = . - pat_write_mid_a
+pat_write_mid_b: .ascii " = const 10 : t0\n  st v"
+pat_write_mid_b_len = . - pat_write_mid_b
+pat_write_mid_c: .ascii " v"
+pat_write_mid_c_len = . - pat_write_mid_c
+pat_write_mid_d: .ascii "\n  v"
+pat_write_mid_d_len = . - pat_write_mid_d
+pat_write_mid_e: .ascii " = const 1 : t0\n  write v"
+pat_write_mid_e_len = . - pat_write_mid_e
+pat_write_mid_f: .ascii " v"
+pat_write_mid_f_len = . - pat_write_mid_f
+pat_write_mid_g: .ascii "\n  v"
+pat_write_mid_g_len = . - pat_write_mid_g
+pat_write_mid_h: .ascii " = const 0 : t0\n  ret v"
+pat_write_mid_h_len = . - pat_write_mid_h
+pat_write_tail: .ascii "\n}\n"
+pat_write_tail_len = . - pat_write_tail
 pat_trace_head: .ascii "fn f0 (t0)->t0 {\nb0:\n  v"
 pat_trace_head_len = . - pat_trace_head
 pat_trace_mid_a: .ascii " = arg 0 : t0\n  trace 1 v"
@@ -744,14 +762,9 @@ do_build:
 .build_try_write_newline:
     lea rdi, [rip+file_buf]
     mov rsi, rbx
-    lea rdx, [rip+pat_write_newline]
-    mov rcx, pat_write_newline_len
-    call find_substr
+    call try_select_write_newline_kernel_code
     cmp rax, 1
     jne .build_try_exit
-    lea r14, [rip+code_stub_write_newline]
-    mov r15, code_stub_write_newline_len
-    mov qword ptr [rip+build_kernel_kind], 22
     jmp .build_code_selected
 
 .build_try_exit:
@@ -6954,6 +6967,315 @@ find_substr_pos:
     ret
 .fsp_no:
     mov rax, -1
+    ret
+
+# try_select_write_newline_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_write_newline_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_write_head]
+    mov rcx, pat_write_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tswk_no
+
+    mov r8, rax
+    add r8, pat_write_head_len       # alloca-id start
+    cmp r8, r13
+    jae .tswk_no
+    mov r9, r8
+.tswk_alloca_vid_loop:
+    cmp r9, r13
+    jae .tswk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tswk_alloca_vid_done
+    cmp al, '9'
+    ja .tswk_alloca_vid_done
+    inc r9
+    jmp .tswk_alloca_vid_loop
+.tswk_alloca_vid_done:
+    cmp r9, r8
+    je .tswk_no
+    mov r14, r8
+    mov r15, r9
+    sub r15, r8                      # alloca-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_a_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_a]
+    mov rdx, pat_write_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, pat_write_mid_a_len     # const10-id start
+    cmp r10, r13
+    jae .tswk_no
+
+    mov r8, r10
+    mov r9, r8
+.tswk_c10_vid_loop:
+    cmp r9, r13
+    jae .tswk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tswk_c10_vid_done
+    cmp al, '9'
+    ja .tswk_c10_vid_done
+    inc r9
+    jmp .tswk_c10_vid_loop
+.tswk_c10_vid_done:
+    cmp r9, r8
+    je .tswk_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # const10-id len
+    push rbx
+    push r11
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_b_len
+    jb .tswk_no_pop_c10
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_b]
+    mov rdx, pat_write_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c10
+    add r10, pat_write_mid_b_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, r14
+    mov rdx, r15
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c10
+    add r10, r15
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_c_len
+    jb .tswk_no_pop_c10
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_c]
+    mov rdx, pat_write_mid_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c10
+    add r10, pat_write_mid_c_len
+
+    pop r11
+    pop rbx
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_d_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_d]
+    mov rdx, pat_write_mid_d_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, pat_write_mid_d_len     # const1-id start
+    cmp r10, r13
+    jae .tswk_no
+
+    mov r8, r10
+    mov r9, r8
+.tswk_c1_vid_loop:
+    cmp r9, r13
+    jae .tswk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tswk_c1_vid_done
+    cmp al, '9'
+    ja .tswk_c1_vid_done
+    inc r9
+    jmp .tswk_c1_vid_loop
+.tswk_c1_vid_done:
+    cmp r9, r8
+    je .tswk_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # const1-id len
+    push rbx
+    push r11
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_e_len
+    jb .tswk_no_pop_c1
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_e]
+    mov rdx, pat_write_mid_e_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c1
+    add r10, pat_write_mid_e_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, r14
+    mov rdx, r15
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c1
+    add r10, r15
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_f_len
+    jb .tswk_no_pop_c1
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_f]
+    mov rdx, pat_write_mid_f_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no_pop_c1
+    add r10, pat_write_mid_f_len
+
+    pop r11
+    pop rbx
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_g_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_g]
+    mov rdx, pat_write_mid_g_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, pat_write_mid_g_len     # const0/ret-id start
+    cmp r10, r13
+    jae .tswk_no
+
+    mov r8, r10
+    mov r9, r8
+.tswk_c0_vid_loop:
+    cmp r9, r13
+    jae .tswk_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tswk_c0_vid_done
+    cmp al, '9'
+    ja .tswk_c0_vid_done
+    inc r9
+    jmp .tswk_c0_vid_loop
+.tswk_c0_vid_done:
+    cmp r9, r8
+    je .tswk_no
+    mov rbx, r8
+    mov r11, r9
+    sub r11, r8                      # const0/ret-id len
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_mid_h_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_mid_h]
+    mov rdx, pat_write_mid_h_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, pat_write_mid_h_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+    add r10, r11
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_write_tail_len
+    jb .tswk_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_write_tail]
+    mov rdx, pat_write_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tswk_no
+
+    lea r14, [rip+code_stub_write_newline]
+    mov r15, code_stub_write_newline_len
+    mov qword ptr [rip+build_kernel_kind], 22
+    mov rax, 1
+    jmp .tswk_done
+
+.tswk_no_pop_c1:
+    add rsp, 16
+    jmp .tswk_no
+.tswk_no_pop_c10:
+    add rsp, 16
+.tswk_no:
+    xor rax, rax
+.tswk_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tswk_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tswk_keep_out:
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 # try_select_exit_kernel_code

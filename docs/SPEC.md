@@ -142,6 +142,7 @@ I also enforce a structural subset inside `fns`:
     - `exit` kernel (`exit v0`) via syscall `exit` stub
     - for `exit`, I also accept canonical nonzero arg/return ids when dataflow matches (`vN = arg 0`, `exit vN`, `ret vN`)
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
+    - for bootstrap newline `write`, I also accept canonical nonzero ids across alloca/const/store/write/return when all value-id uses match their corresponding defs
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
   - I also lower canonical const-return kernel shape:

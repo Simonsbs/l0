@@ -93,6 +93,8 @@ Last updated: 2026-03-01
   - free-noop selector guardrail added: mismatch between const result id and returned id remains intentionally unlowered
   - exit intrinsic selector now accepts canonical nonzero arg/return ids (`vN = arg ...`, `exit vN`, `ret vN`)
   - exit selector guardrail added: mismatch between exit operand id and returned id remains intentionally unlowered
+  - write intrinsic selector now accepts canonical nonzero ids across alloca/const/store/write/ret dataflow for the bootstrap newline kernel template
+  - write selector guardrail added: mismatch between final const id and returned id remains intentionally unlowered
 
 ## Documentation status
 
