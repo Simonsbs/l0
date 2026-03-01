@@ -1612,9 +1612,13 @@ if ! grep -q '^ok$' /tmp/l0_build_call_sub_argdef_order_swapped_unlowered.out; t
 fi
 call_sub_argdef_order_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
 call_sub_argdef_order_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((call_sub_argdef_order_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
-call_sub_argdef_order_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_sub_argdef_order_swapped_unlowered.img | tr -d ' ')
-if [ "$call_sub_argdef_order_swapped_unlowered_kernel_kind" != "0" ] || [ "$call_sub_argdef_order_swapped_unlowered_code_size" != "1" ]; then
-  echo "FAIL: call->sub argdef-order-swapped unlowered unexpectedly lowered"
+if [ "$call_sub_argdef_order_swapped_unlowered_kernel_kind" != "17" ]; then
+  echo "FAIL: call->sub argdef-order-swapped reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_argdef_order_swapped_unlowered.img 9 21 >/tmp/l0_run_call_sub_argdef_order_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_argdef_order_swapped_unlowered.out)" != "12" ]; then
+  echo "FAIL: run call->sub argdef-order-swapped reverse lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_add_mismatch_unlowered.l0" /tmp/l0_test_call_add_mismatch_unlowered.img >/tmp/l0_build_call_add_mismatch_unlowered.out

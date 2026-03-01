@@ -299,8 +299,9 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical two-function call kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`/`and`/`or`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`, `xor`) also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
-    - call->non-commutative targets (`sub.wrap`, `shl`, `shr`) lower only when parsed `f0` and `f1` arg-definition/dataflow mappings preserve semantic arg0->arg1 order
-    - swapped call-arg forms for non-commutative targets remain intentionally unlowered guardrails in current bootstrap lowering
+    - call->non-commutative targets (`shl`, `shr`) lower only when parsed `f0` and `f1` arg-definition/dataflow mappings preserve semantic arg0->arg1 order
+    - for call->`sub.wrap`, I now lower canonical semantic arg0->arg1 shapes and one deterministic reverse-mapping shape where `f0` provides arg1->arg0 mapping while `f1` remains canonical
+    - non-matching non-commutative call shapes remain intentionally unlowered guardrails in current bootstrap lowering
     - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
     - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only when `f0` call-arg mapping remains semantically arg0->arg1
     - call-kernel templates also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)

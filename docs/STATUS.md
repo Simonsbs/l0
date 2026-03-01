@@ -437,7 +437,22 @@ Last updated: 2026-03-01
   - updated regression assertions so `valid_branch.l0` now verifies lowered code bytes and runtime behavior instead of fallback stub behavior
   - validated with full-suite pass
 
-### M36: Non-template backend and full general codegen completion
+### M36: Non-Commutative Call Generalization (`sub.wrap` reverse mapping)
+
+- Status: complete
+- Scope completed:
+  - added deterministic reverse-mapping lowering path for `call->sub.wrap` in two-function call selector flow
+  - lowerings now include a canonical reverse-mapping shape where:
+    - parsed `f0` call-arg mapping is semantic arg1->arg0
+    - parsed `f1` `sub.wrap` mapping remains canonical
+  - kept kernel kind stable for call->`sub.wrap` (`17`) while emitting a dedicated reverse machine payload
+  - preserved existing unlowered guardrails for other non-matching non-commutative call shapes (including swapped-operand `f1` sub variants)
+  - updated regression assertions:
+    - `valid_call_sub_argdef_order_swapped_unlowered.l0` now lowers and executes with deterministic reverse-sub behavior
+    - existing `f1` swapped `sub.wrap` variants remain intentionally unlowered
+  - validated with full-suite pass
+
+### M37: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

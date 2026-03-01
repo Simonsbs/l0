@@ -166,6 +166,8 @@ code_stub_add_trap: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x70,0x01,0xc3,0x0f,0x0b
 code_stub_add_trap_len = . - code_stub_add_trap
 code_stub_sub: .byte 0x48,0x89,0xf8,0x48,0x29,0xf0,0xc3
 code_stub_sub_len = . - code_stub_sub
+code_stub_sub_rev: .byte 0x48,0x89,0xf0,0x48,0x29,0xf8,0xc3
+code_stub_sub_rev_len = . - code_stub_sub_rev
 code_stub_sub_trap: .byte 0x48,0x89,0xf8,0x48,0x29,0xf0,0x70,0x01,0xc3,0x0f,0x0b
 code_stub_sub_trap_len = . - code_stub_sub_trap
 code_stub_and: .byte 0x48,0x89,0xf8,0x48,0x21,0xf0,0xc3
@@ -9325,6 +9327,144 @@ try_select_call_kernel_code:
     jmp .tsck_call_done
 
 .tsck_call_try_mul:
+    # non-commutative sub reverse mapping: semantic arg1->arg0
+    mov rax, r13
+    sub rax, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_rev_len_canon
+    mov rcx, pat_call_tail_a_len
+    jmp .tsck_call_sub_rev_len_ready
+.tsck_call_sub_rev_len_canon:
+    mov rcx, pat_call_tail_a_swapped_len
+.tsck_call_sub_rev_len_ready:
+    add rcx, r11
+    add rcx, pat_call_tail_b_head_len
+    add rcx, 1
+    add rcx, pat_call_tail_b_mid_sub_len
+    add rcx, 1
+    add rcx, pat_call_tail_b_tail_len
+    cmp rax, rcx
+    jb .tsck_call_try_mul_real
+    mov rdi, r12
+    add rdi, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_rev_head_canon
+    lea rsi, [rip+pat_call_tail_a]
+    mov rdx, pat_call_tail_a_len
+    jmp .tsck_call_sub_rev_head_ready
+.tsck_call_sub_rev_head_canon:
+    lea rsi, [rip+pat_call_tail_a_swapped]
+    mov rdx, pat_call_tail_a_swapped_len
+.tsck_call_sub_rev_head_ready:
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    mov rdi, r12
+    add rdi, r10
+    add rdi, pat_call_tail_a_len
+    mov rsi, r12
+    add rsi, rbx
+    mov rdx, r11
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    mov r8, r10
+    cmp qword ptr [rsp], 1
+    jne .tsck_call_sub_rev_head_advance_canon
+    add r8, pat_call_tail_a_len
+    jmp .tsck_call_sub_rev_head_advance_done
+.tsck_call_sub_rev_head_advance_canon:
+    add r8, pat_call_tail_a_swapped_len
+.tsck_call_sub_rev_head_advance_done:
+    add r8, r11
+    mov rax, r13
+    sub rax, r8
+    cmp rax, pat_call_tail_b_head_len
+    jb .tsck_call_try_mul_real
+    mov qword ptr [rsp+8], 0
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head]
+    mov rdx, pat_call_tail_b_head_len
+    call mem_eq
+    cmp rax, 1
+    je .tsck_call_sub_rev_f1_head_ok
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_head_alt]
+    mov rdx, pat_call_tail_b_head_alt_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    mov qword ptr [rsp+8], 1
+.tsck_call_sub_rev_f1_head_ok:
+    add r8, pat_call_tail_b_head_len
+    cmp r8, r13
+    jae .tsck_call_try_mul_real
+    mov r9, r8
+.tsck_call_sub_rev_f1_vid_loop:
+    cmp r9, r13
+    jae .tsck_call_try_mul_real
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsck_call_sub_rev_f1_vid_done
+    cmp al, '9'
+    ja .tsck_call_sub_rev_f1_vid_done
+    inc r9
+    jmp .tsck_call_sub_rev_f1_vid_loop
+.tsck_call_sub_rev_f1_vid_done:
+    cmp r9, r8
+    je .tsck_call_try_mul_real
+    mov r14, r8
+    mov r15, r9
+    sub r15, r8
+    mov r8, r9
+    mov rax, r13
+    sub rax, r8
+    cmp rax, pat_call_tail_b_mid_sub_len
+    jb .tsck_call_try_mul_real
+    mov rdi, r12
+    add rdi, r8
+    cmp qword ptr [rsp+8], 1
+    jne .tsck_call_sub_rev_f1_mid_canon
+    lea rsi, [rip+pat_call_tail_b_mid_sub_swapped]
+    mov rdx, pat_call_tail_b_mid_sub_swapped_len
+    jmp .tsck_call_sub_rev_f1_mid_ready
+.tsck_call_sub_rev_f1_mid_canon:
+    lea rsi, [rip+pat_call_tail_b_mid_sub]
+    mov rdx, pat_call_tail_b_mid_sub_len
+.tsck_call_sub_rev_f1_mid_ready:
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    add r8, pat_call_tail_b_mid_sub_len
+    mov rdi, r12
+    add rdi, r8
+    mov rsi, r12
+    add rsi, r14
+    mov rdx, r15
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    add r8, r15
+    mov rax, r13
+    sub rax, r8
+    cmp rax, pat_call_tail_b_tail_len
+    jb .tsck_call_try_mul_real
+    mov rdi, r12
+    add rdi, r8
+    lea rsi, [rip+pat_call_tail_b_tail]
+    mov rdx, pat_call_tail_b_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsck_call_try_mul_real
+    lea r14, [rip+code_stub_sub_rev]
+    mov r15, code_stub_sub_rev_len
+    mov qword ptr [rip+build_kernel_kind], 17
+    mov rax, 1
+    jmp .tsck_call_done
+
+.tsck_call_try_mul_real:
     mov rax, r13
     sub rax, r10
     mov rcx, pat_call_tail_a_len
