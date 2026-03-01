@@ -452,7 +452,23 @@ Last updated: 2026-03-01
     - existing `f1` swapped `sub.wrap` variants remain intentionally unlowered
   - validated with full-suite pass
 
-### M37: Non-template backend and full general codegen completion
+### M37: Compare/Select Branch-Mapping Generalization
+
+- Status: complete
+- Scope completed:
+  - extended `icmp.eq + cbr` selector lowering to support deterministic reverse branch-return mapping:
+    - `b1` returns arg1
+    - `b2` returns arg0
+  - added dedicated reversed machine payload for compare/select while keeping kernel kind stable (`12`)
+  - wired reverse mapping through generalized normalization flow, so dead-const-injected reverse variants now lower when otherwise canonical
+  - updated regression assertions for previously intentional unlowered reverse mapping fixtures:
+    - arg-id reverse mapping shape now lowers and executes deterministically
+    - argdef-order-swapped reverse mapping shape now lowers and executes deterministically
+    - dead-const-injected reverse mapping shape now lowers and executes deterministically
+  - preserved existing intentional unlowered behavior for non-canonical mismatch shapes (for example extra compare/dataflow divergence cases)
+  - validated with full-suite pass
+
+### M38: Non-template backend and full general codegen completion
 
 - Status: planned
 - Planned:

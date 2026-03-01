@@ -275,6 +275,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - both kernels also accept swapped compare operand order (`icmp.eq v1 v0`) in bootstrap lowering
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
     - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id
+    - `icmp.eq + cbr` kernels now also lower deterministic reverse return mappings where `b1` returns arg1 and `b2` returns arg0 (including normalized dead-const variants)
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - before memory-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match
@@ -303,9 +304,9 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - for call->`sub.wrap`, I now lower canonical semantic arg0->arg1 shapes and one deterministic reverse-mapping shape where `f0` provides arg1->arg0 mapping while `f1` remains canonical
     - non-matching non-commutative call shapes remain intentionally unlowered guardrails in current bootstrap lowering
     - call-kernel templates also accept either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only when `f0` call-arg mapping remains semantically arg0->arg1
+    - for call->`sub.wrap`, I keep non-commutative guardrails by lowering only canonical and explicit reverse-mapping forms
     - call-kernel templates also accept either canonical arg-definition order in `f1` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
-    - for call->`sub.wrap`, I also require semantic arg0->arg1 mapping inside `f1` under its parsed arg-definition order
+    - for call->`sub.wrap`, reverse mapping currently requires canonical `f1` mapping while other non-matching `f1` mappings remain guardrailed
     - call-kernel templates also accept nonzero call-result ids in `f0` when `ret` references the same value id
     - mismatch trace-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch malloc result-id/dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested

@@ -2393,9 +2393,13 @@ if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_ret_mismatch_with_dead_const_unl
 fi
 cbr_dead_const_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.img | tr -d ' ')
 cbr_dead_const_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_dead_const_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.img | tr -d ' ')
-cbr_dead_const_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.img | tr -d ' ')
-if [ "$cbr_dead_const_mismatch_kernel_kind" != "0" ] || [ "$cbr_dead_const_mismatch_code_size" != "1" ]; then
-  echo "FAIL: cbr eq-select dead-const mismatch unexpectedly lowered"
+if [ "$cbr_dead_const_mismatch_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select dead-const reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.img 9 8 >/tmp/l0_run_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select dead-const reverse result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_argids_v7_v9_lowered.l0" /tmp/l0_test_cbr_eq_select_argids_v7_v9_lowered.img >/tmp/l0_build_cbr_eq_select_argids_v7_v9_lowered.out
@@ -2447,9 +2451,13 @@ if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_argids_ret_mismatch_unlowered.ou
 fi
 cbr_argids_ret_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_argids_ret_mismatch_unlowered.img | tr -d ' ')
 cbr_argids_ret_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_argids_ret_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_argids_ret_mismatch_unlowered.img | tr -d ' ')
-cbr_argids_ret_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_argids_ret_mismatch_unlowered.img | tr -d ' ')
-if [ "$cbr_argids_ret_mismatch_kernel_kind" != "0" ] || [ "$cbr_argids_ret_mismatch_code_size" != "1" ]; then
-  echo "FAIL: cbr eq-select argids ret mismatch unexpectedly lowered"
+if [ "$cbr_argids_ret_mismatch_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select argids reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argids_ret_mismatch_unlowered.img 9 8 >/tmp/l0_run_cbr_eq_select_argids_ret_mismatch_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argids_ret_mismatch_unlowered.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select argids reverse result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_argdef_order_swapped_lowered.l0" /tmp/l0_test_cbr_eq_select_argdef_order_swapped_lowered.img >/tmp/l0_build_cbr_eq_select_argdef_order_swapped_lowered.out
@@ -2501,9 +2509,13 @@ if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_argdef_order_swapped_ret_mismatc
 fi
 cbr_argdef_order_swapped_ret_mismatch_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
 cbr_argdef_order_swapped_ret_mismatch_kernel_kind=$(od -An -t u8 -j "$((cbr_argdef_order_swapped_ret_mismatch_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
-cbr_argdef_order_swapped_ret_mismatch_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img | tr -d ' ')
-if [ "$cbr_argdef_order_swapped_ret_mismatch_kernel_kind" != "0" ] || [ "$cbr_argdef_order_swapped_ret_mismatch_code_size" != "1" ]; then
-  echo "FAIL: cbr eq-select argdef-order-swapped ret mismatch unexpectedly lowered"
+if [ "$cbr_argdef_order_swapped_ret_mismatch_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select argdef-order-swapped reverse debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.img 9 8 >/tmp/l0_run_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_argdef_order_swapped_ret_mismatch_unlowered.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select argdef-order-swapped reverse result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out

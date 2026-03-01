@@ -188,6 +188,8 @@ code_stub_icmp_eq: .byte 0x31,0xc0,0x48,0x39,0xf7,0x0f,0x94,0xc0,0xc3
 code_stub_icmp_eq_len = . - code_stub_icmp_eq
 code_stub_cbr_eq_select: .byte 0x48,0x89,0xf0,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc7,0xc3
 code_stub_cbr_eq_select_len = . - code_stub_cbr_eq_select
+code_stub_cbr_eq_select_rev: .byte 0x48,0x89,0xf8,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc6,0xc3
+code_stub_cbr_eq_select_rev_len = . - code_stub_cbr_eq_select_rev
 code_stub_mem_roundtrip: .byte 0x48,0x83,0xec,0x08,0x48,0x89,0x3c,0x24,0x48,0x8b,0x04,0x24,0x48,0x83,0xc4,0x08,0xc3
 code_stub_mem_roundtrip_len = . - code_stub_mem_roundtrip
 code_stub_malloc: .byte 0x48,0x89,0xfe,0x48,0x31,0xff,0x48,0xc7,0xc0,0x09,0x00,0x00,0x00,0x48,0xc7,0xc2,0x03,0x00,0x00,0x00,0x49,0xc7,0xc2,0x22,0x00,0x00,0x00,0x49,0xc7,0xc0,0xff,0xff,0xff,0xff,0x4d,0x31,0xc9,0x0f,0x05,0xc3
@@ -10983,6 +10985,8 @@ try_select_cbr_eq_select_kernel_code:
 .tscs_cmp_ops_ok:
 
     mov r10, r9
+    mov qword ptr [rsp+88], r10      # tail start
+    mov qword ptr [rsp+80], 0        # return-map mode: 0=canonical, 1=reversed
     mov rax, r13
     sub rax, r10
     mov rcx, pat_cbr_tail_mid_len
@@ -10994,6 +10998,69 @@ try_select_cbr_eq_select_kernel_code:
     add rcx, pat_cbr_tail_d_len
     cmp rax, rcx
     jb .tscs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_mid]
+    mov rdx, pat_cbr_tail_mid_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, pat_cbr_tail_mid_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+32]
+    mov rdx, qword ptr [rsp+40]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, qword ptr [rsp+40]
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_b]
+    mov rdx, pat_cbr_tail_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, pat_cbr_tail_b_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, qword ptr [rsp+8]
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_c]
+    mov rdx, pat_cbr_tail_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, pat_cbr_tail_c_len
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    add r10, qword ptr [rsp+24]
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_cbr_tail_d]
+    mov rdx, pat_cbr_tail_d_len
+    call mem_eq
+    cmp rax, 1
+    jne .tscs_try_tail_rev
+    jmp .tscs_tail_ok
+
+.tscs_try_tail_rev:
+    mov qword ptr [rsp+80], 1
+    mov r10, qword ptr [rsp+88]
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_cbr_tail_mid]
@@ -11022,12 +11089,12 @@ try_select_cbr_eq_select_kernel_code:
     mov rdi, r12
     add rdi, r10
     mov rsi, r12
-    add rsi, qword ptr [rsp+0]
-    mov rdx, qword ptr [rsp+8]
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-    add r10, qword ptr [rsp+8]
+    add r10, qword ptr [rsp+24]
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_cbr_tail_c]
@@ -11039,12 +11106,12 @@ try_select_cbr_eq_select_kernel_code:
     mov rdi, r12
     add rdi, r10
     mov rsi, r12
-    add rsi, qword ptr [rsp+16]
-    mov rdx, qword ptr [rsp+24]
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
     call mem_eq
     cmp rax, 1
     jne .tscs_no
-    add r10, qword ptr [rsp+24]
+    add r10, qword ptr [rsp+8]
     mov rdi, r12
     add rdi, r10
     lea rsi, [rip+pat_cbr_tail_d]
@@ -11053,8 +11120,19 @@ try_select_cbr_eq_select_kernel_code:
     cmp rax, 1
     jne .tscs_no
 
+.tscs_tail_ok:
+    cmp qword ptr [rsp+80], 0
+    jne .tscs_tail_rev_codegen
+
     lea r14, [rip+code_stub_cbr_eq_select]
     mov r15, code_stub_cbr_eq_select_len
+    mov qword ptr [rip+build_kernel_kind], 12
+    mov rax, 1
+    jmp .tscs_done
+
+.tscs_tail_rev_codegen:
+    lea r14, [rip+code_stub_cbr_eq_select_rev]
+    mov r15, code_stub_cbr_eq_select_rev_len
     mov qword ptr [rip+build_kernel_kind], 12
     mov rax, 1
     jmp .tscs_done
