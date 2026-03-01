@@ -224,10 +224,14 @@ pat_trace_noop: .ascii "fn f0 (t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  trace 1 v0\n
 pat_trace_noop_len = . - pat_trace_noop
 pat_call_add: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_add_len = . - pat_call_add
+pat_call_add_swapped: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v1 v0 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_call_add_swapped_len = . - pat_call_add_swapped
 pat_call_sub: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = sub.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_sub_len = . - pat_call_sub
 pat_call_mul: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v0 v1 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = mul.wrap v0 v1 : t0\n  ret v2\n}\n"
 pat_call_mul_len = . - pat_call_mul
+pat_call_mul_swapped: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = call f1 v1 v0 : t0\n  ret v2\n}\nfn f1 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = mul.wrap v0 v1 : t0\n  ret v2\n}\n"
+pat_call_mul_swapped_len = . - pat_call_mul_swapped
 pat_const_prefix: .ascii "fn f0 ()->t0 {\nb0:\n  v0 = const "
 pat_const_prefix_len = . - pat_const_prefix
 pat_const_suffix: .ascii " : t0\n  ret v0\n}\n"
@@ -756,6 +760,19 @@ do_build:
     mov rcx, pat_call_mul_len
     call find_substr
     cmp rax, 1
+    jne .build_try_call_mul_swapped
+    lea r14, [rip+code_stub_mul]
+    mov r15, code_stub_mul_len
+    mov qword ptr [rip+build_kernel_kind], 18
+    jmp .build_code_selected
+
+.build_try_call_mul_swapped:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_call_mul_swapped]
+    mov rcx, pat_call_mul_swapped_len
+    call find_substr
+    cmp rax, 1
     jne .build_try_call_add
     lea r14, [rip+code_stub_mul]
     mov r15, code_stub_mul_len
@@ -767,6 +784,19 @@ do_build:
     mov rsi, rbx
     lea rdx, [rip+pat_call_add]
     mov rcx, pat_call_add_len
+    call find_substr
+    cmp rax, 1
+    jne .build_try_call_add_swapped
+    lea r14, [rip+code_stub_add]
+    mov r15, code_stub_add_len
+    mov qword ptr [rip+build_kernel_kind], 16
+    jmp .build_code_selected
+
+.build_try_call_add_swapped:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    lea rdx, [rip+pat_call_add_swapped]
+    mov rcx, pat_call_add_swapped_len
     call find_substr
     cmp rax, 1
     jne .build_try_mem_gep_roundtrip
