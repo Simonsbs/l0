@@ -837,6 +837,17 @@ if [ "$(cat /tmp/l0_tracejoin_double.out)" != $'id 1\nval 123\nstart 0\nend 17\n
   echo "FAIL: tracejoin double-record output"
   exit 1
 fi
+: >/tmp/l0_trace_empty.err
+"$BIN" tracecat /tmp/l0_trace_empty.err >/tmp/l0_tracecat_empty.out
+if [ -s /tmp/l0_tracecat_empty.out ]; then
+  echo "FAIL: tracecat empty-file output"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_trace_empty.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_tracejoin_empty.out
+if [ -s /tmp/l0_tracejoin_empty.out ]; then
+  echo "FAIL: tracejoin empty-file output"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_branch.l0" /tmp/l0_test_branch.img >/tmp/l0_build_branch.out
 if ! grep -q '^ok$' /tmp/l0_build_branch.out; then

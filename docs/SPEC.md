@@ -174,6 +174,7 @@ I also enforce a structural subset inside `fns`:
 - I load a binary trace file and require payload size to be a multiple of 16 bytes.
 - I decode each record as (`u64 trace_id`, `u64 traced_value`).
 - I print deterministic text lines for each record: `id <trace_id>` and `val <traced_value>`.
+- zero-length trace payload is valid and produces no output.
 
 `l0c mapcat <debug_map.bin>` currently:
 - I load a bootstrap debug-map payload and validate:
@@ -197,6 +198,7 @@ I also enforce a structural subset inside `fns`:
 - I load and decode trace payload as fixed 16-byte records.
 - I require every trace record id to resolve to a debug-map `inst_id` entry; unknown ids are rejected.
 - I reject truncated/non-aligned trace payloads (size must be a multiple of 16 bytes).
+- zero-length trace payload is valid and produces no joined output.
 - For each trace record, I join by `trace_id == inst_id` and print:
   - `id <trace_id>`
   - `val <value>`
