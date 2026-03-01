@@ -168,6 +168,16 @@ if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_swapped.out; then
   echo "FAIL: verify valid_cbr_eq_select_swapped"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_v7.l0" >/tmp/l0_ok_cbr_eq_select_v7.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_v7.out; then
+  echo "FAIL: verify valid_cbr_eq_select_v7"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_v7_swapped.l0" >/tmp/l0_ok_cbr_eq_select_v7_swapped.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_v7_swapped.out; then
+  echo "FAIL: verify valid_cbr_eq_select_v7_swapped"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
 if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
   echo "FAIL: verify valid_memory_ops"
@@ -898,6 +908,48 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select_swapped.img 9 8 >/tmp/l0_run_cbr_eq_select_swapped_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_swapped_f.out)" != "8" ]; then
   echo "FAIL: run cbr eq-select swapped false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_v7.l0" /tmp/l0_test_cbr_eq_select_v7.img >/tmp/l0_build_cbr_eq_select_v7.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_v7.out; then
+  echo "FAIL: build valid_cbr_eq_select_v7"
+  exit 1
+fi
+cbr_v7_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_v7.img | tr -d ' ')
+cbr_v7_kernel_kind=$(od -An -t u8 -j "$((cbr_v7_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_v7.img | tr -d ' ')
+if [ "$cbr_v7_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select v7 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_v7.img 9 9 >/tmp/l0_run_cbr_eq_select_v7_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_v7_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select v7 true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_v7.img 9 8 >/tmp/l0_run_cbr_eq_select_v7_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_v7_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select v7 false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_v7_swapped.l0" /tmp/l0_test_cbr_eq_select_v7_swapped.img >/tmp/l0_build_cbr_eq_select_v7_swapped.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_v7_swapped.out; then
+  echo "FAIL: build valid_cbr_eq_select_v7_swapped"
+  exit 1
+fi
+cbr_v7_swapped_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_v7_swapped.img | tr -d ' ')
+cbr_v7_swapped_kernel_kind=$(od -An -t u8 -j "$((cbr_v7_swapped_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_v7_swapped.img | tr -d ' ')
+if [ "$cbr_v7_swapped_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select v7 swapped debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_v7_swapped.img 9 9 >/tmp/l0_run_cbr_eq_select_v7_swapped_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_v7_swapped_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select v7 swapped true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_v7_swapped.img 9 8 >/tmp/l0_run_cbr_eq_select_v7_swapped_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_v7_swapped_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select v7 swapped false result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_roundtrip.l0" /tmp/l0_test_mem_roundtrip.img >/tmp/l0_build_mem_roundtrip.out

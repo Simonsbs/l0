@@ -270,6 +270,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - both kernels also accept swapped compare operand order (`icmp.eq v1 v0`) in bootstrap lowering
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
+    - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
