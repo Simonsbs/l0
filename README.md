@@ -83,6 +83,7 @@ make
 ./bin/l0c tracecat <trace.bin>
 ./bin/l0c mapcat <debug_map.bin>
 ./bin/l0c schemacat <trace_schema.bin>
+./bin/l0c tracejoin <trace.bin> <debug_map.bin>
 ```
 
 ## Notes

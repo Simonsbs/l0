@@ -274,6 +274,12 @@ Optional build-side bootstrap artifacts:
   - variable-size payload: `L0DM`, version `2`, entry count `N`, code size, then `N` triplets of `inst_id/start/end`
 - current bootstrap parser accepts either option independently or both together, and rejects duplicate optional flags
 
+Native bootstrap decode helpers:
+- `tracecat <trace.bin>`
+- `mapcat <debug_map.bin>`
+- `schemacat <trace_schema.bin>`
+- `tracejoin <trace.bin> <debug_map.bin>`
+
 ## 9) Near-Term Completion Steps
 
 To complete the M1 scope, I still need to finish:

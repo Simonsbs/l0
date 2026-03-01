@@ -187,6 +187,15 @@ I also enforce a structural subset inside `fns`:
 - I load a 32-byte trace-schema payload and validate magic/version.
 - I print deterministic text lines: `version <n>`, `record_size <bytes>`, `fields <count>`.
 
+`l0c tracejoin <trace.bin> <debug_map.bin>` currently:
+- I load and validate debug-map payload (`L0DM`, version `2`).
+- I load and decode trace payload as fixed 16-byte records.
+- For each trace record, I join by `trace_id == inst_id` and print:
+  - `id <trace_id>`
+  - `val <value>`
+  - `start <offset>` (default `0` if no match)
+  - `end <offset>` (default `0` if no match)
+
 `l0c imgmeta <file.l0img>` currently:
 - I validate core header and debug-section bounds for bootstrap images.
 - I print deterministic metadata lines:

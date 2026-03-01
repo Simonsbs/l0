@@ -7,6 +7,7 @@
 .lcomm debug_map_out_path_ptr, 8
 .lcomm run_arg1_ptr, 8
 .lcomm run_arg2_ptr, 8
+.lcomm tracejoin_map_path_ptr, 8
 .lcomm num_buf, 32
 .lcomm codegen_buf, 65536
 .lcomm codegen_len, 8
@@ -16,6 +17,12 @@
 .lcomm debug_map_buf, 104
 .lcomm debug_map_size, 8
 .lcomm debug_map_fd, 8
+.lcomm tracejoin_map_count, 8
+.lcomm tracejoin_map_inst_id, 512
+.lcomm tracejoin_map_start, 512
+.lcomm tracejoin_map_end, 512
+.lcomm tracejoin_join_start, 8
+.lcomm tracejoin_join_end, 8
 .lcomm build_kernel_kind, 8
 .lcomm vfp_state_in_fn, 8
 .lcomm vfp_fn_seen, 8
@@ -39,7 +46,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin> | l0c tracejoin <trace.bin> <debug_map.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -74,6 +81,7 @@ cmd_run: .ascii "run\0"
 cmd_tracecat: .ascii "tracecat\0"
 cmd_mapcat: .ascii "mapcat\0"
 cmd_schemacat: .ascii "schemacat\0"
+cmd_tracejoin: .ascii "tracejoin\0"
 trace_id_prefix: .ascii "id "
 trace_id_prefix_len = . - trace_id_prefix
 trace_val_prefix: .ascii "val "
@@ -94,6 +102,10 @@ schema_record_size_prefix: .ascii "record_size "
 schema_record_size_prefix_len = . - schema_record_size_prefix
 schema_fields_prefix: .ascii "fields "
 schema_fields_prefix_len = . - schema_fields_prefix
+join_start_prefix: .ascii "start "
+join_start_prefix_len = . - join_start_prefix
+join_end_prefix: .ascii "end "
+join_end_prefix_len = . - join_end_prefix
 img_version_prefix: .ascii "version "
 img_version_prefix_len = . - img_version_prefix
 img_src_size_prefix: .ascii "src_size "
@@ -528,10 +540,22 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne usage
+    jne .check_tracejoin
     cmp r13, 3
     jne usage
     jmp do_schemacat
+
+.check_tracejoin:
+    lea rsi, [rip+cmd_tracejoin]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne usage
+    cmp r13, 4
+    jne usage
+    mov r11, [r12+32]         # argv[3] debug_map path
+    mov qword ptr [rip+tracejoin_map_path_ptr], r11
+    jmp do_tracejoin
 
 usage:
     lea rsi, [rip+usage_msg]
@@ -1522,6 +1546,141 @@ do_schemacat:
     call write_fd
     mov rdi, qword ptr [r8+24]
     call print_u64_nl
+    mov rdi, 0
+    call exit
+
+do_tracejoin:
+    # load and parse debug map first
+    mov rdi, qword ptr [rip+tracejoin_map_path_ptr]
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    cmp rbx, 32
+    jb fail_parse
+    mov rax, rbx
+    sub rax, 32
+    xor rdx, rdx
+    mov rcx, 24
+    div rcx
+    cmp rdx, 0
+    jne fail_parse
+    lea r8, [rip+file_buf]
+    mov rax, qword ptr [r8+0]
+    mov r9, 0x000000004d44304c
+    cmp rax, r9
+    jne fail_parse
+    mov rax, qword ptr [r8+8]
+    cmp rax, 2
+    jne fail_parse
+    mov r10, qword ptr [r8+16]    # entry_count
+    cmp r10, 64
+    ja fail_parse
+    mov rax, r10
+    imul rax, 24
+    add rax, 32
+    cmp rax, rbx
+    jne fail_parse
+    mov qword ptr [rip+tracejoin_map_count], r10
+    xor r14, r14
+.tj_copy_map_loop:
+    cmp r14, r10
+    jae .tj_map_copied
+    mov r11, r14
+    imul r11, 24
+    add r11, 32
+    mov rax, qword ptr [r8+r11+0]
+    mov rcx, r14
+    shl rcx, 3
+    lea rdx, [rip+tracejoin_map_inst_id]
+    add rdx, rcx
+    mov qword ptr [rdx], rax
+    mov rax, qword ptr [r8+r11+8]
+    lea rdx, [rip+tracejoin_map_start]
+    add rdx, rcx
+    mov qword ptr [rdx], rax
+    mov rax, qword ptr [r8+r11+16]
+    lea rdx, [rip+tracejoin_map_end]
+    add rdx, rcx
+    mov qword ptr [rdx], rax
+    inc r14
+    jmp .tj_copy_map_loop
+
+.tj_map_copied:
+    # load trace records and join on inst_id
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    mov rax, rbx
+    and rax, 15
+    cmp rax, 0
+    jne fail_parse
+    xor r12, r12
+.tj_trace_loop:
+    cmp r12, rbx
+    jae .tj_done
+    lea r8, [rip+file_buf]
+    add r8, r12
+    mov r13, qword ptr [r8+0]     # trace id
+    mov r14, qword ptr [r8+8]     # traced value
+    xor r9, r9                    # joined start default
+    xor r10, r10                  # joined end default
+    xor rcx, rcx
+    mov r11, qword ptr [rip+tracejoin_map_count]
+.tj_find_loop:
+    cmp rcx, r11
+    jae .tj_emit
+    mov rax, rcx
+    shl rax, 3
+    lea rdx, [rip+tracejoin_map_inst_id]
+    add rdx, rax
+    mov rdx, qword ptr [rdx]
+    cmp rdx, r13
+    jne .tj_find_next
+    lea rdx, [rip+tracejoin_map_start]
+    add rdx, rax
+    mov r9, qword ptr [rdx]
+    lea rdx, [rip+tracejoin_map_end]
+    add rdx, rax
+    mov r10, qword ptr [rdx]
+    jmp .tj_emit
+.tj_find_next:
+    inc rcx
+    jmp .tj_find_loop
+
+.tj_emit:
+    mov qword ptr [rip+tracejoin_join_start], r9
+    mov qword ptr [rip+tracejoin_join_end], r10
+    mov rdi, 1
+    lea rsi, [rip+trace_id_prefix]
+    mov rdx, trace_id_prefix_len
+    call write_fd
+    mov rdi, r13
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+trace_val_prefix]
+    mov rdx, trace_val_prefix_len
+    call write_fd
+    mov rdi, r14
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+join_start_prefix]
+    mov rdx, join_start_prefix_len
+    call write_fd
+    mov rdi, qword ptr [rip+tracejoin_join_start]
+    call print_u64_nl
+    mov rdi, 1
+    lea rsi, [rip+join_end_prefix]
+    mov rdx, join_end_prefix_len
+    call write_fd
+    mov rdi, qword ptr [rip+tracejoin_join_end]
+    call print_u64_nl
+    add r12, 16
+    jmp .tj_trace_loop
+
+.tj_done:
     mov rdi, 0
     call exit
 

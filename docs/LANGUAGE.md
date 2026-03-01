@@ -164,6 +164,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c tracecat <trace.bin>`
 - `l0c mapcat <debug_map.bin>`
 - `l0c schemacat <trace_schema.bin>`
+- `l0c tracejoin <trace.bin> <debug_map.bin>`
 
 ### `imgcheck` bootstrap integrity rules
 
@@ -231,6 +232,12 @@ Current bootstrap debug map payload is variable-size:
 - `version <n>`
 - `record_size <bytes>`
 - `fields <count>`
+
+`tracejoin` decodes trace records and debug-map entries, joins by `inst_id`, and prints:
+- `id <trace_id>`
+- `val <value>`
+- `start <offset>`
+- `end <offset>`
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

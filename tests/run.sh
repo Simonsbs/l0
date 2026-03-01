@@ -684,6 +684,11 @@ if ! grep -q '^ok$' /tmp/l0_build_trace_noop.out; then
   echo "FAIL: build valid_trace_noop"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_trace_noop.l0" /tmp/l0_test_trace_noop_map.img --debug-map /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_build_trace_noop_map.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_map.out; then
+  echo "FAIL: build valid_trace_noop with --debug-map"
+  exit 1
+fi
 trace_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
 trace_kernel_kind=$(od -An -t u8 -j "$((trace_dbg_off + 32))" -N 8 /tmp/l0_test_trace_noop.img | tr -d ' ')
 if [ "$trace_kernel_kind" != "24" ]; then
@@ -702,6 +707,11 @@ fi
 "$BIN" tracecat /tmp/l0_run_trace_noop.err >/tmp/l0_tracecat.out
 if [ "$(cat /tmp/l0_tracecat.out)" != $'id 1\nval 123' ]; then
   echo "FAIL: tracecat decoded output"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_tracejoin.out
+if [ "$(cat /tmp/l0_tracejoin.out)" != $'id 1\nval 123\nstart 0\nend 17' ]; then
+  echo "FAIL: tracejoin decoded output"
   exit 1
 fi
 
