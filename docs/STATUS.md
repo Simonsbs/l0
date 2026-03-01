@@ -219,7 +219,16 @@ Last updated: 2026-03-01
   - preserved existing mismatch guardrails by delegating final lowering decisions to existing selectors
   - added regression coverage for lowered and intentionally unlowered dead-const-injected variants of memory roundtrip, memory-gep roundtrip, `malloc`, and `exit`
 
-### M17: Non-template backend and full general codegen
+### M17: Dead-Const Normalization Correctness Hardening
+
+- Status: complete
+- Scope completed:
+  - changed shared dead-const normalization to strip only dead canonical `const` value lines instead of stripping all `const` value lines
+  - scoped dead-const use detection to the current function so same numeric value IDs in later functions do not incorrectly keep dead const defs
+  - retained generalized lowering behavior for already-completed normalization families (`bin`, `icmp`, `icmp+cbr`, `call`, `memory`, `memory-gep`, `malloc`, `exit`)
+  - validated with full suite regression pass, including existing multi-function call dead-const coverage
+
+### M18: Non-template backend and full general codegen
 
 - Status: planned
 - Planned:

@@ -268,6 +268,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - commutative binary kernels in that set also accept canonical swapped operand order (`v1 v0`) during bootstrap lowering
     - binary kernel templates also accept nonzero result value ids when `ret` references the same value (`vN = <op> ...`, `ret vN`)
     - before binary kernel selection, I run a normalization pass that strips canonical dead `const` value lines; this lets me lower binary kernels even when dead const defs are interleaved in the block
+    - in that normalization pass, I now strip only dead const defs (not live const defs), and I scope dead-const detection to the current function so same numeric value ids in other functions do not interfere
     - `icmp.eq` compare kernel (`i64` args, `i1` result)
     - canonical `icmp.eq + cbr` select kernel (`i64` args, `i64` result)
     - before compare/select kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs do not block `icmp.eq` or `icmp.eq + cbr` lowering
@@ -292,7 +293,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero ids across alloca/const/store/write/ret when ids/dataflow match
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
-    - for const-dependent kernels (`free`, `write`, `trace`), I still require exact canonical template shape today; I track dataflow-aware dead-const normalization for those in my next milestone
+    - for const-dependent kernels (`free`, `write`, `trace`), I still require exact canonical template shape today; I track dataflow-aware dead-const normalization for those in M18
     - canonical two-function call->arith kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`)
     - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
     - call->`add.wrap` and call->`mul.wrap` also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering

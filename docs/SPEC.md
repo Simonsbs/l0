@@ -107,6 +107,7 @@ I also enforce a structural subset inside `fns`:
   - I accept canonical swapped-operand form (`v1 v0`) for commutative ops in this set: `add.wrap`, `add.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`
   - I accept canonical nonzero result value ids for this kernel shape when `ret` references the same value id (`vN = <op> ...`, `ret vN`)
   - before binary kernel selection, I normalize by stripping canonical dead `const` value lines; this allows lowering binary kernels that include interleaved dead const defs without changing non-commutative guardrails
+  - in that normalization pass, I strip only dead const defs (not live const defs), and I scope dead-const detection to the current function so same numeric value ids in other functions do not block stripping
   - `add.trap`/`sub.trap`/`mul.trap` currently trap via `jo` to `ud2` on signed overflow
   - I lower `icmp.eq` kernel shape (`v2 = icmp.eq v0 v1 : t1`, `ret v2`)
   - before `icmp.eq` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
@@ -162,7 +163,7 @@ I also enforce a structural subset inside `fns`:
     - for bootstrap newline `write`, I also accept canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
-    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I still require exact canonical templates today; dataflow-aware dead-const normalization for these is tracked in my next milestone
+    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I still require exact canonical templates today; dataflow-aware dead-const normalization for these is tracked in M18
   - I also lower canonical const-return kernel shape:
     - `v0 = const N : t0`
     - `v0 = const -N : t0`

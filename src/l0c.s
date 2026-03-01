@@ -10309,7 +10309,7 @@ normalize_strip_const_value_lines:
     push r13
     push r14
     push r15
-    sub rsp, 32
+    sub rsp, 48
 
     mov r12, rdi                    # src ptr
     mov r13, rsi                    # src len
@@ -10382,7 +10382,80 @@ normalize_strip_const_value_lines:
     jne .tsgbk_norm_copy
     mov al, byte ptr [rbx+rcx+5]
     cmp al, ' '
+    jne .tsgbk_norm_copy
+
+    # const value line found; strip only if value id is dead (not used later)
+    mov rax, qword ptr [rsp+16]      # line start idx
+    add rax, 3                       # lhs value-id digits start idx
+    mov qword ptr [rsp+32], rax
+    mov rax, rcx
+    sub rax, 3                       # lhs value-id digits len
+    mov qword ptr [rsp+40], rax
+    mov r10, qword ptr [rsp+16]
+    add r10, qword ptr [rsp+24]
+    inc r10                          # search start: next line
+.tsgbk_norm_find_use_loop:
+    cmp r10, r13
+    jae .tsgbk_norm_skip
+    # stop dead-const scan at the next function header ("fn ")
+    mov al, byte ptr [r12+r10]
+    cmp al, 'f'
+    jne .tsgbk_norm_find_use_check_vid
+    cmp r10, 0
+    je .tsgbk_norm_find_use_check_fn_head
+    mov dl, byte ptr [r12+r10-1]
+    cmp dl, 10
+    jne .tsgbk_norm_find_use_check_vid
+.tsgbk_norm_find_use_check_fn_head:
+    mov rax, r13
+    sub rax, r10
+    cmp rax, 3
+    jb .tsgbk_norm_find_use_check_vid
+    mov dl, byte ptr [r12+r10+1]
+    cmp dl, 'n'
+    jne .tsgbk_norm_find_use_check_vid
+    mov dl, byte ptr [r12+r10+2]
+    cmp dl, ' '
     je .tsgbk_norm_skip
+.tsgbk_norm_find_use_check_vid:
+    mov al, byte ptr [r12+r10]
+    cmp al, 'v'
+    jne .tsgbk_norm_find_use_next
+    mov rax, r10
+    add rax, 1
+    add rax, qword ptr [rsp+40]
+    cmp rax, r13
+    ja .tsgbk_norm_find_use_next
+    xor r8, r8
+.tsgbk_norm_find_use_cmp_loop:
+    cmp r8, qword ptr [rsp+40]
+    jae .tsgbk_norm_find_use_cmp_done
+    mov r9, r10
+    add r9, 1
+    add r9, r8
+    mov dl, byte ptr [r12+r9]
+    mov r9, qword ptr [rsp+32]
+    add r9, r8
+    mov cl, byte ptr [r12+r9]
+    cmp dl, cl
+    jne .tsgbk_norm_find_use_next
+    inc r8
+    jmp .tsgbk_norm_find_use_cmp_loop
+.tsgbk_norm_find_use_cmp_done:
+    mov rax, r10
+    add rax, 1
+    add rax, qword ptr [rsp+40]
+    cmp rax, r13
+    jae .tsgbk_norm_copy
+    mov dl, byte ptr [r12+rax]
+    cmp dl, '0'
+    jb .tsgbk_norm_copy
+    cmp dl, '9'
+    jbe .tsgbk_norm_find_use_next
+    jmp .tsgbk_norm_copy
+.tsgbk_norm_find_use_next:
+    inc r10
+    jmp .tsgbk_norm_find_use_loop
 
 .tsgbk_norm_copy:
     mov rax, qword ptr [rsp+24]
@@ -10419,7 +10492,7 @@ normalize_strip_const_value_lines:
 .tsgbk_no:
     xor rax, rax
 .tsgbk_done:
-    add rsp, 32
+    add rsp, 48
     pop r15
     pop r14
     pop r13
