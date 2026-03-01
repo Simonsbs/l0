@@ -59,7 +59,7 @@ Last updated: 2026-03-01
   - negative-path tests for malformed artifacts
 - Remaining:
   - broader malformed-image fuzz-style tests
-  - more malformed trace payload cases (multi-record corruption patterns)
+  - broader multi-record trace corruption patterns beyond truncation/alignment checks
 
 ### M5: Full language/general codegen
 

@@ -248,6 +248,7 @@ Current bootstrap debug map payload is variable-size:
 - `end <offset>`
 - it rejects invalid debug-map entries (`inst_id = 0`, non-increasing `inst_id`, or ranges outside/overlapping `code_size`)
 - it rejects trace records whose `trace_id` has no matching debug-map entry
+- it rejects truncated/non-16-byte-aligned trace payloads
 
 I print decoded output in deterministic text lines:
 - `id <trace_id>`

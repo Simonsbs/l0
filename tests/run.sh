@@ -814,9 +814,27 @@ if [ "$(cat /tmp/l0_tracecat.out)" != $'id 1\nval 123' ]; then
   echo "FAIL: tracecat decoded output"
   exit 1
 fi
+cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_trace_truncated.err
+printf '\x00' >> /tmp/l0_bad_trace_truncated.err
+if "$BIN" tracecat /tmp/l0_bad_trace_truncated.err >/tmp/l0_bad_trace_truncated.out 2>/tmp/l0_bad_trace_truncated.errlog; then
+  echo "FAIL: tracecat accepted non-16-byte-aligned trace payload"
+  exit 1
+fi
 "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_tracejoin.out
 if [ "$(cat /tmp/l0_tracejoin.out)" != $'id 1\nval 123\nstart 0\nend 17' ]; then
   echo "FAIL: tracejoin decoded output"
+  exit 1
+fi
+cp /tmp/l0_run_trace_noop.err /tmp/l0_bad_tracejoin_truncated.err
+printf '\x00' >> /tmp/l0_bad_tracejoin_truncated.err
+if "$BIN" tracejoin /tmp/l0_bad_tracejoin_truncated.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_bad_tracejoin_truncated.out 2>/tmp/l0_bad_tracejoin_truncated.errlog; then
+  echo "FAIL: tracejoin accepted truncated trace payload"
+  exit 1
+fi
+cat /tmp/l0_run_trace_noop.err /tmp/l0_run_trace_noop.err >/tmp/l0_trace_double.err
+"$BIN" tracejoin /tmp/l0_trace_double.err /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_tracejoin_double.out
+if [ "$(cat /tmp/l0_tracejoin_double.out)" != $'id 1\nval 123\nstart 0\nend 17\nid 1\nval 123\nstart 0\nend 17' ]; then
+  echo "FAIL: tracejoin double-record output"
   exit 1
 fi
 

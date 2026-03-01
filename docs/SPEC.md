@@ -196,6 +196,7 @@ I also enforce a structural subset inside `fns`:
 - I enforce debug-map entry validity (non-zero strictly increasing `inst_id`, `start <= end <= code_size`, monotonic non-overlapping ranges).
 - I load and decode trace payload as fixed 16-byte records.
 - I require every trace record id to resolve to a debug-map `inst_id` entry; unknown ids are rejected.
+- I reject truncated/non-aligned trace payloads (size must be a multiple of 16 bytes).
 - For each trace record, I join by `trace_id == inst_id` and print:
   - `id <trace_id>`
   - `val <value>`
