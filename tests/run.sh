@@ -1321,6 +1321,19 @@ if "$BIN" mapcat /tmp/l0_bad_debug_map_truncated.bin >/tmp/l0_bad_debug_map_trun
   echo "FAIL: mapcat accepted misaligned debug-map payload size"
   exit 1
 fi
+# Ensure trace-noop artifacts exist before corruption/join checks that consume them.
+if [ ! -f /tmp/l0_run_trace_noop.err ] || [ ! -f /tmp/l0_trace_noop_debug_map.bin ]; then
+  "$BIN" build "$ROOT/tests/valid_trace_noop.l0" /tmp/l0_test_trace_noop.img --debug-map /tmp/l0_trace_noop_debug_map.bin >/tmp/l0_build_trace_noop_seed.out
+  if ! grep -q '^ok$' /tmp/l0_build_trace_noop_seed.out; then
+    echo "FAIL: trace-noop seed build"
+    exit 1
+  fi
+  "$BIN" run /tmp/l0_test_trace_noop.img 123 >/tmp/l0_run_trace_noop.out 2>/tmp/l0_run_trace_noop.err
+  if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop.out)" != "0" ]; then
+    echo "FAIL: trace-noop seed run output"
+    exit 1
+  fi
+fi
 if "$BIN" tracejoin /tmp/l0_run_trace_noop.err /tmp/l0_bad_debug_map_version.bin >/tmp/l0_bad_tracejoin.out 2>/tmp/l0_bad_tracejoin.err; then
   echo "FAIL: tracejoin accepted invalid map file"
   exit 1
