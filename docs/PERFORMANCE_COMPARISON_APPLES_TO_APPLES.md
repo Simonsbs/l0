@@ -2,30 +2,47 @@
 
 I generated this snapshot automatically with `tests/benchmark_apples_to_apples.sh`.
 
-- generated_utc: `2026-03-02T14:02:24Z`
-- host: `runnervmnay03`
-- kernel: `Linux 6.14.0-1017-azure x86_64`
+- generated_utc: `2026-03-02T15:11:39Z`
+- host: `SimonsLaptop`
+- kernel: `Linux 6.17.0-14-generic x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
-- runtime iterations per run: `20000000`
+- build iterations per kernel: `80`
+- runtime iterations per run: `5000000`
+- runtime repeats per kernel: `3 (median)`
 
 ## Method
 
-I compare equivalent `f0(uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,uint64_t)->uint64_t` implementations:
-- L0: `tests/valid_sysv_abi_sum6_lowered.l0` built via `l0c build-elf`
-- GCC: equivalent C function built with `gcc -O2 -c`
+I compare multiple equivalent `f0(uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,uint64_t)->uint64_t` implementations:
+- L0: each listed fixture built via `l0c build-elf`
+- GCC: generated equivalent C function built with `gcc -O2 -c`
 - Runtime harness: same assembly `_start` loop calling `f0` with fixed args for both variants
 - Runtime metric: median of 3 runs in Mops/s
 - Build metric: repeated object build throughput (ops/s)
 
-## Results
+## Per-Kernel Results
 
-| Metric | L0 (`l0c`) | GCC (`-O2`) |
-|---|---:|---:|
-| Build throughput (sum6 object) ops/s | 1250 | 60 |
-| Runtime throughput (sum6 harness) Mops/s | 501.81 | 501.09 |
+| Kernel | L0 fixture | Build ops/s L0 | Build ops/s GCC | Build ratio L0/GCC | Runtime Mops/s L0 | Runtime Mops/s GCC | Runtime ratio L0/GCC |
+|---|---|---:|---:|---:|---:|---:|---:|
+| add.wrap (2-arg) | `tests/valid_add_v7.l0` | 2162 | 95 | 22.7579 | 766.41 | 783.63 | 0.9780 |
+| sub.wrap (2-arg) | `tests/valid_sub.l0` | 243 | 92 | 2.6413 | 763.18 | 787.74 | 0.9688 |
+| mul.wrap (2-arg) | `tests/valid_mul.l0` | 2758 | 96 | 28.7292 | 784.23 | 779.26 | 1.0064 |
+| and (2-arg) | `tests/valid_and.l0` | 2758 | 96 | 28.7292 | 759.23 | 815.06 | 0.9315 |
+| xor (2-arg) | `tests/valid_xor.l0` | 2758 | 96 | 28.7292 | 757.64 | 772.29 | 0.9810 |
+| cbr select (eq ? a : b) | `tests/valid_cbr_eq_select_v7.l0` | 2758 | 97 | 28.4330 | 782.19 | 765.06 | 1.0224 |
+| memory roundtrip | `tests/valid_mem_roundtrip_v7.l0` | 2857 | 92 | 31.0543 | 780.56 | 713.94 | 1.0933 |
+| call add (f0->f1) | `tests/valid_call_add_v7_lowered.l0` | 404 | 95 | 4.2526 | 757.41 | 778.26 | 0.9732 |
+| sum6 sysv | `tests/valid_sysv_abi_sum6_lowered.l0` | 2758 | 93 | 29.6559 | 717.82 | 687.74 | 1.0437 |
+
+## Aggregate
+
+| Metric | Value |
+|---|---:|
+| Geometric mean build ratio (L0/GCC) | 17.5596 |
+| Geometric mean runtime ratio (L0/GCC) | 0.9988 |
 
 ## Interpretation
 
-- This is tighter than process-I/O comparisons because both variants use the same loop harness.
-- It still represents one kernel shape; broader conclusions require additional kernels.
+- This matrix is tighter than process-I/O comparisons because both variants use the same loop harness per kernel.
+- Runtime ratio near 1.0 means parity; >1.0 favors L0; <1.0 favors GCC.
+- Build ratio reflects compiler throughput, not generated-code quality.
