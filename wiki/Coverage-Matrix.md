@@ -99,6 +99,8 @@ I enforce documentation integrity with:
 | merge and branch-protection governance | `docs/GOVERNANCE.md` | `.github/workflows/ci.yml` + `.github/CODEOWNERS` |
 | pinned toolchain policy | `docs/TOOLCHAIN_POLICY.md` | `tests/toolchain_policy.sh` |
 | CI smoke performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `tests/ci_smoke_bench.sh` |
+| nightly/tag full performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `.github/workflows/performance.yml` + `tests/performance_gates.sh` |
+| local comparison snapshot vs host compiler(s) | `docs/PERFORMANCE_COMPARISON.md` | `tests/benchmark_compare.sh` |
 | stable release notes and changelog maintenance | `docs/RELEASE_NOTES_v1.0.0.md` + `CHANGELOG.md` | release workflow discipline |
 
 ## Contract Gate Mapping
@@ -112,5 +114,6 @@ I enforce documentation integrity with:
 - verifier rule matrix: `tests/verifier_matrix.sh`
 - toolchain baseline policy: `tests/toolchain_policy.sh`
 - CI smoke benchmark baseline: `tests/ci_smoke_bench.sh`
+- comparative benchmark snapshot: `tests/benchmark_compare.sh`
 
 These are wired into `tests/run.sh` and therefore enforced by `make test`.

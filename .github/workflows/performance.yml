@@ -1,0 +1,35 @@
+name: Performance
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  perf-full:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: make
+
+      - name: Full performance gate
+        run: bash tests/performance_gates.sh ./bin/l0c .
+
+      - name: Comparison report
+        run: |
+          bash tests/benchmark_compare.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON.md
+          cat docs/PERFORMANCE_COMPARISON.md
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: |
+            docs/PERFORMANCE_COMPARISON.md
+            /tmp/l0_m66_performance_gates.out

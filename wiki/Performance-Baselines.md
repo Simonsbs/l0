@@ -25,6 +25,9 @@ I enforce this contract in:
 
 That harness is integrated into `tests/run.sh` and therefore enforced by `make test`.
 
+I also run this automatically in GitHub Actions:
+- `.github/workflows/performance.yml` on nightly schedule and on version tags (`v*`).
+
 ## Pinned Throughput Floors in v1
 
 - `verify.valid_min >= 1800 ops/s`

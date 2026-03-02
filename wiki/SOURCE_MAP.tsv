@@ -12,6 +12,7 @@ Deterministic-Builds.md|docs/DETERMINISTIC_BUILDS.md
 Differential-Testing.md|docs/DIFFERENTIAL_TESTING.md
 Fuzz-Stress.md|docs/FUZZ_STRESS.md
 Performance-Baselines.md|docs/PERFORMANCE_BASELINES.md
+Performance-Comparison.md|docs/PERFORMANCE_COMPARISON.md
 Error-Model.md|docs/ERROR_MODEL.md
 Release-Pipeline.md|docs/RELEASE_PIPELINE.md
 Release-Notes-v1.0.0.md|docs/RELEASE_NOTES_v1.0.0.md

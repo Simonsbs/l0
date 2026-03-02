@@ -49,6 +49,7 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [Coverage-Matrix](Coverage-Matrix)
 
 ### Other
+- [Performance-Comparison](Performance-Comparison)
 - [Release-Notes-v1.0.0](Release-Notes-v1.0.0)
 - [Governance](Governance)
 - [Grammar-and-Typing](Grammar-and-Typing)

@@ -44,6 +44,7 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `docs/RELEASE_NOTES_v1.0.0.md`
 - `docs/GOVERNANCE.md`
 - `docs/TOOLCHAIN_POLICY.md`
+- `docs/PERFORMANCE_COMPARISON.md`
 - `SECURITY.md`
 - `CHANGELOG.md`
 

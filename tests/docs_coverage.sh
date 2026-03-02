@@ -94,6 +94,7 @@ required_refs=(
   docs/GOVERNANCE.md
   docs/TOOLCHAIN_POLICY.md
   docs/RELEASE_NOTES_v1.0.0.md
+  docs/PERFORMANCE_COMPARISON.md
   SECURITY.md
   CHANGELOG.md
   tests/verifier_matrix.sh
@@ -104,6 +105,8 @@ required_refs=(
   tests/production_readiness.sh
   tests/toolchain_policy.sh
   tests/ci_smoke_bench.sh
+  tests/benchmark_compare.sh
+  .github/workflows/performance.yml
   tests/docs_links.sh
   tests/docs_headings.sh
   tests/docs_index.sh

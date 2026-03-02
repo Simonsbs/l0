@@ -285,6 +285,19 @@ bash tests/ci_smoke_bench.sh ./bin/l0c .
 Expected stable output:
 - `ok`
 
+## Workflow 16: Comparative Benchmark Snapshot
+
+I use this when I want an operational comparison between `l0c` and available host compilers.
+
+```sh
+make
+bash tests/benchmark_compare.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+- refreshed `docs/PERFORMANCE_COMPARISON.md`
+
 ## Workflow 14: Deterministic Build Contract Gate
 
 I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.
