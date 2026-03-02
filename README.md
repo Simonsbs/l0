@@ -224,6 +224,7 @@ Current bootstrap status:
 - Docs coverage harness: `tests/docs_coverage.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 - Wiki sync script: `scripts/sync_wiki.sh`
+- Wiki remote publish script: `scripts/publish_wiki_remote.sh` (requires GitHub Wiki enabled)
 
 ## Build
 

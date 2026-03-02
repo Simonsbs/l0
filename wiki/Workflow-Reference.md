@@ -371,3 +371,17 @@ bash tests/docs_coverage.sh .
 
 Expected stable output:
 - `ok`
+
+## Workflow 24: Publish Wiki Mirror to GitHub Wiki
+
+I use this when I want to publish my generated `wiki/` mirror to the remote GitHub Wiki repository.
+
+```sh
+bash scripts/publish_wiki_remote.sh
+```
+
+Expected stable output:
+- `ok`
+
+Note:
+- this requires GitHub Wiki to be enabled in repository settings so `<repo>.wiki.git` exists.
