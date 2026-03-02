@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a deterministic defect with a minimal reproduction.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please keep reports deterministic and minimal.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: Command, verifier rule, lowering family, trace/debug tool, or docs page.
+      placeholder: "verify / build / run / docs / CI"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Paste minimal L0 module, exact command sequence, and observed output.
+      placeholder: |
+        ./bin/l0c verify tests/valid_min.l0
+        ./bin/l0c build tests/valid_min.l0 /tmp/min.img
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, `as --version`, `ld --version`, `make --version`, and git commit/tag.
+    validations:
+      required: true

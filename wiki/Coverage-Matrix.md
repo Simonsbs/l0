@@ -91,6 +91,16 @@ I enforce documentation integrity with:
 - `tests/docs_index.sh`
 - `tests/docs_snapshot.sh`
 
+## Operations and Governance Coverage
+
+| Capability | Reference | Gate |
+|---|---|---|
+| security disclosure and supported-version policy | `SECURITY.md` | process policy + CI/full test discipline |
+| merge and branch-protection governance | `docs/GOVERNANCE.md` | `.github/workflows/ci.yml` + `.github/CODEOWNERS` |
+| pinned toolchain policy | `docs/TOOLCHAIN_POLICY.md` | `tests/toolchain_policy.sh` |
+| CI smoke performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `tests/ci_smoke_bench.sh` |
+| stable release notes and changelog maintenance | `docs/RELEASE_NOTES_v1.0.0.md` + `CHANGELOG.md` | release workflow discipline |
+
 ## Contract Gate Mapping
 
 - runtime intrinsic contracts: `tests/intrinsic_contracts.sh`
@@ -100,5 +110,7 @@ I enforce documentation integrity with:
 - compatibility contracts: `tests/compatibility_matrix.sh`
 - production readiness contracts: `tests/production_readiness.sh`
 - verifier rule matrix: `tests/verifier_matrix.sh`
+- toolchain baseline policy: `tests/toolchain_policy.sh`
+- CI smoke benchmark baseline: `tests/ci_smoke_bench.sh`
 
 These are wired into `tests/run.sh` and therefore enforced by `make test`.

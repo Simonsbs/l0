@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+    name: build (${{ matrix.os }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: make
+
+      - name: Toolchain policy
+        run: bash tests/toolchain_policy.sh
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [smoke, full]
+    name: test (${{ matrix.suite }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: make
+
+      - name: Run smoke benchmark gate
+        if: matrix.suite == 'smoke'
+        run: bash tests/ci_smoke_bench.sh ./bin/l0c .
+
+      - name: Run full suite
+        if: matrix.suite == 'full'
+        run: make test

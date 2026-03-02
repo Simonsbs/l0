@@ -1,0 +1,42 @@
+# Release Notes v1.0.0
+
+I published `v1.0.0` as the first stable L0 release.
+
+Release tag: `v1.0.0`  
+Production candidate predecessor: `v1.0.0-rc1`
+
+## Highlights
+
+- I completed the M1-M70 implementation roadmap and froze the v1 contract surfaces.
+- I shipped deterministic docs and wiki pipelines with test-gated sync.
+- I published a frozen docs snapshot at `docs/releases/v1.0.0/`.
+- I published a machine-readable docs index at `docs/LLM_DOC_INDEX.json`.
+
+## Contracts and Compatibility
+
+I treat these as frozen compatibility anchors in v1:
+- intrinsic contracts (`intrinsics.v1`)
+- debug-map schema (`debugmap.v1`)
+- trace schema (`traceschema.v1`)
+- deterministic build contracts (`detbuild.v1`)
+- differential semantics (`diffsem.v1`)
+- fuzz stress (`fuzzstress.v1`)
+- performance baselines (`perfbase.v1`)
+- error model (`errmodel.v1`)
+- release pipeline (`relpipe.v1`)
+- compatibility policy (`compat.v1`)
+- production readiness (`prodready.v1`)
+
+## Operational Baseline
+
+- platform focus: Linux x86-64 bootstrap
+- toolchain: GNU `as`/`ld` + `make` (see `docs/TOOLCHAIN_POLICY.md`)
+- CI baseline: build matrix, test matrix, and smoke benchmark gate
+
+## Upgrade Guidance
+
+I recommend this upgrade flow:
+1. read `docs/COMPATIBILITY_POLICY.md`
+2. run `make test`
+3. run release pipeline checks if distributing artifacts
+4. compare contract docs if moving from pre-v1 tags

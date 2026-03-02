@@ -41,6 +41,7 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [Error-Model](Error-Model)
 - [Release-Pipeline](Release-Pipeline)
 - [Compatibility-Policy](Compatibility-Policy)
+- [Toolchain-Policy](Toolchain-Policy)
 - [Production-Readiness](Production-Readiness)
 
 ### Planning and Coverage
@@ -48,6 +49,8 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [Coverage-Matrix](Coverage-Matrix)
 
 ### Other
+- [Release-Notes-v1.0.0](Release-Notes-v1.0.0)
+- [Governance](Governance)
 - [Grammar-and-Typing](Grammar-and-Typing)
 - [LLM-Prompt-Pack](LLM-Prompt-Pack)
 - [Index](Index)

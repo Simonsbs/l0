@@ -262,6 +262,29 @@ bash tests/trace_schema_contracts.sh ./bin/l0c
 Expected stable output:
 - `ok`
 
+## Workflow 14: Toolchain Policy Gate
+
+I use this when I want to verify the pinned native toolchain baseline.
+
+```sh
+bash tests/toolchain_policy.sh
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 15: CI Smoke Benchmark Gate
+
+I use this when I want a quick performance regression signal suitable for CI.
+
+```sh
+make
+bash tests/ci_smoke_bench.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
 ## Workflow 14: Deterministic Build Contract Gate
 
 I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.

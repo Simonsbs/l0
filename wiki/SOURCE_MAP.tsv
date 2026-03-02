@@ -14,7 +14,10 @@ Fuzz-Stress.md|docs/FUZZ_STRESS.md
 Performance-Baselines.md|docs/PERFORMANCE_BASELINES.md
 Error-Model.md|docs/ERROR_MODEL.md
 Release-Pipeline.md|docs/RELEASE_PIPELINE.md
+Release-Notes-v1.0.0.md|docs/RELEASE_NOTES_v1.0.0.md
 Compatibility-Policy.md|docs/COMPATIBILITY_POLICY.md
+Governance.md|docs/GOVERNANCE.md
+Toolchain-Policy.md|docs/TOOLCHAIN_POLICY.md
 Production-Readiness.md|docs/PRODUCTION_READINESS.md
 Project-Status.md|docs/STATUS.md
 Documentation-Roadmap.md|docs/DOCUMENTATION_ROADMAP.md

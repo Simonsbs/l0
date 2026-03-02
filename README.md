@@ -155,6 +155,7 @@ Current bootstrap status:
 - I now started my post-M70 documentation program with a dual-doc pipeline: canonical `docs/` plus generated `wiki/` mirror enforced by test-gated sync checks.
 - I now consider Documentation Phase 2 complete: per-command failure examples, consolidated grammar/typing rules, expanded coverage matrix traceability, docs lint gates, and an LLM prompt pack are all implemented and enforced in `make test`.
 - I now consider Documentation Phase 4 complete: I froze `docs/releases/v1.0.0/` with a manifest, added opcode-by-opcode valid/failure references, added `docs/LLM_DOC_INDEX.json`, and enforced new docs index/snapshot gates in `make test`.
+- I now consider Phase 5 operations hardening complete: I added governance templates and code ownership, a security policy, a toolchain pinning policy with enforcement, CI build/test matrices with smoke benchmark gating, and stable `v1.0.0` release notes/changelog coverage.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -189,6 +190,9 @@ Current bootstrap status:
 - Workflow reference: `docs/WORKFLOWS.md`
 - Documentation roadmap: `docs/DOCUMENTATION_ROADMAP.md`
 - Documentation index: `docs/INDEX.md`
+- Governance and merge policy: `docs/GOVERNANCE.md`
+- Toolchain pinning policy: `docs/TOOLCHAIN_POLICY.md`
+- Release notes: `docs/RELEASE_NOTES_v1.0.0.md`
 - Command reference: `docs/COMMAND_REFERENCE.md`
 - Command cookbook: `docs/COMMAND_COOKBOOK.md`
 - Examples catalog: `docs/EXAMPLES_CATALOG.md`
@@ -202,6 +206,8 @@ Current bootstrap status:
 - LLM machine-readable docs index: `docs/LLM_DOC_INDEX.json`
 - Versioned docs policy: `docs/VERSIONED_DOCS.md`
 - Learning path (30 min): `docs/LEARNING_PATH_30_MIN.md`
+- Security policy: `SECURITY.md`
+- Changelog: `CHANGELOG.md`
 - Runtime intrinsic contracts: `docs/INTRINSIC_CONTRACTS.md`
 - Debug-map schema contracts: `docs/DEBUG_MAP_SCHEMA.md`
 - Trace schema contracts: `docs/TRACE_SCHEMA.md`
@@ -232,6 +238,8 @@ Current bootstrap status:
 - M68 release pipeline harness: `tests/release_pipeline.sh`
 - M69 compatibility matrix harness: `tests/compatibility_matrix.sh`
 - M70 production readiness harness: `tests/production_readiness.sh`
+- Toolchain policy harness: `tests/toolchain_policy.sh`
+- CI smoke benchmark harness: `tests/ci_smoke_bench.sh`
 - Docs/wiki sync harness: `tests/wiki_sync.sh`
 - Docs coverage harness: `tests/docs_coverage.sh`
 - Docs links harness: `tests/docs_links.sh`

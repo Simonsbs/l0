@@ -2,13 +2,14 @@
 
 I maintain this file as my current implementation status for the L0 bootstrap.
 
-Last updated: 2026-03-02
+Last updated: 2026-03-02 (Phase 5 operations hardening)
 
 ## Overall
 
 - I am in bootstrap/MVP implementation mode with a native-only toolchain (`as`, `ld`, `make`).
 - I have a deterministic end-to-end loop: `verify -> build -> imgcheck/imgmeta -> run`.
 - I have deterministic debug/trace tooling: `tracecat`, `schemacat`, `mapcat`, `tracejoin`.
+- I now have governance and production-ops baselines in-repo: CODEOWNERS, issue/PR templates, security policy, toolchain pinning policy, CI build/test matrix workflows, and smoke benchmark gating.
 
 ## Milestone Matrix
 

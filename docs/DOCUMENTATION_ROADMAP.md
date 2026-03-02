@@ -76,6 +76,7 @@ I will keep documentation quality enforced in automation:
 6. Freeze final `v1.0.0` docs snapshot with manifest verification.
 7. Add machine-readable docs index for deterministic LLM tooling.
 8. Add CI wiki autopublish flow for `main` updates.
+9. Add governance, security, toolchain, and release-note operations docs.
 
 ## Phase Status
 
@@ -83,6 +84,7 @@ I will keep documentation quality enforced in automation:
 - Phase 2 complete: command failure examples, opcode/type/error coverage matrix, consolidated grammar/typing page, docs lint gates, and LLM prompt pack are now added and test-gated.
 - Phase 3 complete: docs index/task navigation, troubleshooting + cookbook docs, versioned snapshot policy, 30-minute learning path, and contract-reference consistency gate are now added and test-gated.
 - Phase 4 complete: frozen `v1.0.0` snapshot, opcode-by-opcode valid/failure reference page, machine-readable docs index (`docs/LLM_DOC_INDEX.json`), snapshot/index test gates, and GitHub Actions wiki autopublish workflow.
+- Phase 5 complete: governance templates, CODEOWNERS and PR/issue templates, security policy, toolchain pinning policy (`toolchain.v1`) with enforcement, CI build/test matrix documentation, and `v1.0.0` release notes/changelog coverage.
 
 ## Done Definition
 

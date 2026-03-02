@@ -43,6 +43,11 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `docs/COMPATIBILITY_POLICY.md`
 - `docs/VERSIONED_DOCS.md`
 - `docs/PRODUCTION_READINESS.md`
+- `docs/RELEASE_NOTES_v1.0.0.md`
+- `docs/GOVERNANCE.md`
+- `docs/TOOLCHAIN_POLICY.md`
+- `SECURITY.md`
+- `CHANGELOG.md`
 
 ### I want LLM-oriented reference material
 
@@ -75,3 +80,4 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `tests/docs_contract_refs.sh`
 - `tests/docs_index.sh`
 - `tests/docs_snapshot.sh`
+- `tests/toolchain_policy.sh`

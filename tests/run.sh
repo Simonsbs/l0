@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="$ROOT/bin/l0c"
 
+bash "$ROOT/tests/toolchain_policy.sh" >/tmp/l0_toolchain_policy.out
+if ! grep -q '^ok$' /tmp/l0_toolchain_policy.out; then
+  echo "FAIL: toolchain policy gate did not report ok"
+  exit 1
+fi
+
 for f in "$ROOT"/docs/examples/*.l0; do
   "$BIN" verify "$f" >/tmp/l0_docs_example_verify.out
   if ! grep -q '^ok$' /tmp/l0_docs_example_verify.out; then

@@ -91,12 +91,19 @@ required_refs=(
   docs/OPCODE_EXAMPLES.md
   docs/LLM_DOC_INDEX.json
   docs/INTRINSIC_CONTRACTS.md
+  docs/GOVERNANCE.md
+  docs/TOOLCHAIN_POLICY.md
+  docs/RELEASE_NOTES_v1.0.0.md
+  SECURITY.md
+  CHANGELOG.md
   tests/verifier_matrix.sh
   tests/deterministic_builds.sh
   tests/error_model.sh
   tests/release_pipeline.sh
   tests/compatibility_matrix.sh
   tests/production_readiness.sh
+  tests/toolchain_policy.sh
+  tests/ci_smoke_bench.sh
   tests/docs_links.sh
   tests/docs_headings.sh
   tests/docs_index.sh
