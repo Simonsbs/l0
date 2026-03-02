@@ -302,12 +302,18 @@ I use this when I want a stricter function-level comparison with the same runtim
 
 ```sh
 make
-bash tests/benchmark_apples_to_apples.sh ./bin/l0c .
+L0_A2A_PIN_CPU=0 \
+L0_A2A_RUNTIME_SAMPLES=5 \
+L0_A2A_BUILD_SAMPLES=3 \
+bash tests/benchmark_apples_to_apples.sh ./bin/l0c . \
+  docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md \
+  docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json
 ```
 
 Expected stable output:
 - `ok`
 - refreshed `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
+- refreshed `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json`
 
 ## Workflow 18: LLM Usability and Token-Efficiency Benchmark
 

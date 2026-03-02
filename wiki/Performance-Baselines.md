@@ -54,3 +54,23 @@ My local/pinned production profile remains the default when this variable is not
 - Cross-machine or cross-CPU performance comparability guarantees.
 - Full benchmarking methodology for release marketing claims.
 - Auto-tuning of thresholds; v1 thresholds are pinned and explicitly versioned.
+
+## Reproducibility Notes for Comparison Reports
+
+For apples-to-apples comparison snapshots, I now capture reproducibility metadata and confidence hints in:
+- `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
+- `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json`
+
+I can control this benchmark behavior with:
+- `L0_A2A_PIN_CPU` (optional CPU affinity, e.g. `0`)
+- `L0_A2A_BUILD_ITERS`
+- `L0_A2A_BUILD_SAMPLES`
+- `L0_A2A_RUNTIME_ITERS`
+- `L0_A2A_RUNTIME_SAMPLES`
+- `L0_A2A_WARMUP_RUNS`
+
+The report includes:
+- CPU/model/topology metadata
+- sample counts and warmup configuration
+- median throughput values
+- CI95 on runtime sample means

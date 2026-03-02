@@ -99,7 +99,7 @@ I enforce documentation integrity with:
 | CI smoke performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `tests/ci_smoke_bench.sh` |
 | nightly/tag full performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `.github/workflows/performance.yml` + `tests/performance_gates.sh` |
 | local comparison snapshot vs host compiler(s) | `docs/PERFORMANCE_COMPARISON.md` | `tests/benchmark_compare.sh` |
-| apples-to-apples function/harness comparison snapshot | `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md` | `tests/benchmark_apples_to_apples.sh` |
+| apples-to-apples function/harness comparison snapshot | `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md` + `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json` | `tests/benchmark_apples_to_apples.sh` |
 | LLM usability and token-efficiency benchmark | `docs/LLM_USABILITY_BENCHMARK.md` + `docs/LLM_BENCHMARK_RESULTS.md` + `docs/LLM_BENCHMARK_RESULTS.json` | `tests/llm_usability_bench.sh` + `.github/workflows/llm-benchmark.yml` |
 | LLM model leaderboard matrix | `docs/LLM_MODEL_LEADERBOARD.md` + `docs/LLM_MODEL_LEADERBOARD.json` + `docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl` + `docs/LLM_MODEL_LEADERBOARD_TRENDS.md` | `tests/llm_model_matrix.sh` + `.github/workflows/llm-model-matrix.yml` |
 | stable release notes and changelog maintenance | `docs/RELEASE_NOTES_v1.0.0.md` + `CHANGELOG.md` | release workflow discipline |

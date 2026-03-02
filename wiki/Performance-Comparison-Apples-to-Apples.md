@@ -4,14 +4,19 @@
 
 I generated this snapshot automatically with `tests/benchmark_apples_to_apples.sh`.
 
-- generated_utc: `2026-03-02T15:11:39Z`
+- generated_utc: `2026-03-02T15:28:56Z`
 - host: `SimonsLaptop`
 - kernel: `Linux 6.17.0-14-generic x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
-- build iterations per kernel: `80`
-- runtime iterations per run: `5000000`
-- runtime repeats per kernel: `3 (median)`
+- cpu_model: `11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz`
+- cpu_topology: `CPU(s)=16 Thread(s) per core=2 Core(s) per socket=8 Socket(s)=1`
+- cpu_affinity: `0`
+- build iterations per sample: `80`
+- build samples per kernel: `3`
+- runtime iterations per sample: `5000000`
+- runtime samples per kernel: `5`
+- warmup runs per kernel: `1`
 
 ## Method
 
@@ -19,32 +24,34 @@ I compare multiple equivalent `f0(uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,u
 - L0: each listed fixture built via `l0c build-elf`
 - GCC: generated equivalent C function built with `gcc -O2 -c`
 - Runtime harness: same assembly `_start` loop calling `f0` with fixed args for both variants
-- Runtime metric: median of 3 runs in Mops/s
-- Build metric: repeated object build throughput (ops/s)
+- Runtime metric: median Mops/s across samples + CI95 on sample mean
+- Build metric: median build throughput (ops/s) across samples
+- Machine-readable artifact: `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json`
 
 ## Per-Kernel Results
 
-| Kernel | L0 fixture | Build ops/s L0 | Build ops/s GCC | Build ratio L0/GCC | Runtime Mops/s L0 | Runtime Mops/s GCC | Runtime ratio L0/GCC |
+| Kernel | L0 fixture | Build ops/s L0 (median) | Build ops/s GCC (median) | Build ratio L0/GCC | Runtime Mops/s L0 (median ± CI95) | Runtime Mops/s GCC (median ± CI95) | Runtime ratio L0/GCC |
 |---|---|---:|---:|---:|---:|---:|---:|
-| add.wrap (2-arg) | `tests/valid_add_v7.l0` | 2162 | 95 | 22.7579 | 766.41 | 783.63 | 0.9780 |
-| sub.wrap (2-arg) | `tests/valid_sub.l0` | 243 | 92 | 2.6413 | 763.18 | 787.74 | 0.9688 |
-| mul.wrap (2-arg) | `tests/valid_mul.l0` | 2758 | 96 | 28.7292 | 784.23 | 779.26 | 1.0064 |
-| and (2-arg) | `tests/valid_and.l0` | 2758 | 96 | 28.7292 | 759.23 | 815.06 | 0.9315 |
-| xor (2-arg) | `tests/valid_xor.l0` | 2758 | 96 | 28.7292 | 757.64 | 772.29 | 0.9810 |
-| cbr select (eq ? a : b) | `tests/valid_cbr_eq_select_v7.l0` | 2758 | 97 | 28.4330 | 782.19 | 765.06 | 1.0224 |
-| memory roundtrip | `tests/valid_mem_roundtrip_v7.l0` | 2857 | 92 | 31.0543 | 780.56 | 713.94 | 1.0933 |
-| call add (f0->f1) | `tests/valid_call_add_v7_lowered.l0` | 404 | 95 | 4.2526 | 757.41 | 778.26 | 0.9732 |
-| sum6 sysv | `tests/valid_sysv_abi_sum6_lowered.l0` | 2758 | 93 | 29.6559 | 717.82 | 687.74 | 1.0437 |
+| add.wrap (2-arg) | `tests/valid_add_v7.l0` | 1355.0000 | 95.0000 | 14.2632 | 737.7243 ± 12.9004 | 740.4371 ± 12.1503 | 0.9963 |
+| sub.wrap (2-arg) | `tests/valid_sub.l0` | 1355.0000 | 91.0000 | 14.8901 | 728.8324 ± 27.5848 | 735.3080 ± 19.5391 | 0.9912 |
+| mul.wrap (2-arg) | `tests/valid_mul.l0` | 1333.0000 | 94.0000 | 14.1809 | 717.7176 ± 14.4819 | 716.3751 ± 19.9613 | 1.0019 |
+| and (2-arg) | `tests/valid_and.l0` | 1290.0000 | 94.0000 | 13.7234 | 466.1507 ± 11.2975 | 478.6133 ± 52.6544 | 0.9740 |
+| xor (2-arg) | `tests/valid_xor.l0` | 1355.0000 | 95.0000 | 14.2632 | 719.4361 ± 11.3644 | 745.6668 ± 12.5548 | 0.9648 |
+| cbr select (eq ? a : b) | `tests/valid_cbr_eq_select_v7.l0` | 1290.0000 | 94.0000 | 13.7234 | 731.5897 ± 14.9997 | 710.4339 ± 17.4146 | 1.0298 |
+| memory roundtrip | `tests/valid_mem_roundtrip_v7.l0` | 1355.0000 | 96.0000 | 14.1146 | 738.4774 ± 16.5739 | 724.3992 ± 11.3917 | 1.0194 |
+| call add (f0->f1) | `tests/valid_call_add_v7_lowered.l0` | 1333.0000 | 93.0000 | 14.3333 | 730.6592 ± 12.3080 | 759.3503 ± 17.2142 | 0.9622 |
+| sum6 sysv | `tests/valid_sysv_abi_sum6_lowered.l0` | 1311.0000 | 92.0000 | 14.2500 | 633.7817 ± 15.7434 | 635.0387 ± 27.8923 | 0.9980 |
 
 ## Aggregate
 
 | Metric | Value |
 |---|---:|
-| Geometric mean build ratio (L0/GCC) | 17.5596 |
-| Geometric mean runtime ratio (L0/GCC) | 0.9988 |
+| Geometric mean build ratio (L0/GCC) | 14.1898 |
+| Geometric mean runtime ratio (L0/GCC) | 0.9928 |
 
 ## Interpretation
 
 - This matrix is tighter than process-I/O comparisons because both variants use the same loop harness per kernel.
 - Runtime ratio near 1.0 means parity; >1.0 favors L0; <1.0 favors GCC.
+- CI95 is reported to make run-to-run variability explicit.
 - Build ratio reflects compiler throughput, not generated-code quality.

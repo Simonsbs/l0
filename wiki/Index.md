@@ -48,6 +48,7 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `docs/TOOLCHAIN_POLICY.md`
 - `docs/PERFORMANCE_COMPARISON.md`
 - `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
+- `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json`
 - `SECURITY.md`
 - `CHANGELOG.md`
 
