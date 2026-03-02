@@ -1,0 +1,3 @@
+Generate canonical L0 module.
+Task: function f0 takes one i1 arg and returns arg0 if true else 0 using cbr/blocks.
+Return only valid canonical L0 source.

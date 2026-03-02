@@ -27,6 +27,8 @@ Command-Reference.md|docs/COMMAND_REFERENCE.md
 Examples-Catalog.md|docs/EXAMPLES_CATALOG.md
 Coverage-Matrix.md|docs/COVERAGE_MATRIX.md
 LLM-Quick-Reference.md|docs/LLM_QUICK_REFERENCE.md
+LLM-Usability-Benchmark.md|docs/LLM_USABILITY_BENCHMARK.md
+LLM-Benchmark-Results.md|docs/LLM_BENCHMARK_RESULTS.md
 Grammar-and-Typing.md|docs/GRAMMAR_AND_TYPING.md
 LLM-Prompt-Pack.md|docs/LLM_PROMPT_PACK.md
 Opcode-Examples.md|docs/OPCODE_EXAMPLES.md

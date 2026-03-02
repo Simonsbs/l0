@@ -1,0 +1,3 @@
+Generate canonical L0 module.
+Task: f0 takes two i64 args, calls f1, returns result; f1 adds its two i64 args with add.wrap.
+Return only valid canonical L0 source.

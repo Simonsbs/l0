@@ -1,0 +1,3 @@
+Generate canonical L0 module.
+Task: function f0 takes one i64 arg, stores to alloca, loads it, and returns loaded value.
+Return only valid canonical L0 source.

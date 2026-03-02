@@ -96,6 +96,9 @@ required_refs=(
   docs/RELEASE_NOTES_v1.0.0.md
   docs/PERFORMANCE_COMPARISON.md
   docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
+  docs/LLM_USABILITY_BENCHMARK.md
+  docs/LLM_BENCHMARK_RESULTS.md
+  docs/LLM_BENCHMARK_RESULTS.json
   SECURITY.md
   CHANGELOG.md
   tests/verifier_matrix.sh
@@ -108,7 +111,9 @@ required_refs=(
   tests/ci_smoke_bench.sh
   tests/benchmark_compare.sh
   tests/benchmark_apples_to_apples.sh
+  tests/llm_usability_bench.sh
   .github/workflows/performance.yml
+  .github/workflows/llm-benchmark.yml
   tests/docs_links.sh
   tests/docs_headings.sh
   tests/docs_index.sh

@@ -58,6 +58,9 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `docs/COVERAGE_MATRIX.md`
 - `docs/LLM_DOC_INDEX.md`
 - `docs/LLM_DOC_INDEX.json`
+- `docs/LLM_USABILITY_BENCHMARK.md`
+- `docs/LLM_BENCHMARK_RESULTS.md`
+- `docs/LLM_BENCHMARK_RESULTS.json`
 
 ## Frozen v1 Contract Set
 

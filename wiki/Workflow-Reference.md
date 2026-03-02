@@ -311,6 +311,22 @@ Expected stable output:
 - `ok`
 - refreshed `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
 
+## Workflow 18: LLM Usability and Token-Efficiency Benchmark
+
+I use this when I want deterministic usability/token-efficiency metrics for L0 in LLM workflows.
+
+```sh
+make
+bash tests/llm_usability_bench.sh ./bin/l0c . reference \
+  docs/LLM_BENCHMARK_RESULTS.json \
+  docs/LLM_BENCHMARK_RESULTS.md
+```
+
+Expected stable output:
+- `ok`
+- refreshed `docs/LLM_BENCHMARK_RESULTS.json`
+- refreshed `docs/LLM_BENCHMARK_RESULTS.md`
+
 ## Workflow 14: Deterministic Build Contract Gate
 
 I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.

@@ -102,6 +102,7 @@ I enforce documentation integrity with:
 | nightly/tag full performance regression gate | `docs/PERFORMANCE_BASELINES.md` | `.github/workflows/performance.yml` + `tests/performance_gates.sh` |
 | local comparison snapshot vs host compiler(s) | `docs/PERFORMANCE_COMPARISON.md` | `tests/benchmark_compare.sh` |
 | apples-to-apples function/harness comparison snapshot | `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md` | `tests/benchmark_apples_to_apples.sh` |
+| LLM usability and token-efficiency benchmark | `docs/LLM_USABILITY_BENCHMARK.md` + `docs/LLM_BENCHMARK_RESULTS.md` + `docs/LLM_BENCHMARK_RESULTS.json` | `tests/llm_usability_bench.sh` + `.github/workflows/llm-benchmark.yml` |
 | stable release notes and changelog maintenance | `docs/RELEASE_NOTES_v1.0.0.md` + `CHANGELOG.md` | release workflow discipline |
 
 ## Contract Gate Mapping
@@ -117,5 +118,6 @@ I enforce documentation integrity with:
 - CI smoke benchmark baseline: `tests/ci_smoke_bench.sh`
 - comparative benchmark snapshot: `tests/benchmark_compare.sh`
 - apples-to-apples benchmark snapshot: `tests/benchmark_apples_to_apples.sh`
+- LLM usability/token-efficiency benchmark: `tests/llm_usability_bench.sh`
 
 These are wired into `tests/run.sh` and therefore enforced by `make test`.

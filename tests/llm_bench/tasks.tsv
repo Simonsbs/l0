@@ -1,0 +1,7 @@
+# id|prompt|expected_l0|baseline_c|run_args|expected_stdout
+t01_add|tests/llm_bench/prompts/t01_add.txt|docs/examples/01_arithmetic_add_wrap.l0|tests/llm_bench/baseline_c/t01_add.c|5 8|13
+t02_icmp_eq|tests/llm_bench/prompts/t02_icmp_eq.txt|docs/examples/02_compare_icmp_eq.l0|tests/llm_bench/baseline_c/t02_icmp_eq.c|7 7|1
+t03_cbr_select|tests/llm_bench/prompts/t03_cbr_select.txt|docs/examples/03_control_cbr_select.l0|tests/llm_bench/baseline_c/t03_cbr_select.c|1|1
+t04_mem_roundtrip|tests/llm_bench/prompts/t04_mem_roundtrip.txt|docs/examples/04_memory_roundtrip.l0|tests/llm_bench/baseline_c/t04_mem_roundtrip.c|42|42
+t05_call_add|tests/llm_bench/prompts/t05_call_add.txt|docs/examples/06_call_add_two_function.l0|tests/llm_bench/baseline_c/t05_call_add.c|5 8|13
+t06_sysv_sum6|tests/llm_bench/prompts/t06_sysv_sum6.txt|docs/examples/18_sysv_abi_sum6_kernel.l0|tests/llm_bench/baseline_c/t06_sysv_sum6.c|1 2 3 4 5 6|21

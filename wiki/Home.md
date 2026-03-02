@@ -53,6 +53,8 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [Performance-Comparison-Apples-to-Apples](Performance-Comparison-Apples-to-Apples)
 - [Release-Notes-v1.0.0](Release-Notes-v1.0.0)
 - [Governance](Governance)
+- [LLM-Usability-Benchmark](LLM-Usability-Benchmark)
+- [LLM-Benchmark-Results](LLM-Benchmark-Results)
 - [Grammar-and-Typing](Grammar-and-Typing)
 - [LLM-Prompt-Pack](LLM-Prompt-Pack)
 - [Index](Index)

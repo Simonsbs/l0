@@ -202,6 +202,9 @@ Current bootstrap status:
 - LLM quick reference: `docs/LLM_QUICK_REFERENCE.md`
 - Grammar and typing reference: `docs/GRAMMAR_AND_TYPING.md`
 - LLM prompt pack: `docs/LLM_PROMPT_PACK.md`
+- LLM usability benchmark methodology: `docs/LLM_USABILITY_BENCHMARK.md`
+- LLM usability benchmark results: `docs/LLM_BENCHMARK_RESULTS.md`
+- LLM usability benchmark data: `docs/LLM_BENCHMARK_RESULTS.json`
 - Opcode and terminator examples: `docs/OPCODE_EXAMPLES.md`
 - LLM docs index reference: `docs/LLM_DOC_INDEX.md`
 - LLM machine-readable docs index: `docs/LLM_DOC_INDEX.json`
@@ -245,6 +248,7 @@ Current bootstrap status:
 - CI smoke benchmark harness: `tests/ci_smoke_bench.sh`
 - Comparative benchmark harness: `tests/benchmark_compare.sh`
 - Apples-to-apples benchmark harness: `tests/benchmark_apples_to_apples.sh`
+- LLM usability/token-efficiency benchmark harness: `tests/llm_usability_bench.sh`
 - Docs/wiki sync harness: `tests/wiki_sync.sh`
 - Docs coverage harness: `tests/docs_coverage.sh`
 - Docs links harness: `tests/docs_links.sh`
