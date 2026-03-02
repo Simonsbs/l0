@@ -193,3 +193,36 @@ Expected stable outputs:
 - `imgcheck`: `ok`
 - `imgmeta` contains: `kernel_kind 32`, `code_size 19`
 - `run ... 1 2 3 4 5 6` prints: `21`
+
+## Workflow 10: ELF Object Path End-to-End
+
+I use this when I want to emit a relocatable ELF object and link it with a minimal native harness.
+
+```sh
+./bin/l0c verify docs/examples/18_sysv_abi_sum6_kernel.l0
+./bin/l0c build-elf docs/examples/18_sysv_abi_sum6_kernel.l0 /tmp/l0_wf_sum6.o
+cat >/tmp/l0_wf_sum6_harness.s <<'EOF'
+.intel_syntax noprefix
+.global _start
+.extern f0
+_start:
+  mov rdi, 1
+  mov rsi, 2
+  mov rdx, 3
+  mov rcx, 4
+  mov r8, 5
+  mov r9, 6
+  call f0
+  mov rdi, rax
+  mov rax, 60
+  syscall
+EOF
+as --64 -o /tmp/l0_wf_sum6_harness.o /tmp/l0_wf_sum6_harness.s
+ld -o /tmp/l0_wf_sum6_exec /tmp/l0_wf_sum6_harness.o /tmp/l0_wf_sum6.o
+/tmp/l0_wf_sum6_exec ; echo $?
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `build-elf`: `ok`
+- linked executable exit status: `21`

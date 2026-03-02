@@ -139,7 +139,8 @@ Current bootstrap status:
 - I now consider my M56 SSA join and merge lowering milestone complete: I added lowering for canonical branch/store/join/ld merge CFG modules and preserved strict fallback guardrails for unsupported join-return mappings.
 - I now consider my M57 register allocation generalization milestone complete: I added a deterministic spill/reload stress lowering path, dead-const-normalized coverage, and strict fallback guardrails for unsupported stress-shape mappings.
 - I now consider my M58 SysV AMD64 ABI completeness milestone complete: I added deterministic 3-6 argument SysV entry-kernel lowering coverage, wired `run` argument passing across all six SysV integer argument registers, and locked an ABI-focused runtime fixture matrix.
-- I track my next milestone as M59: object output path (ELF) v1.
+- I now consider my M59 object output path (ELF) v1 milestone complete: I added native deterministic ELF64 relocatable object emission with a global `f0` symbol and locked link-and-run checks in the test suite.
+- I track my next milestone as M60: runtime intrinsic contract freeze v1.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -202,6 +203,7 @@ make
 ./bin/l0c build <module.l0> <out.l0img> --trace-schema <trace_schema.bin>
 ./bin/l0c build <module.l0> <out.l0img> --debug-map <debug_map.bin>
 ./bin/l0c build <module.l0> <out.l0img> --trace-schema <trace_schema.bin> --debug-map <debug_map.bin>
+./bin/l0c build-elf <module.l0> <out.o>
 ./bin/l0c imgcheck <out.l0img>
 ./bin/l0c imgmeta <out.l0img>
 ./bin/l0c run <out.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]

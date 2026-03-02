@@ -902,11 +902,23 @@ Last updated: 2026-03-02
 
 ### M59: Object Output Path (ELF) v1
 
-- Status: planned
-- Planned (measurable):
-  - add ELF object emission path alongside current image output path
-  - add deterministic object metadata checks
-  - acceptance: ELF fixtures link and run in scripted checks with deterministic outputs
+- Status: complete
+- Scope completed:
+  - added native ELF object emission command:
+    - `l0c build-elf <input.l0> <out.o>`
+  - implemented deterministic ELF64 relocatable writer in the bootstrap compiler:
+    - emits `.text`, `.symtab`, `.strtab`, `.shstrtab`
+    - exports global function symbol `f0`
+  - reused existing generalized selector chain for object emission so lowered code parity is maintained across image and object output paths
+  - added deterministic metadata/object checks:
+    - ELF magic/type/machine assertions in scripted tests
+    - repeat-build byte-for-byte determinism assertion
+  - added link-and-run coverage with native harnesses:
+    - 3-arg object fixture linked and executed
+    - 6-arg object fixture linked and executed
+  - acceptance:
+    - ELF fixtures link and run in scripted checks with deterministic outputs
+    - full suite passes under `make test`
 
 ### M60: Runtime Intrinsic Contract Freeze v1
 

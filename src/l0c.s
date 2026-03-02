@@ -14,6 +14,7 @@
 .lcomm tracejoin_map_path_ptr, 8
 .lcomm num_buf, 32
 .lcomm codegen_buf, 65536
+.lcomm elf_obj_buf, 131072
 .lcomm codegen_len, 8
 .lcomm img_header_buf, 80
 .lcomm img_debug_idx_buf, 64
@@ -50,7 +51,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin> | l0c tracejoin <trace.bin> <debug_map.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build-elf <input.l0> <out.o> | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin> | l0c tracejoin <trace.bin> <debug_map.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -76,6 +77,7 @@ err_run_arg_len = . - err_run_arg_msg
 cmd_canon: .ascii "canon\0"
 cmd_verify: .ascii "verify\0"
 cmd_build: .ascii "build\0"
+cmd_build_elf: .ascii "build-elf\0"
 flag_o: .ascii "-o\0"
 flag_trace_schema: .ascii "--trace-schema\0"
 flag_debug_map: .ascii "--debug-map\0"
@@ -540,6 +542,10 @@ tok_const: .ascii "const"
 tok_const_len = . - tok_const
 tok_icmp_eq: .ascii "icmp.eq"
 tok_icmp_eq_len = . - tok_icmp_eq
+elf_strtab_f0: .ascii "\0f0\0"
+elf_strtab_f0_len = . - elf_strtab_f0
+elf_shstrtab: .ascii "\0.text\0.symtab\0.strtab\0.shstrtab\0"
+elf_shstrtab_len = . - elf_shstrtab
 
 .section .text
 .global _start
@@ -586,7 +592,7 @@ _start:
     mov rdi, r14
     call str_eq
     cmp rax, 1
-    jne .check_imgcheck
+    jne .check_build_elf
     mov qword ptr [rip+trace_schema_out_path_ptr], 0
     mov qword ptr [rip+debug_map_out_path_ptr], 0
     cmp r13, 4
@@ -759,6 +765,18 @@ _start:
     mov r11, [r12+72]
     mov qword ptr [rip+trace_schema_out_path_ptr], r11
     jmp do_build
+
+.check_build_elf:
+    lea rsi, [rip+cmd_build_elf]
+    mov rdi, r14
+    call str_eq
+    cmp rax, 1
+    jne .check_imgcheck
+    cmp r13, 4
+    jne usage
+    mov r11, [r12+32]         # argv[3] output path
+    mov qword ptr [rip+out_path_ptr], r11
+    jmp do_build_elf
 
 .check_imgcheck:
     lea rsi, [rip+cmd_imgcheck]
@@ -1625,6 +1643,301 @@ do_build:
     jmp fail_build
 
 .build_write_fail:
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp fail_build
+
+do_build_elf:
+    mov rdi, r15
+    call load_file
+    cmp rax, 0
+    jl fail_io
+    mov rbx, rax
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call validate_module
+    cmp rax, 1
+    jne fail_parse
+
+    lea r14, [rip+code_stub_ret]
+    mov r15, code_stub_ret_len
+    mov qword ptr [rip+build_kernel_kind], 0
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_trace_noop_kernel_code
+    cmp rax, 1
+    jne .belf_try_write_newline
+    jmp .belf_code_selected
+
+.belf_try_write_newline:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_write_newline_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_exit
+    jmp .belf_code_selected
+
+.belf_try_general_exit:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_exit_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_malloc
+    jmp .belf_code_selected
+
+.belf_try_general_malloc:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_malloc_kernel_code
+    cmp rax, 1
+    jne .belf_try_free_noop
+    jmp .belf_code_selected
+
+.belf_try_free_noop:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_free_noop_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_call
+    jmp .belf_code_selected
+
+.belf_try_general_call:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_call_kernel_code
+    cmp rax, 1
+    jne .belf_try_mem_gep_roundtrip
+    jmp .belf_code_selected
+
+.belf_try_mem_gep_roundtrip:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_mem_gep_roundtrip_kernel_code
+    cmp rax, 1
+    jne .belf_try_mem_roundtrip
+    jmp .belf_code_selected
+
+.belf_try_mem_roundtrip:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_mem_roundtrip_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_branch_identity
+    jmp .belf_code_selected
+
+.belf_try_general_branch_identity:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_branch_identity_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_branch_const_select
+    jmp .belf_code_selected
+
+.belf_try_general_branch_const_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_branch_const_select_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_merge_mem_select
+    jmp .belf_code_selected
+
+.belf_try_general_merge_mem_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_merge_mem_select_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_cbr_eq_select
+    jmp .belf_code_selected
+
+.belf_try_general_cbr_eq_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_cbr_eq_select_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_icmp_eq
+    jmp .belf_code_selected
+
+.belf_try_general_icmp_eq:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_icmp_eq_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_spill_stress
+    jmp .belf_code_selected
+
+.belf_try_general_spill_stress:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_spill_stress_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_sysv_abi_sum
+    jmp .belf_code_selected
+
+.belf_try_general_sysv_abi_sum:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_sysv_abi_sum_kernel_code
+    cmp rax, 1
+    jne .belf_try_general_bin
+    jmp .belf_code_selected
+
+.belf_try_general_bin:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_bin_kernel_code
+    cmp rax, 1
+    jne .belf_try_const_kernel
+    jmp .belf_code_selected
+
+.belf_try_const_kernel:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_const_kernel_code
+    cmp rax, 1
+    jne .belf_code_selected
+    lea r14, [rip+codegen_buf]
+    mov r15, qword ptr [rip+codegen_len]
+    mov qword ptr [rip+build_kernel_kind], 13
+
+.belf_code_selected:
+    # ELF64 relocatable object layout:
+    # [Ehdr][.text][.symtab][.strtab][.shstrtab][Shdr table]
+    mov r8, 64                    # .text offset
+    mov r9, r8
+    add r9, r15
+    add r9, 7
+    and r9, -8                    # .symtab offset (8-byte aligned)
+    mov r10, r9
+    add r10, 72                   # .strtab offset
+    mov r11, r10
+    add r11, elf_strtab_f0_len    # .shstrtab offset
+    mov r12, r11
+    add r12, elf_shstrtab_len
+    add r12, 7
+    and r12, -8                   # section-header table offset
+    mov r13, r12
+    add r13, 320                  # 5 * 64-byte section headers
+
+    lea rdi, [rip+elf_obj_buf]
+    xor eax, eax
+    mov rcx, r13
+    rep stosb
+
+    lea rbp, [rip+elf_obj_buf]
+    mov rax, 0x00010102464c457f
+    mov qword ptr [rbp+0], rax
+    mov qword ptr [rbp+8], 0
+    mov word ptr [rbp+16], 1      # ET_REL
+    mov word ptr [rbp+18], 62     # EM_X86_64
+    mov dword ptr [rbp+20], 1     # EV_CURRENT
+    mov qword ptr [rbp+24], 0
+    mov qword ptr [rbp+32], 0
+    mov qword ptr [rbp+40], r12
+    mov dword ptr [rbp+48], 0
+    mov word ptr [rbp+52], 64
+    mov word ptr [rbp+54], 0
+    mov word ptr [rbp+56], 0
+    mov word ptr [rbp+58], 64
+    mov word ptr [rbp+60], 5
+    mov word ptr [rbp+62], 4
+
+    lea rdi, [rip+elf_obj_buf]
+    add rdi, 64
+    mov rsi, r14
+    mov rcx, r15
+    rep movsb
+
+    lea rdi, [rip+elf_obj_buf]
+    add rdi, r10
+    lea rsi, [rip+elf_strtab_f0]
+    mov rcx, elf_strtab_f0_len
+    rep movsb
+
+    lea rdi, [rip+elf_obj_buf]
+    add rdi, r11
+    lea rsi, [rip+elf_shstrtab]
+    mov rcx, elf_shstrtab_len
+    rep movsb
+
+    lea rbp, [rip+elf_obj_buf]
+    add rbp, r9                   # symtab base
+    mov byte ptr [rbp+28], 3      # STT_SECTION local
+    mov word ptr [rbp+30], 1      # .text section index
+    mov dword ptr [rbp+48], 1     # st_name = "f0"
+    mov byte ptr [rbp+52], 18     # STB_GLOBAL | STT_FUNC
+    mov word ptr [rbp+54], 1      # .text section index
+    mov qword ptr [rbp+64], r15   # function size
+
+    lea rbp, [rip+elf_obj_buf]
+    add rbp, r12                  # section-header table base
+    # shdr[1] .text
+    mov dword ptr [rbp+64], 1     # sh_name
+    mov dword ptr [rbp+68], 1     # SHT_PROGBITS
+    mov qword ptr [rbp+72], 6     # SHF_ALLOC|SHF_EXECINSTR
+    mov qword ptr [rbp+80], 0
+    mov qword ptr [rbp+88], r8
+    mov qword ptr [rbp+96], r15
+    mov dword ptr [rbp+104], 0
+    mov dword ptr [rbp+108], 0
+    mov qword ptr [rbp+112], 16
+    mov qword ptr [rbp+120], 0
+    # shdr[2] .symtab
+    mov dword ptr [rbp+128], 7
+    mov dword ptr [rbp+132], 2    # SHT_SYMTAB
+    mov qword ptr [rbp+136], 0
+    mov qword ptr [rbp+144], 0
+    mov qword ptr [rbp+152], r9
+    mov qword ptr [rbp+160], 72
+    mov dword ptr [rbp+168], 3    # link -> .strtab
+    mov dword ptr [rbp+172], 2    # first non-local symbol index
+    mov qword ptr [rbp+176], 8
+    mov qword ptr [rbp+184], 24
+    # shdr[3] .strtab
+    mov dword ptr [rbp+192], 15
+    mov dword ptr [rbp+196], 3    # SHT_STRTAB
+    mov qword ptr [rbp+200], 0
+    mov qword ptr [rbp+208], 0
+    mov qword ptr [rbp+216], r10
+    mov qword ptr [rbp+224], elf_strtab_f0_len
+    mov dword ptr [rbp+232], 0
+    mov dword ptr [rbp+236], 0
+    mov qword ptr [rbp+240], 1
+    mov qword ptr [rbp+248], 0
+    # shdr[4] .shstrtab
+    mov dword ptr [rbp+256], 23
+    mov dword ptr [rbp+260], 3    # SHT_STRTAB
+    mov qword ptr [rbp+264], 0
+    mov qword ptr [rbp+272], 0
+    mov qword ptr [rbp+280], r11
+    mov qword ptr [rbp+288], elf_shstrtab_len
+    mov dword ptr [rbp+296], 0
+    mov dword ptr [rbp+300], 0
+    mov qword ptr [rbp+304], 1
+    mov qword ptr [rbp+312], 0
+
+    mov rdi, qword ptr [rip+out_path_ptr]
+    mov rax, 2
+    mov rsi, 577
+    mov rdx, 420
+    syscall
+    test rax, rax
+    js fail_build
+    mov r10, rax
+
+    mov rdi, r10
+    lea rsi, [rip+elf_obj_buf]
+    mov rdx, r13
+    call write_all
+    cmp rax, 0
+    jne .belf_write_fail
+
+    mov rdi, r10
+    mov rax, 3
+    syscall
+    jmp .build_emit_ok
+
+.belf_write_fail:
     mov rdi, r10
     mov rax, 3
     syscall

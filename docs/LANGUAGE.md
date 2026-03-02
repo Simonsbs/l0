@@ -162,6 +162,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> <out.l0img> --trace-schema <out.bin>`
 - `l0c build <input.l0> <out.l0img> --debug-map <out.bin>`
 - `l0c build <input.l0> <out.l0img> --trace-schema <out.bin> --debug-map <out.bin>`
+- `l0c build-elf <input.l0> <out.o>`
 - `l0c imgcheck <out.l0img>`
 - `l0c imgmeta <out.l0img>`
 - `l0c run <out.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]`

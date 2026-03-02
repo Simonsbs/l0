@@ -3009,6 +3009,86 @@ if [ "$sysv_abi_sum6_guardrail_kernel_kind" != "0" ]; then
   echo "FAIL: sysv abi sum6 guardrail expected fallback kernel kind 0"
   exit 1
 fi
+"$BIN" build-elf "$ROOT/tests/valid_sysv_abi_sum3_lowered.l0" /tmp/l0_test_sysv_abi_sum3.o >/tmp/l0_buildelf_sysv_abi_sum3.out
+if ! grep -q '^ok$' /tmp/l0_buildelf_sysv_abi_sum3.out; then
+  echo "FAIL: build-elf valid_sysv_abi_sum3_lowered"
+  exit 1
+fi
+if [ "$(od -An -t x1 -N 4 /tmp/l0_test_sysv_abi_sum3.o | tr -d ' \n')" != "7f454c46" ]; then
+  echo "FAIL: build-elf sum3 missing ELF magic"
+  exit 1
+fi
+if [ "$(od -An -t u2 -j 16 -N 2 /tmp/l0_test_sysv_abi_sum3.o | tr -d ' ')" != "1" ]; then
+  echo "FAIL: build-elf sum3 wrong ELF type"
+  exit 1
+fi
+if [ "$(od -An -t u2 -j 18 -N 2 /tmp/l0_test_sysv_abi_sum3.o | tr -d ' ')" != "62" ]; then
+  echo "FAIL: build-elf sum3 wrong ELF machine"
+  exit 1
+fi
+cat > /tmp/l0_m59_sysv3_harness.s <<'EOF'
+.intel_syntax noprefix
+.global _start
+.extern f0
+_start:
+  mov rdi, 1
+  mov rsi, 2
+  mov rdx, 3
+  call f0
+  mov rdi, rax
+  mov rax, 60
+  syscall
+EOF
+as --64 -o /tmp/l0_m59_sysv3_harness.o /tmp/l0_m59_sysv3_harness.s
+ld -o /tmp/l0_m59_sysv3_exec /tmp/l0_m59_sysv3_harness.o /tmp/l0_test_sysv_abi_sum3.o
+set +e
+/tmp/l0_m59_sysv3_exec
+sysv3_status=$?
+set -e
+if [ "$sysv3_status" != "6" ]; then
+  echo "FAIL: linked ELF sum3 runtime result"
+  exit 1
+fi
+"$BIN" build-elf "$ROOT/tests/valid_sysv_abi_sum6_lowered.l0" /tmp/l0_test_sysv_abi_sum6.o >/tmp/l0_buildelf_sysv_abi_sum6.out
+if ! grep -q '^ok$' /tmp/l0_buildelf_sysv_abi_sum6.out; then
+  echo "FAIL: build-elf valid_sysv_abi_sum6_lowered"
+  exit 1
+fi
+"$BIN" build-elf "$ROOT/tests/valid_sysv_abi_sum6_lowered.l0" /tmp/l0_test_sysv_abi_sum6_second.o >/tmp/l0_buildelf_sysv_abi_sum6_second.out
+if ! grep -q '^ok$' /tmp/l0_buildelf_sysv_abi_sum6_second.out; then
+  echo "FAIL: build-elf valid_sysv_abi_sum6_lowered second build"
+  exit 1
+fi
+if ! cmp -s /tmp/l0_test_sysv_abi_sum6.o /tmp/l0_test_sysv_abi_sum6_second.o; then
+  echo "FAIL: build-elf sum6 output is not deterministic"
+  exit 1
+fi
+cat > /tmp/l0_m59_sysv6_harness.s <<'EOF'
+.intel_syntax noprefix
+.global _start
+.extern f0
+_start:
+  mov rdi, 1
+  mov rsi, 2
+  mov rdx, 3
+  mov rcx, 4
+  mov r8, 5
+  mov r9, 6
+  call f0
+  mov rdi, rax
+  mov rax, 60
+  syscall
+EOF
+as --64 -o /tmp/l0_m59_sysv6_harness.o /tmp/l0_m59_sysv6_harness.s
+ld -o /tmp/l0_m59_sysv6_exec /tmp/l0_m59_sysv6_harness.o /tmp/l0_test_sysv_abi_sum6.o
+set +e
+/tmp/l0_m59_sysv6_exec
+sysv6_status=$?
+set -e
+if [ "$sysv6_status" != "21" ]; then
+  echo "FAIL: linked ELF sum6 runtime result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_swapped.l0" /tmp/l0_test_cbr_eq_select_swapped.img >/tmp/l0_build_cbr_eq_select_swapped.out
 if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_swapped.out; then
   echo "FAIL: build valid_cbr_eq_select_swapped"
