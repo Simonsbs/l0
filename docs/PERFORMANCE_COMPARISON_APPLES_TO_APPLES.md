@@ -2,9 +2,9 @@
 
 I generated this snapshot automatically with `tests/benchmark_apples_to_apples.sh`.
 
-- generated_utc: `2026-03-02T13:51:21Z`
-- host: `SimonsLaptop`
-- kernel: `Linux 6.17.0-14-generic x86_64`
+- generated_utc: `2026-03-02T14:02:24Z`
+- host: `runnervmnay03`
+- kernel: `Linux 6.14.0-1017-azure x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
 - runtime iterations per run: `20000000`
@@ -22,8 +22,8 @@ I compare equivalent `f0(uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,uint64_t)-
 
 | Metric | L0 (`l0c`) | GCC (`-O2`) |
 |---|---:|---:|
-| Build throughput (sum6 object) ops/s | 2727 | 93 |
-| Runtime throughput (sum6 harness) Mops/s | 784.69 | 788.95 |
+| Build throughput (sum6 object) ops/s | 1250 | 60 |
+| Runtime throughput (sum6 harness) Mops/s | 501.81 | 501.09 |
 
 ## Interpretation
 
