@@ -27,18 +27,20 @@ jobs:
       - name: Comparison report
         run: |
           bash tests/benchmark_compare.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON.md
+          bash tests/benchmark_apples_to_apples.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
           cat docs/PERFORMANCE_COMPARISON.md
+          cat docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
 
       - name: Commit updated comparison report
         run: |
           set -euo pipefail
-          if git diff --quiet -- docs/PERFORMANCE_COMPARISON.md; then
+          if git diff --quiet -- docs/PERFORMANCE_COMPARISON.md docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md; then
             echo "No comparison report change."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/PERFORMANCE_COMPARISON.md
+          git add docs/PERFORMANCE_COMPARISON.md docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
           git commit -m "Perf: refresh comparison report"
           git push
 
@@ -48,6 +50,7 @@ jobs:
           name: performance-reports
           path: |
             docs/PERFORMANCE_COMPARISON.md
+            docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
 
   perf-full-observe:
     runs-on: ubuntu-latest

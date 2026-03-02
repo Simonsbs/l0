@@ -95,6 +95,7 @@ required_refs=(
   docs/TOOLCHAIN_POLICY.md
   docs/RELEASE_NOTES_v1.0.0.md
   docs/PERFORMANCE_COMPARISON.md
+  docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
   SECURITY.md
   CHANGELOG.md
   tests/verifier_matrix.sh
@@ -106,6 +107,7 @@ required_refs=(
   tests/toolchain_policy.sh
   tests/ci_smoke_bench.sh
   tests/benchmark_compare.sh
+  tests/benchmark_apples_to_apples.sh
   .github/workflows/performance.yml
   tests/docs_links.sh
   tests/docs_headings.sh

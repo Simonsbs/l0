@@ -217,6 +217,7 @@ Current bootstrap status:
 - Fuzz and malformed-input stress contracts: `docs/FUZZ_STRESS.md`
 - Performance baseline contracts: `docs/PERFORMANCE_BASELINES.md`
 - Performance comparison snapshot: `docs/PERFORMANCE_COMPARISON.md`
+- Apples-to-apples performance comparison snapshot: `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
 - Error model contracts: `docs/ERROR_MODEL.md`
 - Release pipeline contracts: `docs/RELEASE_PIPELINE.md`
 - Compatibility and upgrade policy: `docs/COMPATIBILITY_POLICY.md`
@@ -243,6 +244,7 @@ Current bootstrap status:
 - Toolchain policy harness: `tests/toolchain_policy.sh`
 - CI smoke benchmark harness: `tests/ci_smoke_bench.sh`
 - Comparative benchmark harness: `tests/benchmark_compare.sh`
+- Apples-to-apples benchmark harness: `tests/benchmark_apples_to_apples.sh`
 - Docs/wiki sync harness: `tests/wiki_sync.sh`
 - Docs coverage harness: `tests/docs_coverage.sh`
 - Docs links harness: `tests/docs_links.sh`

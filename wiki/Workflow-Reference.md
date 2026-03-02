@@ -298,6 +298,19 @@ Expected stable output:
 - `ok`
 - refreshed `docs/PERFORMANCE_COMPARISON.md`
 
+## Workflow 17: Apples-to-Apples Benchmark Snapshot
+
+I use this when I want a stricter function-level comparison with the same runtime loop harness.
+
+```sh
+make
+bash tests/benchmark_apples_to_apples.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+- refreshed `docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md`
+
 ## Workflow 14: Deterministic Build Contract Gate
 
 I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.

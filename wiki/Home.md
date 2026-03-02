@@ -50,6 +50,7 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 
 ### Other
 - [Performance-Comparison](Performance-Comparison)
+- [Performance-Comparison-Apples-to-Apples](Performance-Comparison-Apples-to-Apples)
 - [Release-Notes-v1.0.0](Release-Notes-v1.0.0)
 - [Governance](Governance)
 - [Grammar-and-Typing](Grammar-and-Typing)
