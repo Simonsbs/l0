@@ -155,3 +155,23 @@ Expected stable outputs:
 - `imgmeta` contains: `kernel_kind 27`, `code_size 27`
 - `run ... 1` prints: `11`
 - `run ... 0` prints: `22`
+
+## Workflow 8: Spill/Reload Stress Kernel
+
+I use this when I want deterministic spill/reload-path coverage in generalized lowering.
+
+```sh
+./bin/l0c verify docs/examples/17_spill_stress_kernel.l0
+./bin/l0c build docs/examples/17_spill_stress_kernel.l0 /tmp/l0_wf_spill.img
+./bin/l0c imgcheck /tmp/l0_wf_spill.img
+./bin/l0c imgmeta /tmp/l0_wf_spill.img
+./bin/l0c run /tmp/l0_wf_spill.img 7 3
+./bin/l0c run /tmp/l0_wf_spill.img 5 2
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 28`, `code_size 35`
+- `run ... 7 3` prints: `23`
+- `run ... 5 2` prints: `9`

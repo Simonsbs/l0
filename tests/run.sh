@@ -178,6 +178,21 @@ if ! grep -q '^ok$' /tmp/l0_ok_merge_mem_select_guardrail_fallback.out; then
   echo "FAIL: verify valid_merge_mem_select_guardrail_fallback"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_spill_stress_lowered.l0" >/tmp/l0_ok_spill_stress_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_spill_stress_lowered.out; then
+  echo "FAIL: verify valid_spill_stress_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_spill_stress_with_dead_const_general_lowered.l0" >/tmp/l0_ok_spill_stress_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_spill_stress_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_spill_stress_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_spill_stress_guardrail_fallback.l0" >/tmp/l0_ok_spill_stress_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_spill_stress_guardrail_fallback.out; then
+  echo "FAIL: verify valid_spill_stress_guardrail_fallback"
+  exit 1
+fi
 "$BIN" canon "$ROOT/tests/valid_min.l0" -o /tmp/l0_canon_min.l0 >/tmp/l0_canon_min_cmd.out
 if ! grep -q '^ok$' /tmp/l0_canon_min_cmd.out; then
   echo "FAIL: canon -o valid_min"
@@ -2808,6 +2823,59 @@ merge_mem_select_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_merge_
 merge_mem_select_guardrail_kernel_kind=$(od -An -t u8 -j "$((merge_mem_select_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_merge_mem_select_guardrail_fallback.img | tr -d ' ')
 if [ "$merge_mem_select_guardrail_kernel_kind" != "0" ]; then
   echo "FAIL: merge mem-select guardrail expected fallback kernel kind 0"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_spill_stress_lowered.l0" /tmp/l0_test_spill_stress.img >/tmp/l0_build_spill_stress.out
+if ! grep -q '^ok$' /tmp/l0_build_spill_stress.out; then
+  echo "FAIL: build valid_spill_stress_lowered"
+  exit 1
+fi
+spill_stress_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_spill_stress.img | tr -d ' ')
+spill_stress_kernel_kind=$(od -An -t u8 -j "$((spill_stress_dbg_off + 32))" -N 8 /tmp/l0_test_spill_stress.img | tr -d ' ')
+if [ "$spill_stress_kernel_kind" != "28" ]; then
+  echo "FAIL: spill stress kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_spill_stress.img 7 3 >/tmp/l0_run_spill_stress_7_3.out
+if [ "$(tr -d '\n' < /tmp/l0_run_spill_stress_7_3.out)" != "23" ]; then
+  echo "FAIL: run spill stress 7 3 result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_spill_stress.img 5 2 >/tmp/l0_run_spill_stress_5_2.out
+if [ "$(tr -d '\n' < /tmp/l0_run_spill_stress_5_2.out)" != "9" ]; then
+  echo "FAIL: run spill stress 5 2 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_spill_stress_lowered.l0" /tmp/l0_test_spill_stress_map.img --debug-map /tmp/l0_spill_stress_debug_map.bin >/tmp/l0_build_spill_stress_map.out
+if ! grep -q '^ok$' /tmp/l0_build_spill_stress_map.out; then
+  echo "FAIL: build valid_spill_stress_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_spill_stress_debug_map.bin >/tmp/l0_spill_stress_mapcat.out
+if [ "$(cat /tmp/l0_spill_stress_mapcat.out)" != $'entries 4\ncode_size 35\ninst_id 1\nstart 0\nend 16\ninst_id 2\nstart 16\nend 24\ninst_id 3\nstart 24\nend 33\ninst_id 4\nstart 33\nend 35' ]; then
+  echo "FAIL: spill stress debug-map layout"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_spill_stress_with_dead_const_general_lowered.l0" /tmp/l0_test_spill_stress_dead_const.img >/tmp/l0_build_spill_stress_dead_const.out
+if ! grep -q '^ok$' /tmp/l0_build_spill_stress_dead_const.out; then
+  echo "FAIL: build valid_spill_stress_with_dead_const_general_lowered"
+  exit 1
+fi
+spill_stress_dead_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_spill_stress_dead_const.img | tr -d ' ')
+spill_stress_dead_kernel_kind=$(od -An -t u8 -j "$((spill_stress_dead_dbg_off + 32))" -N 8 /tmp/l0_test_spill_stress_dead_const.img | tr -d ' ')
+if [ "$spill_stress_dead_kernel_kind" != "28" ]; then
+  echo "FAIL: spill stress dead-const kernel kind"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_spill_stress_guardrail_fallback.l0" /tmp/l0_test_spill_stress_guardrail_fallback.img >/tmp/l0_build_spill_stress_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_spill_stress_guardrail_fallback.out; then
+  echo "FAIL: build valid_spill_stress_guardrail_fallback"
+  exit 1
+fi
+spill_stress_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_spill_stress_guardrail_fallback.img | tr -d ' ')
+spill_stress_guardrail_kernel_kind=$(od -An -t u8 -j "$((spill_stress_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_spill_stress_guardrail_fallback.img | tr -d ' ')
+if [ "$spill_stress_guardrail_kernel_kind" != "0" ]; then
+  echo "FAIL: spill stress guardrail expected fallback kernel kind 0"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_swapped.l0" /tmp/l0_test_cbr_eq_select_swapped.img >/tmp/l0_build_cbr_eq_select_swapped.out

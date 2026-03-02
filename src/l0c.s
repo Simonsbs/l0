@@ -194,6 +194,8 @@ code_stub_cbr_eq_select: .byte 0x48,0x89,0xf0,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc7
 code_stub_cbr_eq_select_len = . - code_stub_cbr_eq_select
 code_stub_cbr_eq_select_rev: .byte 0x48,0x89,0xf8,0x48,0x39,0xf7,0x48,0x0f,0x44,0xc6,0xc3
 code_stub_cbr_eq_select_rev_len = . - code_stub_cbr_eq_select_rev
+code_stub_spill_stress: .byte 0x55,0x48,0x89,0xe5,0x48,0x83,0xec,0x10,0x48,0x89,0x7d,0xf8,0x48,0x89,0x75,0xf0,0x48,0x8b,0x45,0xf8,0x48,0x03,0x45,0xf0,0x48,0x0f,0xaf,0x45,0xf0,0x48,0x2b,0x45,0xf8,0xc9,0xc3
+code_stub_spill_stress_len = . - code_stub_spill_stress
 code_stub_mem_roundtrip: .byte 0x48,0x83,0xec,0x08,0x48,0x89,0x3c,0x24,0x48,0x8b,0x04,0x24,0x48,0x83,0xc4,0x08,0xc3
 code_stub_mem_roundtrip_len = . - code_stub_mem_roundtrip
 code_stub_malloc: .byte 0x48,0x89,0xfe,0x48,0x31,0xff,0x48,0xc7,0xc0,0x09,0x00,0x00,0x00,0x48,0xc7,0xc2,0x03,0x00,0x00,0x00,0x49,0xc7,0xc2,0x22,0x00,0x00,0x00,0x49,0xc7,0xc0,0xff,0xff,0xff,0xff,0x4d,0x31,0xc9,0x0f,0x05,0xc3
@@ -402,6 +404,8 @@ pat_branch_const_mid_g: .ascii " : t1\n  ret v"
 pat_branch_const_mid_g_len = . - pat_branch_const_mid_g
 pat_branch_const_tail: .ascii "\n}\n"
 pat_branch_const_tail_len = . - pat_branch_const_tail
+pat_spill_stress: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  v3 = mul.wrap v2 v1 : t0\n  v4 = sub.wrap v3 v0 : t0\n  ret v4\n}\n"
+pat_spill_stress_len = . - pat_spill_stress
 pat_merge_mem_head: .ascii "fn f0 (t0)->t1 {\nb0:\n  v"
 pat_merge_mem_head_len = . - pat_merge_mem_head
 pat_merge_mem_mid_a: .ascii " = arg 0 : t0\n  v"
@@ -1034,6 +1038,14 @@ do_build:
     mov rsi, rbx
     call try_select_general_icmp_eq_kernel_code
     cmp rax, 1
+    jne .build_try_general_spill_stress
+    jmp .build_code_selected
+
+.build_try_general_spill_stress:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_spill_stress_kernel_code
+    cmp rax, 1
     jne .build_try_general_bin
     jmp .build_code_selected
 
@@ -1247,6 +1259,8 @@ do_build:
     je .build_dbg_map_case_three_5_16
     cmp rax, 27
     je .build_dbg_map_case_three_5_16
+    cmp rax, 28
+    je .build_dbg_map_case_four_16_24_33
     jmp .build_dbg_map_case_synth
 
 .build_dbg_map_case_single_full:
@@ -1297,6 +1311,22 @@ do_build:
     mov qword ptr [r11+80], 3
     mov qword ptr [r11+88], 16
     mov qword ptr [r11+96], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_four_16_24_33:
+    mov r12, 4
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 16
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 16
+    mov qword ptr [r11+72], 24
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 24
+    mov qword ptr [r11+96], 33
+    mov qword ptr [r11+104], 4
+    mov qword ptr [r11+112], 33
+    mov qword ptr [r11+120], r15
     jmp .build_dbg_map_finish
 
 .build_dbg_map_case_three_3_6:
@@ -1634,9 +1664,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
-    # L0IX kernel kind id must be within known bootstrap range [0,27]
+    # L0IX kernel kind id must be within known bootstrap range [0,28]
     mov rax, qword ptr [r8+r9+32]
-    cmp rax, 27
+    cmp rax, 28
     ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
@@ -1735,7 +1765,7 @@ do_imgmeta:
     cmp rax, 1
     jne fail_img
     mov rax, qword ptr [r8+r9+32]  # kernel kind
-    cmp rax, 27
+    cmp rax, 28
     ja fail_img
     mov rax, qword ptr [r8+r9+40]  # debug code_size
     cmp rax, qword ptr [r8+56]
@@ -13651,6 +13681,92 @@ try_select_general_merge_mem_select_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgmms_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_spill_stress_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_spill_stress_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_spill_stress]
+    mov rcx, pat_spill_stress_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsss_no
+
+    lea r14, [rip+code_stub_spill_stress]
+    mov r15, code_stub_spill_stress_len
+    mov qword ptr [rip+build_kernel_kind], 28
+    mov rax, 1
+    jmp .tsss_done
+
+.tsss_no:
+    xor rax, rax
+.tsss_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsss_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsss_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_spill_stress_kernel_code
+# generalized pre-lowering normalization for spill stress kernel:
+# - removes canonical dead const value lines
+# - reuses spill-stress selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_spill_stress_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgss_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_spill_stress_kernel_code
+    cmp rax, 1
+    jne .tsgss_no
+    mov rax, 1
+    jmp .tsgss_done
+
+.tsgss_no:
+    xor rax, rax
+.tsgss_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgss_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgss_keep_out:
     pop r13
     pop r12
     pop rbx

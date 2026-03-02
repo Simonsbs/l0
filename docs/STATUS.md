@@ -838,11 +838,34 @@ Last updated: 2026-03-02
 
 ### M57: Register Allocation Generalization
 
-- Status: planned
-- Planned (measurable):
-  - extend allocator behavior for broader live-range/spill patterns in generalized lowering
-  - add spill/reload stress fixtures with deterministic runtime checks
-  - acceptance: stress fixtures pass and preserve deterministic image/debug metadata stability
+- Status: complete
+- Scope completed:
+  - added deterministic spill/reload stress lowering path in generalized selector chain:
+    - `try_select_spill_stress_kernel_code`
+    - `try_select_general_spill_stress_kernel_code`
+  - added explicit stack spill/reload style emitted backend payload:
+    - prologue + spill + reload compute + epilogue path
+    - kernel kind `28`, code size `35`
+  - preserved strict fallback guardrails for unsupported stress-shape return mappings
+  - extended debug-map routing with deterministic spill kernel layout:
+    - `inst_id 1: [0,16)`
+    - `inst_id 2: [16,24)`
+    - `inst_id 3: [24,33)`
+    - `inst_id 4: [33,35)`
+  - extended image/meta kernel-kind validation range to include `28`
+  - added deterministic fixtures and assertions:
+    - lowered: `valid_spill_stress_lowered.l0`
+    - lowered (dead-const normalized): `valid_spill_stress_with_dead_const_general_lowered.l0`
+    - guardrail fallback: `valid_spill_stress_guardrail_fallback.l0`
+  - added runnable docs example:
+    - `docs/examples/17_spill_stress_kernel.l0`
+  - integrated checks into `tests/run.sh` (verify/build/run/debug-map/fallback assertions)
+  - updated documentation:
+    - `README.md`
+    - `docs/LANGUAGE.md`
+    - `docs/HOW_TO_WRITE_L0.md`
+    - `docs/WORKFLOWS.md`
+  - validated with full-suite pass
 
 ### M58: SysV AMD64 ABI Completeness
 

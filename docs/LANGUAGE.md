@@ -329,6 +329,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical branch-identity multi-block modules (`cbr vN b1 b2` with both branches returning `vN`) are now directly lowered in bootstrap instead of falling back to the single-byte `ret` stub
     - canonical branch-const-select multi-block modules (`cbr vN b1 b2` with branch-local `const` returns) are now directly lowered in bootstrap, including dead-const-normalized variants, while unsupported branch-return mappings remain strict fallback guardrails
     - canonical merge-memory-select multi-block modules (`cbr` -> branch-local `const` + `st` -> `b3` join `ld` + `ret`) are now directly lowered in bootstrap, including dead-const-normalized variants, while unsupported join-return mappings remain strict fallback guardrails
+    - canonical spill/reload stress modules (multi-op value chains lowered through explicit stack spill/reload style backend paths) are now directly lowered in bootstrap, including dead-const-normalized variants, while unsupported return-mapping shapes remain strict fallback guardrails
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
     - const-return kernels also accept nonzero const-def value ids when the same id is returned (`vN = const ...`, `ret vN`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)

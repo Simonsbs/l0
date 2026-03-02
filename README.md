@@ -137,7 +137,8 @@ Current bootstrap status:
 - I now consider my M54 type-system expansion and closure milestone complete: I added verifier support for struct/array/function type tokens, added deterministic type-form examples, and locked edge-case rejection fixtures in `make test`.
 - I now consider my M55 general CFG lowering v1 milestone complete: I added lowering for canonical multi-block branch-const-select CFG modules and preserved strict fallback guardrails for unsupported return-mapping shapes.
 - I now consider my M56 SSA join and merge lowering milestone complete: I added lowering for canonical branch/store/join/ld merge CFG modules and preserved strict fallback guardrails for unsupported join-return mappings.
-- I track my next milestone as M57: register allocation generalization and spill-path stress coverage for broader generalized lowering shapes.
+- I now consider my M57 register allocation generalization milestone complete: I added a deterministic spill/reload stress lowering path, dead-const-normalized coverage, and strict fallback guardrails for unsupported stress-shape mappings.
+- I track my next milestone as M58: SysV AMD64 ABI completeness with a broader ABI-focused fixture matrix.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
