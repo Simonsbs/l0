@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-as_line="$(as --version | head -n 1)"
-ld_line="$(ld --version | head -n 1)"
-make_line="$(make --version | head -n 1)"
+as_out="$(as --version)"
+ld_out="$(ld --version)"
+make_out="$(make --version)"
+as_line="${as_out%%$'\n'*}"
+ld_line="${ld_out%%$'\n'*}"
+make_line="${make_out%%$'\n'*}"
 
 if ! echo "$as_line" | grep -q '^GNU assembler'; then
   echo "FAIL: toolchain policy requires GNU assembler"
