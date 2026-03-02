@@ -193,6 +193,36 @@ if ! grep -q '^ok$' /tmp/l0_ok_spill_stress_guardrail_fallback.out; then
   echo "FAIL: verify valid_spill_stress_guardrail_fallback"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum3_lowered.l0" >/tmp/l0_ok_sysv_abi_sum3_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum3_lowered.out; then
+  echo "FAIL: verify valid_sysv_abi_sum3_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum4_lowered.l0" >/tmp/l0_ok_sysv_abi_sum4_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum4_lowered.out; then
+  echo "FAIL: verify valid_sysv_abi_sum4_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum5_lowered.l0" >/tmp/l0_ok_sysv_abi_sum5_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum5_lowered.out; then
+  echo "FAIL: verify valid_sysv_abi_sum5_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum6_lowered.l0" >/tmp/l0_ok_sysv_abi_sum6_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum6_lowered.out; then
+  echo "FAIL: verify valid_sysv_abi_sum6_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum6_with_dead_const_general_lowered.l0" >/tmp/l0_ok_sysv_abi_sum6_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum6_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_sysv_abi_sum6_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_sysv_abi_sum6_guardrail_fallback.l0" >/tmp/l0_ok_sysv_abi_sum6_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_sysv_abi_sum6_guardrail_fallback.out; then
+  echo "FAIL: verify valid_sysv_abi_sum6_guardrail_fallback"
+  exit 1
+fi
 "$BIN" canon "$ROOT/tests/valid_min.l0" -o /tmp/l0_canon_min.l0 >/tmp/l0_canon_min_cmd.out
 if ! grep -q '^ok$' /tmp/l0_canon_min_cmd.out; then
   echo "FAIL: canon -o valid_min"
@@ -2878,6 +2908,107 @@ if [ "$spill_stress_guardrail_kernel_kind" != "0" ]; then
   echo "FAIL: spill stress guardrail expected fallback kernel kind 0"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum3_lowered.l0" /tmp/l0_test_sysv_abi_sum3.img >/tmp/l0_build_sysv_abi_sum3.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum3.out; then
+  echo "FAIL: build valid_sysv_abi_sum3_lowered"
+  exit 1
+fi
+sysv_abi_sum3_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum3.img | tr -d ' ')
+sysv_abi_sum3_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum3_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum3.img | tr -d ' ')
+if [ "$sysv_abi_sum3_kernel_kind" != "29" ]; then
+  echo "FAIL: sysv abi sum3 kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sysv_abi_sum3.img 1 2 3 >/tmp/l0_run_sysv_abi_sum3.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sysv_abi_sum3.out)" != "6" ]; then
+  echo "FAIL: run sysv abi sum3 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum4_lowered.l0" /tmp/l0_test_sysv_abi_sum4.img >/tmp/l0_build_sysv_abi_sum4.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum4.out; then
+  echo "FAIL: build valid_sysv_abi_sum4_lowered"
+  exit 1
+fi
+sysv_abi_sum4_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum4.img | tr -d ' ')
+sysv_abi_sum4_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum4_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum4.img | tr -d ' ')
+if [ "$sysv_abi_sum4_kernel_kind" != "30" ]; then
+  echo "FAIL: sysv abi sum4 kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sysv_abi_sum4.img 1 2 3 4 >/tmp/l0_run_sysv_abi_sum4.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sysv_abi_sum4.out)" != "10" ]; then
+  echo "FAIL: run sysv abi sum4 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum5_lowered.l0" /tmp/l0_test_sysv_abi_sum5.img >/tmp/l0_build_sysv_abi_sum5.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum5.out; then
+  echo "FAIL: build valid_sysv_abi_sum5_lowered"
+  exit 1
+fi
+sysv_abi_sum5_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum5.img | tr -d ' ')
+sysv_abi_sum5_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum5_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum5.img | tr -d ' ')
+if [ "$sysv_abi_sum5_kernel_kind" != "31" ]; then
+  echo "FAIL: sysv abi sum5 kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sysv_abi_sum5.img 1 2 3 4 5 >/tmp/l0_run_sysv_abi_sum5.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sysv_abi_sum5.out)" != "15" ]; then
+  echo "FAIL: run sysv abi sum5 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum6_lowered.l0" /tmp/l0_test_sysv_abi_sum6.img >/tmp/l0_build_sysv_abi_sum6.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum6.out; then
+  echo "FAIL: build valid_sysv_abi_sum6_lowered"
+  exit 1
+fi
+sysv_abi_sum6_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum6.img | tr -d ' ')
+sysv_abi_sum6_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum6_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum6.img | tr -d ' ')
+if [ "$sysv_abi_sum6_kernel_kind" != "32" ]; then
+  echo "FAIL: sysv abi sum6 kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sysv_abi_sum6.img 1 2 3 4 5 6 >/tmp/l0_run_sysv_abi_sum6.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sysv_abi_sum6.out)" != "21" ]; then
+  echo "FAIL: run sysv abi sum6 result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum6_with_dead_const_general_lowered.l0" /tmp/l0_test_sysv_abi_sum6_dead_const.img >/tmp/l0_build_sysv_abi_sum6_dead_const.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum6_dead_const.out; then
+  echo "FAIL: build valid_sysv_abi_sum6_with_dead_const_general_lowered"
+  exit 1
+fi
+sysv_abi_sum6_dead_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum6_dead_const.img | tr -d ' ')
+sysv_abi_sum6_dead_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum6_dead_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum6_dead_const.img | tr -d ' ')
+if [ "$sysv_abi_sum6_dead_kernel_kind" != "32" ]; then
+  echo "FAIL: sysv abi sum6 dead-const kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_sysv_abi_sum6_dead_const.img 10 20 30 40 50 60 >/tmp/l0_run_sysv_abi_sum6_dead_const.out
+if [ "$(tr -d '\n' < /tmp/l0_run_sysv_abi_sum6_dead_const.out)" != "210" ]; then
+  echo "FAIL: run sysv abi sum6 dead-const result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum6_lowered.l0" /tmp/l0_test_sysv_abi_sum6_map.img --debug-map /tmp/l0_sysv_abi_sum6_debug_map.bin >/tmp/l0_build_sysv_abi_sum6_map.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum6_map.out; then
+  echo "FAIL: build valid_sysv_abi_sum6_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_sysv_abi_sum6_debug_map.bin >/tmp/l0_sysv_abi_sum6_mapcat.out
+if [ "$(cat /tmp/l0_sysv_abi_sum6_mapcat.out)" != $'entries 1\ncode_size 19\ninst_id 1\nstart 0\nend 19' ]; then
+  echo "FAIL: sysv abi sum6 debug-map layout"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_sysv_abi_sum6_guardrail_fallback.l0" /tmp/l0_test_sysv_abi_sum6_guardrail_fallback.img >/tmp/l0_build_sysv_abi_sum6_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_sysv_abi_sum6_guardrail_fallback.out; then
+  echo "FAIL: build valid_sysv_abi_sum6_guardrail_fallback"
+  exit 1
+fi
+sysv_abi_sum6_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_sysv_abi_sum6_guardrail_fallback.img | tr -d ' ')
+sysv_abi_sum6_guardrail_kernel_kind=$(od -An -t u8 -j "$((sysv_abi_sum6_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_sysv_abi_sum6_guardrail_fallback.img | tr -d ' ')
+if [ "$sysv_abi_sum6_guardrail_kernel_kind" != "0" ]; then
+  echo "FAIL: sysv abi sum6 guardrail expected fallback kernel kind 0"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_swapped.l0" /tmp/l0_test_cbr_eq_select_swapped.img >/tmp/l0_build_cbr_eq_select_swapped.out
 if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_swapped.out; then
   echo "FAIL: build valid_cbr_eq_select_swapped"
@@ -3938,6 +4069,10 @@ if [ "$(tr -d '\n' < /tmp/l0_run_branch_1.out)" != "1" ]; then
 fi
 if "$BIN" run /tmp/l0_test.img X 5 >/tmp/l0_run_badarg.out 2>/tmp/l0_run_badarg.err; then
   echo "FAIL: run accepted invalid numeric argument"
+  exit 1
+fi
+if "$BIN" run /tmp/l0_test.img 1 2 3 4 5 6 7 >/tmp/l0_run_toomany.out 2>/tmp/l0_run_toomany.err; then
+  echo "FAIL: run accepted too many arguments"
   exit 1
 fi
 cp /tmp/l0_test.img /tmp/l0_badver.img

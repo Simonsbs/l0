@@ -164,7 +164,7 @@ Note: full opcode semantics/type-checking are still being added incrementally.
 - `l0c build <input.l0> <out.l0img> --trace-schema <out.bin> --debug-map <out.bin>`
 - `l0c imgcheck <out.l0img>`
 - `l0c imgmeta <out.l0img>`
-- `l0c run <out.l0img> [u64_a] [u64_b]`
+- `l0c run <out.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]`
 - `l0c tracecat <trace.bin>`
 - `l0c mapcat <debug_map.bin>`
 - `l0c schemacat <trace_schema.bin>`
@@ -203,7 +203,7 @@ Before printing, `imgmeta` now also rejects bootstrap debug-index schema mismatc
 `run` currently executes the image code section with a minimal syscall-only loader path:
 - I validate core image header fields and code section bounds.
 - I allocate executable memory with `mmap` and copy code bytes into it.
-- I invoke code as `fn(u64,u64)->u64` using optional decimal CLI args (`u64_a`, `u64_b`) as inputs.
+- I invoke code as `fn(u64,u64,u64,u64,u64,u64)->u64` using optional decimal CLI args (`u64_a`..`u64_f`) as inputs mapped to SysV integer arg registers (`rdi`,`rsi`,`rdx`,`rcx`,`r8`,`r9`).
 - I print the returned value as unsigned decimal with a newline.
 - I reject invalid numeric arguments.
 

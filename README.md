@@ -138,8 +138,9 @@ Current bootstrap status:
 - I now consider my M55 general CFG lowering v1 milestone complete: I added lowering for canonical multi-block branch-const-select CFG modules and preserved strict fallback guardrails for unsupported return-mapping shapes.
 - I now consider my M56 SSA join and merge lowering milestone complete: I added lowering for canonical branch/store/join/ld merge CFG modules and preserved strict fallback guardrails for unsupported join-return mappings.
 - I now consider my M57 register allocation generalization milestone complete: I added a deterministic spill/reload stress lowering path, dead-const-normalized coverage, and strict fallback guardrails for unsupported stress-shape mappings.
-- I track my next milestone as M58: SysV AMD64 ABI completeness with a broader ABI-focused fixture matrix.
-- I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
+- I now consider my M58 SysV AMD64 ABI completeness milestone complete: I added deterministic 3-6 argument SysV entry-kernel lowering coverage, wired `run` argument passing across all six SysV integer argument registers, and locked an ABI-focused runtime fixture matrix.
+- I track my next milestone as M59: object output path (ELF) v1.
+- I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
 - I enforce canonical entry block (`b0`) per function.
@@ -203,7 +204,7 @@ make
 ./bin/l0c build <module.l0> <out.l0img> --trace-schema <trace_schema.bin> --debug-map <debug_map.bin>
 ./bin/l0c imgcheck <out.l0img>
 ./bin/l0c imgmeta <out.l0img>
-./bin/l0c run <out.l0img> [u64_a] [u64_b]
+./bin/l0c run <out.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]
 ./bin/l0c tracecat <trace.bin>
 ./bin/l0c mapcat <debug_map.bin>
 ./bin/l0c schemacat <trace_schema.bin>

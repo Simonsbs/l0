@@ -175,3 +175,21 @@ Expected stable outputs:
 - `imgmeta` contains: `kernel_kind 28`, `code_size 35`
 - `run ... 7 3` prints: `23`
 - `run ... 5 2` prints: `9`
+
+## Workflow 9: SysV ABI 6-Arg Entry Coverage
+
+I use this when I want to validate SysV integer-argument register mapping across all six entry arguments.
+
+```sh
+./bin/l0c verify docs/examples/18_sysv_abi_sum6_kernel.l0
+./bin/l0c build docs/examples/18_sysv_abi_sum6_kernel.l0 /tmp/l0_wf_sysv6.img
+./bin/l0c imgcheck /tmp/l0_wf_sysv6.img
+./bin/l0c imgmeta /tmp/l0_wf_sysv6.img
+./bin/l0c run /tmp/l0_wf_sysv6.img 1 2 3 4 5 6
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 32`, `code_size 19`
+- `run ... 1 2 3 4 5 6` prints: `21`

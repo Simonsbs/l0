@@ -7,6 +7,10 @@
 .lcomm debug_map_out_path_ptr, 8
 .lcomm run_arg1_ptr, 8
 .lcomm run_arg2_ptr, 8
+.lcomm run_arg3_ptr, 8
+.lcomm run_arg4_ptr, 8
+.lcomm run_arg5_ptr, 8
+.lcomm run_arg6_ptr, 8
 .lcomm tracejoin_map_path_ptr, 8
 .lcomm num_buf, 32
 .lcomm codegen_buf, 65536
@@ -46,7 +50,7 @@
 .lcomm vfp_value_type_map, 524288
 
 .section .rodata
-usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin> | l0c tracejoin <trace.bin> <debug_map.bin>\n"
+usage_msg: .ascii "usage: l0c <canon|verify> <input.l0> | l0c canon <input.l0> -o <out.l0> | l0c build <input.l0> <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c build <input.l0> -o <out.l0img> [--trace-schema <out.bin>] [--debug-map <out.bin>] | l0c imgcheck <file.l0img> | l0c imgmeta <file.l0img> | l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f] | l0c tracecat <trace.bin> | l0c mapcat <debug_map.bin> | l0c schemacat <trace_schema.bin> | l0c tracejoin <trace.bin> <debug_map.bin>\n"
 usage_len = . - usage_msg
 
 ok_msg: .ascii "ok\n"
@@ -196,6 +200,14 @@ code_stub_cbr_eq_select_rev: .byte 0x48,0x89,0xf8,0x48,0x39,0xf7,0x48,0x0f,0x44,
 code_stub_cbr_eq_select_rev_len = . - code_stub_cbr_eq_select_rev
 code_stub_spill_stress: .byte 0x55,0x48,0x89,0xe5,0x48,0x83,0xec,0x10,0x48,0x89,0x7d,0xf8,0x48,0x89,0x75,0xf0,0x48,0x8b,0x45,0xf8,0x48,0x03,0x45,0xf0,0x48,0x0f,0xaf,0x45,0xf0,0x48,0x2b,0x45,0xf8,0xc9,0xc3
 code_stub_spill_stress_len = . - code_stub_spill_stress
+code_stub_sysv_sum3: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x48,0x01,0xd0,0xc3
+code_stub_sysv_sum3_len = . - code_stub_sysv_sum3
+code_stub_sysv_sum4: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x48,0x01,0xd0,0x48,0x01,0xc8,0xc3
+code_stub_sysv_sum4_len = . - code_stub_sysv_sum4
+code_stub_sysv_sum5: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x48,0x01,0xd0,0x48,0x01,0xc8,0x4c,0x01,0xc0,0xc3
+code_stub_sysv_sum5_len = . - code_stub_sysv_sum5
+code_stub_sysv_sum6: .byte 0x48,0x89,0xf8,0x48,0x01,0xf0,0x48,0x01,0xd0,0x48,0x01,0xc8,0x4c,0x01,0xc0,0x4c,0x01,0xc8,0xc3
+code_stub_sysv_sum6_len = . - code_stub_sysv_sum6
 code_stub_mem_roundtrip: .byte 0x48,0x83,0xec,0x08,0x48,0x89,0x3c,0x24,0x48,0x8b,0x04,0x24,0x48,0x83,0xc4,0x08,0xc3
 code_stub_mem_roundtrip_len = . - code_stub_mem_roundtrip
 code_stub_malloc: .byte 0x48,0x89,0xfe,0x48,0x31,0xff,0x48,0xc7,0xc0,0x09,0x00,0x00,0x00,0x48,0xc7,0xc2,0x03,0x00,0x00,0x00,0x49,0xc7,0xc2,0x22,0x00,0x00,0x00,0x49,0xc7,0xc0,0xff,0xff,0xff,0xff,0x4d,0x31,0xc9,0x0f,0x05,0xc3
@@ -406,6 +418,14 @@ pat_branch_const_tail: .ascii "\n}\n"
 pat_branch_const_tail_len = . - pat_branch_const_tail
 pat_spill_stress: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = add.wrap v0 v1 : t0\n  v3 = mul.wrap v2 v1 : t0\n  v4 = sub.wrap v3 v0 : t0\n  ret v4\n}\n"
 pat_spill_stress_len = . - pat_spill_stress
+pat_sysv_sum3: .ascii "fn f0 (t0,t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = arg 2 : t0\n  v3 = add.wrap v0 v1 : t0\n  v4 = add.wrap v3 v2 : t0\n  ret v4\n}\n"
+pat_sysv_sum3_len = . - pat_sysv_sum3
+pat_sysv_sum4: .ascii "fn f0 (t0,t0,t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = arg 2 : t0\n  v3 = arg 3 : t0\n  v4 = add.wrap v0 v1 : t0\n  v5 = add.wrap v4 v2 : t0\n  v6 = add.wrap v5 v3 : t0\n  ret v6\n}\n"
+pat_sysv_sum4_len = . - pat_sysv_sum4
+pat_sysv_sum5: .ascii "fn f0 (t0,t0,t0,t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = arg 2 : t0\n  v3 = arg 3 : t0\n  v4 = arg 4 : t0\n  v5 = add.wrap v0 v1 : t0\n  v6 = add.wrap v5 v2 : t0\n  v7 = add.wrap v6 v3 : t0\n  v8 = add.wrap v7 v4 : t0\n  ret v8\n}\n"
+pat_sysv_sum5_len = . - pat_sysv_sum5
+pat_sysv_sum6: .ascii "fn f0 (t0,t0,t0,t0,t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v2 = arg 2 : t0\n  v3 = arg 3 : t0\n  v4 = arg 4 : t0\n  v5 = arg 5 : t0\n  v6 = add.wrap v0 v1 : t0\n  v7 = add.wrap v6 v2 : t0\n  v8 = add.wrap v7 v3 : t0\n  v9 = add.wrap v8 v4 : t0\n  v10 = add.wrap v9 v5 : t0\n  ret v10\n}\n"
+pat_sysv_sum6_len = . - pat_sysv_sum6
 pat_merge_mem_head: .ascii "fn f0 (t0)->t1 {\nb0:\n  v"
 pat_merge_mem_head_len = . - pat_merge_mem_head
 pat_merge_mem_mid_a: .ascii " = arg 0 : t0\n  v"
@@ -768,10 +788,14 @@ _start:
     jne .check_tracecat
     cmp r13, 3
     jb usage
-    cmp r13, 5
+    cmp r13, 9
     ja usage
     mov qword ptr [rip+run_arg1_ptr], 0
     mov qword ptr [rip+run_arg2_ptr], 0
+    mov qword ptr [rip+run_arg3_ptr], 0
+    mov qword ptr [rip+run_arg4_ptr], 0
+    mov qword ptr [rip+run_arg5_ptr], 0
+    mov qword ptr [rip+run_arg6_ptr], 0
     cmp r13, 4
     jb .run_dispatch_done
     mov r11, [r12+32]
@@ -780,6 +804,22 @@ _start:
     jb .run_dispatch_done
     mov r11, [r12+40]
     mov qword ptr [rip+run_arg2_ptr], r11
+    cmp r13, 6
+    jb .run_dispatch_done
+    mov r11, [r12+48]
+    mov qword ptr [rip+run_arg3_ptr], r11
+    cmp r13, 7
+    jb .run_dispatch_done
+    mov r11, [r12+56]
+    mov qword ptr [rip+run_arg4_ptr], r11
+    cmp r13, 8
+    jb .run_dispatch_done
+    mov r11, [r12+64]
+    mov qword ptr [rip+run_arg5_ptr], r11
+    cmp r13, 9
+    jb .run_dispatch_done
+    mov r11, [r12+72]
+    mov qword ptr [rip+run_arg6_ptr], r11
 .run_dispatch_done:
     jmp do_run
 
@@ -1046,6 +1086,14 @@ do_build:
     mov rsi, rbx
     call try_select_general_spill_stress_kernel_code
     cmp rax, 1
+    jne .build_try_general_sysv_abi_sum
+    jmp .build_code_selected
+
+.build_try_general_sysv_abi_sum:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_sysv_abi_sum_kernel_code
+    cmp rax, 1
     jne .build_try_general_bin
     jmp .build_code_selected
 
@@ -1261,6 +1309,14 @@ do_build:
     je .build_dbg_map_case_three_5_16
     cmp rax, 28
     je .build_dbg_map_case_four_16_24_33
+    cmp rax, 29
+    je .build_dbg_map_case_single_full
+    cmp rax, 30
+    je .build_dbg_map_case_single_full
+    cmp rax, 31
+    je .build_dbg_map_case_single_full
+    cmp rax, 32
+    je .build_dbg_map_case_single_full
     jmp .build_dbg_map_case_synth
 
 .build_dbg_map_case_single_full:
@@ -1664,9 +1720,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
-    # L0IX kernel kind id must be within known bootstrap range [0,28]
+    # L0IX kernel kind id must be within known bootstrap range [0,32]
     mov rax, qword ptr [r8+r9+32]
-    cmp rax, 28
+    cmp rax, 32
     ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
@@ -1765,7 +1821,7 @@ do_imgmeta:
     cmp rax, 1
     jne fail_img
     mov rax, qword ptr [r8+r9+32]  # kernel kind
-    cmp rax, 28
+    cmp rax, 32
     ja fail_img
     mov rax, qword ptr [r8+r9+40]  # debug code_size
     cmp rax, qword ptr [r8+56]
@@ -1897,6 +1953,10 @@ do_run:
 
     xor r14, r14                  # run arg a default
     xor r15, r15                  # run arg b default
+    xor r12, r12                  # run arg c default
+    xor r13, r13                  # run arg d default
+    xor rbp, rbp                  # run arg e default
+    xor r10, r10                  # run arg f default
 
     mov rdi, qword ptr [rip+run_arg1_ptr]
     cmp rdi, 0
@@ -1909,15 +1969,55 @@ do_run:
 .run_arg2:
     mov rdi, qword ptr [rip+run_arg2_ptr]
     cmp rdi, 0
-    je .run_call
+    je .run_arg3
     call parse_u64_cstr
     cmp rdx, 1
     jne fail_run_arg
     mov r15, rax
 
+.run_arg3:
+    mov rdi, qword ptr [rip+run_arg3_ptr]
+    cmp rdi, 0
+    je .run_arg4
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov r12, rax
+
+.run_arg4:
+    mov rdi, qword ptr [rip+run_arg4_ptr]
+    cmp rdi, 0
+    je .run_arg5
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov r13, rax
+
+.run_arg5:
+    mov rdi, qword ptr [rip+run_arg5_ptr]
+    cmp rdi, 0
+    je .run_arg6
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov rbp, rax
+
+.run_arg6:
+    mov rdi, qword ptr [rip+run_arg6_ptr]
+    cmp rdi, 0
+    je .run_call
+    call parse_u64_cstr
+    cmp rdx, 1
+    jne fail_run_arg
+    mov r10, rax
+
 .run_call:
     mov rdi, r14
     mov rsi, r15
+    mov rdx, r12
+    mov rcx, r13
+    mov r8, rbp
+    mov r9, r10
     call rbx
 
     mov rdi, rax
@@ -13767,6 +13867,134 @@ try_select_general_spill_stress_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgss_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_sysv_abi_sum_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_sysv_abi_sum_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+
+    lea rdx, [rip+pat_sysv_sum3]
+    mov rcx, pat_sysv_sum3_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tssas_try_sum4
+    lea r14, [rip+code_stub_sysv_sum3]
+    mov r15, code_stub_sysv_sum3_len
+    mov qword ptr [rip+build_kernel_kind], 29
+    mov rax, 1
+    jmp .tssas_done
+
+.tssas_try_sum4:
+    lea rdx, [rip+pat_sysv_sum4]
+    mov rcx, pat_sysv_sum4_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tssas_try_sum5
+    lea r14, [rip+code_stub_sysv_sum4]
+    mov r15, code_stub_sysv_sum4_len
+    mov qword ptr [rip+build_kernel_kind], 30
+    mov rax, 1
+    jmp .tssas_done
+
+.tssas_try_sum5:
+    lea rdx, [rip+pat_sysv_sum5]
+    mov rcx, pat_sysv_sum5_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tssas_try_sum6
+    lea r14, [rip+code_stub_sysv_sum5]
+    mov r15, code_stub_sysv_sum5_len
+    mov qword ptr [rip+build_kernel_kind], 31
+    mov rax, 1
+    jmp .tssas_done
+
+.tssas_try_sum6:
+    lea rdx, [rip+pat_sysv_sum6]
+    mov rcx, pat_sysv_sum6_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tssas_no
+    lea r14, [rip+code_stub_sysv_sum6]
+    mov r15, code_stub_sysv_sum6_len
+    mov qword ptr [rip+build_kernel_kind], 32
+    mov rax, 1
+    jmp .tssas_done
+
+.tssas_no:
+    xor rax, rax
+.tssas_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tssas_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tssas_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_sysv_abi_sum_kernel_code
+# generalized pre-lowering normalization for SysV-ABI sum kernels:
+# - removes canonical dead const value lines
+# - reuses SysV-ABI sum selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_sysv_abi_sum_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgsas_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_sysv_abi_sum_kernel_code
+    cmp rax, 1
+    jne .tsgsas_no
+    mov rax, 1
+    jmp .tsgsas_done
+
+.tsgsas_no:
+    xor rax, rax
+.tsgsas_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgsas_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgsas_keep_out:
     pop r13
     pop r12
     pop rbx

@@ -869,11 +869,36 @@ Last updated: 2026-03-02
 
 ### M58: SysV AMD64 ABI Completeness
 
-- Status: planned
-- Planned (measurable):
-  - complete SysV ABI lowering/validation coverage for supported L0 call shapes
-  - add ABI-focused fixture matrix and runtime checks
-  - acceptance: ABI matrix passes under `make test` on Linux x86-64
+- Status: complete
+- Scope completed:
+  - extended `run` command argument handling from 2 args to full SysV integer-arg register set:
+    - `rdi`, `rsi`, `rdx`, `rcx`, `r8`, `r9`
+  - added deterministic generalized selector family for SysV ABI entry-kernel shapes:
+    - 3-arg sum (kernel kind `29`)
+    - 4-arg sum (kernel kind `30`)
+    - 5-arg sum (kernel kind `31`)
+    - 6-arg sum (kernel kind `32`)
+  - added generalized dead-const normalized lowering coverage for the 6-arg SysV shape
+  - added strict guardrail fallback coverage for non-matching 6-arg shape
+  - extended debug-map routing and image/meta kernel-kind validation range to include kernel kinds `29..32`
+  - added deterministic fixtures and assertions:
+    - lowered: `valid_sysv_abi_sum3_lowered.l0`
+    - lowered: `valid_sysv_abi_sum4_lowered.l0`
+    - lowered: `valid_sysv_abi_sum5_lowered.l0`
+    - lowered: `valid_sysv_abi_sum6_lowered.l0`
+    - lowered (dead-const normalized): `valid_sysv_abi_sum6_with_dead_const_general_lowered.l0`
+    - guardrail fallback: `valid_sysv_abi_sum6_guardrail_fallback.l0`
+  - added runnable docs example:
+    - `docs/examples/18_sysv_abi_sum6_kernel.l0`
+  - integrated checks into `tests/run.sh` (verify/build/run/debug-map/fallback assertions, plus run-argument limit rejection)
+  - updated documentation:
+    - `README.md`
+    - `docs/LANGUAGE.md`
+    - `docs/HOW_TO_WRITE_L0.md`
+    - `docs/WORKFLOWS.md`
+    - `docs/ABI_SYSV_AMD64.md`
+  - acceptance:
+    - ABI matrix passes under `make test` on Linux x86-64
 
 ### M59: Object Output Path (ELF) v1
 

@@ -1,0 +1,20 @@
+ver 1
+types { t0=i64 }
+consts { }
+extern { }
+globals { }
+fns {
+fn f0 (t0,t0,t0,t0,t0)->t0 {
+b0:
+  v0 = arg 0 : t0
+  v1 = arg 1 : t0
+  v2 = arg 2 : t0
+  v3 = arg 3 : t0
+  v4 = arg 4 : t0
+  v5 = add.wrap v0 v1 : t0
+  v6 = add.wrap v5 v2 : t0
+  v7 = add.wrap v6 v3 : t0
+  v8 = add.wrap v7 v4 : t0
+  ret v8
+}
+}

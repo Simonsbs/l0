@@ -59,6 +59,7 @@ I keep runnable examples in [`docs/examples/`](examples):
 - control flow: `03_control_cbr_select.l0`
 - multi-block cfg: `15_cfg_branch_const_select.l0`, `16_cfg_merge_mem_select.l0`
 - spill/reload stress: `17_spill_stress_kernel.l0`
+- SysV ABI argument matrix: `18_sysv_abi_sum6_kernel.l0`
 - memory: `04_memory_roundtrip.l0`, `05_memory_gep_roundtrip.l0`
 - calls: `06_call_add_two_function.l0`
 - intrinsics: `07_intrinsic_malloc.l0`, `08_intrinsic_free.l0`, `09_intrinsic_write.l0`, `10_intrinsic_trace.l0`, `11_intrinsic_exit.l0`
