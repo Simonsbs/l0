@@ -9,7 +9,7 @@ on:
       - "v*"
 
 jobs:
-  perf-full:
+  perf-smoke:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,8 +18,8 @@ jobs:
       - name: Build
         run: make
 
-      - name: Full performance gate
-        run: bash tests/performance_gates.sh ./bin/l0c .
+      - name: CI smoke performance gate
+        run: bash tests/ci_smoke_bench.sh ./bin/l0c .
 
       - name: Comparison report
         run: |
@@ -32,4 +32,23 @@ jobs:
           name: performance-reports
           path: |
             docs/PERFORMANCE_COMPARISON.md
+
+  perf-full-observe:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: make
+
+      - name: Full performance gate
+        run: bash tests/performance_gates.sh ./bin/l0c . | tee /tmp/l0_m66_performance_gates.out
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-full-observe
+          path: |
             /tmp/l0_m66_performance_gates.out

@@ -27,6 +27,7 @@ That harness is integrated into `tests/run.sh` and therefore enforced by `make t
 
 I also run this automatically in GitHub Actions:
 - `.github/workflows/performance.yml` on nightly schedule and on version tags (`v*`).
+- CI uses a blocking smoke gate (`tests/ci_smoke_bench.sh`) plus a non-blocking full-gate observation run (`tests/performance_gates.sh`) because hosted runner throughput is less stable than my pinned local baseline environment.
 
 ## Pinned Throughput Floors in v1
 
