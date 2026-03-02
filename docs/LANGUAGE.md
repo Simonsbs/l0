@@ -299,6 +299,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - bootstrap newline `write` intrinsic kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` intrinsic kernel also accepts canonical nonzero traced-arg id and const/return id when ids/dataflow match (`trace 1 vN` and `ret vM` where `vM` is the const-def id)
     - for const-dependent kernels (`free`, `write`, `trace`), I now run generalized dead pure-line normalization before selector matching and lower valid dead-const/dead-icmp-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
+    - intrinsic generalized coverage now also includes multi-dead-pure (`const` + `icmp.eq`) variants for `malloc`/`free`/`write`/`trace`/`exit`, plus cross-function dead-icmp id-reuse variants for `free` and `trace`, with write `alloca 0` cross-function guardrails preserved
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
     - canonical two-function call kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`/`and`/`or`)

@@ -604,16 +604,40 @@ Last updated: 2026-03-01
 
 ### M47: Intrinsic Dead-Pure Stress Matrix Expansion
 
+- Status: complete
+- Scope completed:
+  - expanded intrinsic dead-pure coverage to multi-dead-pure (`const` + `icmp.eq`) variants for:
+    - `malloc`
+    - `free`
+    - `write`
+    - `trace`
+    - `exit`
+  - added cross-function dead-icmp id-reuse variants for:
+    - `free`
+    - `trace`
+  - preserved write `alloca 0` fallback guardrails under cross-function multi-dead-pure variant
+  - added regression fixtures and assertions:
+    - `valid_malloc_with_multi_dead_pure_general_lowered.l0`
+    - `valid_free_noop_with_multi_dead_pure_general_lowered.l0`
+    - `valid_write_newline_with_multi_dead_pure_general_lowered.l0`
+    - `valid_trace_noop_with_multi_dead_pure_general_lowered.l0`
+    - `valid_exit_with_multi_dead_pure_general_lowered.l0`
+    - `valid_free_noop_with_dead_icmp_crossfn_general_lowered.l0`
+    - `valid_trace_noop_with_dead_icmp_crossfn_general_lowered.l0`
+    - `valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.l0`
+  - asserted deterministic lowered behavior (kernel kind plus runtime outputs/status) for lowered fixtures
+  - asserted deterministic fallback behavior (`kernel_kind 0`, `code_size 1`) for cross-function write guardrail fixture
+  - validated with full-suite pass
+
+### M48: Intrinsic Debug/Trace Stress Coverage
+
 - Status: planned
 - Planned (measurable):
-  - extend intrinsic dead-pure coverage beyond single injected lines to multi-dead-pure variants (`const` + `icmp.eq`) for `malloc`, `free`, `write`, `trace`, and `exit`
-  - add cross-function value-id-reuse variants for dead-icmp intrinsic shapes to ensure function-local dead-line detection remains stable
-  - preserve write `alloca 0` fallback guardrails under multi-dead-pure and cross-function variants
-  - add at least 8 fixtures:
-    - 5 lowered multi-dead-pure intrinsic fixtures (one per intrinsic family)
-    - 2 lowered cross-function dead-icmp fixtures (free/trace)
-    - 1 fallback cross-function write-guardrail fixture
-  - acceptance: full suite pass with explicit kernel-kind/runtime checks for lowered cases and explicit fallback assertions for guardrail cases
+  - add debug-map and tracejoin stress coverage for new intrinsic dead-pure/cross-function fixtures
+  - assert stable debug-map entry layouts for at least 3 intrinsic families under multi-dead-pure variants (`write`, `malloc`, `trace`)
+  - add tracejoin decode assertions for cross-function trace fixture outputs
+  - add at least 4 tamper tests on emitted artifacts from these new fixtures (truncated map, bad entry count, unknown trace id, non-monotonic ranges)
+  - acceptance: full suite pass with deterministic mapcat/tracejoin output checks and deterministic rejection checks for malformed artifacts
 
 ## Documentation status
 

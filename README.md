@@ -125,7 +125,8 @@ Current bootstrap status:
 - I now consider my M44 compare/select multi-block tolerant normalization milestone complete: I lower canonical `icmp.eq + cbr` compare/select modules with extra dead pure value lines in `b0`, `b1`, and `b2`, and I keep a strict fallback guardrail for unsupported branch-return mappings.
 - I now consider my M45 call-kernel dead pure-line tolerance milestone complete: I regression-lock call lowering with dead `icmp.eq` value lines in `f0` and `f1`, keep supported non-commutative `call->sub.wrap` mappings lowered, and keep unsupported call-shape mappings on strict fallback.
 - I now consider my M46 intrinsic-path dead pure-line tolerance milestone complete: I regression-lock intrinsic lowering with dead `icmp.eq` lines for `malloc`, `free`, `write`, `trace`, and `exit`, while preserving strict write `alloca 0` fallback guardrails.
-- I track my next milestone as M47: intrinsic dead-pure stress matrix expansion (multi-dead-pure and cross-function id-reuse variants with explicit lowered/fallback expectations).
+- I now consider my M47 intrinsic dead-pure stress-matrix milestone complete: I lock multi-dead-pure intrinsic variants (`const` + `icmp.eq`) plus cross-function dead-icmp id-reuse variants, while preserving strict write `alloca 0` cross-function guardrail fallback.
+- I track my next milestone as M48: debug-map and tracejoin stress coverage for the new intrinsic dead-pure/cross-function fixture families.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

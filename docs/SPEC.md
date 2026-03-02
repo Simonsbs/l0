@@ -174,6 +174,7 @@ I also enforce a structural subset inside `fns`:
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
     - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I now run generalized dead pure-line normalization before selector matching and lower valid dead-const/dead-icmp-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
+    - intrinsic generalized tolerance also covers multi-dead-pure (`const` + `icmp.eq`) variants for `malloc`/`free`/`write`/`trace`/`exit`, plus cross-function dead-icmp id-reuse variants for `free` and `trace`, while preserving cross-function write `alloca 0` guardrail fallback
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
   - I now lower canonical branch-identity multi-block shape:

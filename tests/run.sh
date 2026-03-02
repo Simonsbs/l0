@@ -753,6 +753,46 @@ if ! grep -q '^ok$' /tmp/l0_ok_write_newline_alloca0_with_dead_icmp_guardrail_fa
   echo "FAIL: verify valid_write_newline_alloca0_with_dead_icmp_guardrail_fallback"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_malloc_with_multi_dead_pure_general_lowered.l0" >/tmp/l0_ok_malloc_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_malloc_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: verify valid_malloc_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_free_noop_with_multi_dead_pure_general_lowered.l0" >/tmp/l0_ok_free_noop_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: verify valid_free_noop_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_with_multi_dead_pure_general_lowered.l0" >/tmp/l0_ok_write_newline_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: verify valid_write_newline_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop_with_multi_dead_pure_general_lowered.l0" >/tmp/l0_ok_trace_noop_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: verify valid_trace_noop_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_exit_with_multi_dead_pure_general_lowered.l0" >/tmp/l0_ok_exit_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_exit_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: verify valid_exit_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_free_noop_with_dead_icmp_crossfn_general_lowered.l0" >/tmp/l0_ok_free_noop_with_dead_icmp_crossfn_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_free_noop_with_dead_icmp_crossfn_general_lowered.out; then
+  echo "FAIL: verify valid_free_noop_with_dead_icmp_crossfn_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_trace_noop_with_dead_icmp_crossfn_general_lowered.l0" >/tmp/l0_ok_trace_noop_with_dead_icmp_crossfn_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_trace_noop_with_dead_icmp_crossfn_general_lowered.out; then
+  echo "FAIL: verify valid_trace_noop_with_dead_icmp_crossfn_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.l0" >/tmp/l0_ok_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.out; then
+  echo "FAIL: verify valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_min.l0" /tmp/l0_test.img >/tmp/l0_build.out
 if ! grep -q '^ok$' /tmp/l0_build.out; then
@@ -3599,15 +3639,22 @@ for f in \
   valid_malloc_with_dead_const_general_lowered.l0 \
   valid_malloc_mismatch_with_dead_const_unlowered.l0 \
   valid_malloc_with_dead_icmp_general_lowered.l0 \
+  valid_malloc_with_multi_dead_pure_general_lowered.l0 \
   valid_exit_with_dead_const_general_lowered.l0 \
   valid_exit_mismatch_with_dead_const_unlowered.l0 \
   valid_exit_with_dead_icmp_general_lowered.l0 \
+  valid_exit_with_multi_dead_pure_general_lowered.l0 \
   valid_write_newline_with_dead_const_general_unlowered.l0 \
   valid_write_newline_with_dead_icmp_general_lowered.l0 \
+  valid_write_newline_with_multi_dead_pure_general_lowered.l0 \
   valid_free_noop_with_dead_const_general_unlowered.l0 \
   valid_free_noop_with_dead_icmp_general_lowered.l0 \
+  valid_free_noop_with_multi_dead_pure_general_lowered.l0 \
+  valid_free_noop_with_dead_icmp_crossfn_general_lowered.l0 \
   valid_trace_noop_with_dead_const_general_unlowered.l0 \
   valid_trace_noop_with_dead_icmp_general_lowered.l0 \
+  valid_trace_noop_with_multi_dead_pure_general_lowered.l0 \
+  valid_trace_noop_with_dead_icmp_crossfn_general_lowered.l0 \
   valid_write_newline_with_two_dead_consts_general_unlowered.l0 \
   valid_free_noop_with_two_dead_consts_general_unlowered.l0 \
   valid_trace_noop_with_two_dead_consts_general_unlowered.l0 \
@@ -3617,6 +3664,7 @@ for f in \
   valid_write_newline_alloca16_with_dead_const_general_unlowered.l0 \
   valid_write_newline_alloca0_with_dead_const_general_unlowered.l0 \
   valid_write_newline_alloca0_with_dead_icmp_guardrail_fallback.l0 \
+  valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.l0 \
   valid_free_noop_v123_with_two_dead_consts_general_unlowered.l0 \
   valid_trace_noop_v123_with_two_dead_consts_general_unlowered.l0 \
   valid_write_newline_alloca0_v123_with_two_dead_consts_general_unlowered.l0 \
@@ -3731,6 +3779,21 @@ if [ "$malloc_dead_icmp_out" = "0" ]; then
   echo "FAIL: run malloc dead-icmp generalized returned null"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_malloc_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_malloc_with_multi_dead_pure_general_lowered.img >/tmp/l0_build_malloc_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: build valid_malloc_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_malloc_with_multi_dead_pure_general_lowered.img)" != "20" ]; then
+  echo "FAIL: malloc multi-dead-pure generalized kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_malloc_with_multi_dead_pure_general_lowered.img 4096 >/tmp/l0_run_malloc_with_multi_dead_pure_general_lowered.out
+malloc_multi_dead_pure_out="$(tr -d '\n' < /tmp/l0_run_malloc_with_multi_dead_pure_general_lowered.out)"
+if [ "$malloc_multi_dead_pure_out" = "0" ]; then
+  echo "FAIL: run malloc multi-dead-pure generalized returned null"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_exit_with_dead_const_general_lowered.l0" /tmp/l0_test_exit_with_dead_const_general_lowered.img >/tmp/l0_build_exit_with_dead_const_general_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_exit_with_dead_const_general_lowered.out; then
@@ -3775,6 +3838,23 @@ exit_dead_icmp_rc=$?
 set -e
 if [ "$exit_dead_icmp_rc" -ne 19 ]; then
   echo "FAIL: run exit dead-icmp generalized image status"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_exit_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_exit_with_multi_dead_pure_general_lowered.img >/tmp/l0_build_exit_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_exit_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: build valid_exit_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_exit_with_multi_dead_pure_general_lowered.img)" != "23" ]; then
+  echo "FAIL: exit multi-dead-pure generalized kernel kind"
+  exit 1
+fi
+set +e
+"$BIN" run /tmp/l0_test_exit_with_multi_dead_pure_general_lowered.img 29 >/tmp/l0_run_exit_with_multi_dead_pure_general_lowered.out 2>/tmp/l0_run_exit_with_multi_dead_pure_general_lowered.err
+exit_multi_dead_pure_rc=$?
+set -e
+if [ "$exit_multi_dead_pure_rc" -ne 29 ]; then
+  echo "FAIL: run exit multi-dead-pure generalized image status"
   exit 1
 fi
 
@@ -3826,6 +3906,24 @@ if [ "$(od -An -t x1 /tmp/l0_run_write_newline_with_dead_icmp_general_lowered.ou
   echo "FAIL: run write newline dead-icmp generalized output bytes"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_write_newline_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_write_newline_with_multi_dead_pure_general_lowered.img >/tmp/l0_build_write_newline_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: build valid_write_newline_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_with_multi_dead_pure_general_lowered.img)" != "22" ]; then
+  echo "FAIL: write newline multi-dead-pure generalized lowering kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_write_newline_with_multi_dead_pure_general_lowered.img >/tmp/l0_run_write_newline_with_multi_dead_pure_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_write_newline_with_multi_dead_pure_general_lowered.out)" != "0" ]; then
+  echo "FAIL: run write newline multi-dead-pure generalized image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_write_newline_with_multi_dead_pure_general_lowered.out | tr -d ' \n')" != "0a300a" ]; then
+  echo "FAIL: run write newline multi-dead-pure generalized output bytes"
+  exit 1
+fi
 
 "$BIN" build "$ROOT/tests/valid_free_noop_with_dead_icmp_general_lowered.l0" /tmp/l0_test_free_noop_with_dead_icmp_general_lowered.img >/tmp/l0_build_free_noop_with_dead_icmp_general_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_dead_icmp_general_lowered.out; then
@@ -3839,6 +3937,34 @@ fi
 "$BIN" run /tmp/l0_test_free_noop_with_dead_icmp_general_lowered.img 123 >/tmp/l0_run_free_noop_with_dead_icmp_general_lowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_with_dead_icmp_general_lowered.out)" != "0" ]; then
   echo "FAIL: run free noop dead-icmp generalized image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_free_noop_with_multi_dead_pure_general_lowered.img >/tmp/l0_build_free_noop_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: build valid_free_noop_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_multi_dead_pure_general_lowered.img)" != "21" ]; then
+  echo "FAIL: free noop multi-dead-pure generalized lowering kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_free_noop_with_multi_dead_pure_general_lowered.img 123 >/tmp/l0_run_free_noop_with_multi_dead_pure_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_with_multi_dead_pure_general_lowered.out)" != "0" ]; then
+  echo "FAIL: run free noop multi-dead-pure generalized image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_free_noop_with_dead_icmp_crossfn_general_lowered.l0" /tmp/l0_test_free_noop_with_dead_icmp_crossfn_general_lowered.img >/tmp/l0_build_free_noop_with_dead_icmp_crossfn_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_free_noop_with_dead_icmp_crossfn_general_lowered.out; then
+  echo "FAIL: build valid_free_noop_with_dead_icmp_crossfn_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_free_noop_with_dead_icmp_crossfn_general_lowered.img)" != "21" ]; then
+  echo "FAIL: free noop dead-icmp crossfn generalized lowering kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_free_noop_with_dead_icmp_crossfn_general_lowered.img 123 >/tmp/l0_run_free_noop_with_dead_icmp_crossfn_general_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_free_noop_with_dead_icmp_crossfn_general_lowered.out)" != "0" ]; then
+  echo "FAIL: run free noop dead-icmp crossfn generalized image result"
   exit 1
 fi
 
@@ -3858,6 +3984,42 @@ if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_with_dead_icmp_general_lowered.out)"
 fi
 if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_with_dead_icmp_general_lowered.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
   echo "FAIL: run trace noop dead-icmp generalized emit bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_trace_noop_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_trace_noop_with_multi_dead_pure_general_lowered.img >/tmp/l0_build_trace_noop_with_multi_dead_pure_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_multi_dead_pure_general_lowered.out; then
+  echo "FAIL: build valid_trace_noop_with_multi_dead_pure_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_multi_dead_pure_general_lowered.img)" != "24" ]; then
+  echo "FAIL: trace noop multi-dead-pure generalized lowering kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_trace_noop_with_multi_dead_pure_general_lowered.img 123 >/tmp/l0_run_trace_noop_with_multi_dead_pure_general_lowered.out 2>/tmp/l0_run_trace_noop_with_multi_dead_pure_general_lowered.err
+if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_with_multi_dead_pure_general_lowered.out)" != "0" ]; then
+  echo "FAIL: run trace noop multi-dead-pure generalized image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_with_multi_dead_pure_general_lowered.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
+  echo "FAIL: run trace noop multi-dead-pure generalized emit bytes"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_trace_noop_with_dead_icmp_crossfn_general_lowered.l0" /tmp/l0_test_trace_noop_with_dead_icmp_crossfn_general_lowered.img >/tmp/l0_build_trace_noop_with_dead_icmp_crossfn_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_dead_icmp_crossfn_general_lowered.out; then
+  echo "FAIL: build valid_trace_noop_with_dead_icmp_crossfn_general_lowered"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_trace_noop_with_dead_icmp_crossfn_general_lowered.img)" != "24" ]; then
+  echo "FAIL: trace noop dead-icmp crossfn generalized lowering kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_trace_noop_with_dead_icmp_crossfn_general_lowered.img 123 >/tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.out 2>/tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err
+if [ "$(tr -d '\n' < /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.out)" != "0" ]; then
+  echo "FAIL: run trace noop dead-icmp crossfn generalized image result"
+  exit 1
+fi
+if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err | tr -d ' \n')" != "01000000000000007b00000000000000" ]; then
+  echo "FAIL: run trace noop dead-icmp crossfn generalized emit bytes"
   exit 1
 fi
 
@@ -3948,6 +4110,15 @@ if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca0_with_dead_icmp_guardrail
 fi
 if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca0_with_dead_icmp_guardrail_fallback.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca0_with_dead_icmp_guardrail_fallback.img)" != "1" ]; then
   echo "FAIL: write newline alloca0 dead-icmp guardrail fallback violated"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.l0" /tmp/l0_test_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.img >/tmp/l0_build_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.out; then
+  echo "FAIL: build valid_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback"
+  exit 1
+fi
+if [ "$(get_kernel_kind /tmp/l0_test_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.img)" != "0" ] || [ "$(get_code_size /tmp/l0_test_write_newline_alloca0_with_multi_dead_pure_crossfn_guardrail_fallback.img)" != "1" ]; then
+  echo "FAIL: write newline alloca0 multi-dead-pure crossfn guardrail fallback violated"
   exit 1
 fi
 
