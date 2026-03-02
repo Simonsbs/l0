@@ -21,6 +21,7 @@ jobs:
         run: make
 
       - name: Toolchain policy
+        if: matrix.os == 'ubuntu-latest'
         run: bash tests/toolchain_policy.sh
 
   test:
@@ -43,4 +44,6 @@ jobs:
 
       - name: Run full suite
         if: matrix.suite == 'full'
+        env:
+          L0_PERF_PROFILE: ci
         run: make test

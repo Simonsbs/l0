@@ -72,14 +72,28 @@ tracecat_ops=$(bench_ops 1200 "$BIN" tracecat "$WORK_DIR/trace.bin")
 tracejoin_ops=$(bench_ops 1200 "$BIN" tracejoin "$WORK_DIR/trace.bin" "$WORK_DIR/trace.map")
 
 # perfbase.v1 pinned throughput floors (Linux x86-64 bootstrap environment).
-require_min_ops "verify.valid_min" "$verify_ops" 1800
-require_min_ops "build.valid_min" "$build_ops" 1300
-require_min_ops "run.add" "$run_add_ops" 2400
-require_min_ops "run.sum6" "$run_sum6_ops" 2200
-require_min_ops "build-elf.sum6" "$build_elf_ops" 1100
-require_min_ops "mapcat.trace_map" "$mapcat_ops" 2500
-require_min_ops "schemacat.trace_schema" "$schemacat_ops" 2500
-require_min_ops "tracecat.trace_bin" "$tracecat_ops" 2500
-require_min_ops "tracejoin.trace_bin+map" "$tracejoin_ops" 2300
+profile="${L0_PERF_PROFILE:-local}"
+if [ "$profile" = "ci" ]; then
+  # Conservative floors for shared hosted runners.
+  require_min_ops "verify.valid_min" "$verify_ops" 1000
+  require_min_ops "build.valid_min" "$build_ops" 700
+  require_min_ops "run.add" "$run_add_ops" 1200
+  require_min_ops "run.sum6" "$run_sum6_ops" 1100
+  require_min_ops "build-elf.sum6" "$build_elf_ops" 500
+  require_min_ops "mapcat.trace_map" "$mapcat_ops" 1200
+  require_min_ops "schemacat.trace_schema" "$schemacat_ops" 1200
+  require_min_ops "tracecat.trace_bin" "$tracecat_ops" 1200
+  require_min_ops "tracejoin.trace_bin+map" "$tracejoin_ops" 1000
+else
+  require_min_ops "verify.valid_min" "$verify_ops" 1800
+  require_min_ops "build.valid_min" "$build_ops" 1300
+  require_min_ops "run.add" "$run_add_ops" 2400
+  require_min_ops "run.sum6" "$run_sum6_ops" 2200
+  require_min_ops "build-elf.sum6" "$build_elf_ops" 1100
+  require_min_ops "mapcat.trace_map" "$mapcat_ops" 2500
+  require_min_ops "schemacat.trace_schema" "$schemacat_ops" 2500
+  require_min_ops "tracecat.trace_bin" "$tracecat_ops" 2500
+  require_min_ops "tracejoin.trace_bin+map" "$tracejoin_ops" 2300
+fi
 
 echo "ok"

@@ -39,6 +39,14 @@ I also run this automatically in GitHub Actions:
 - `tracecat.trace_bin >= 2500 ops/s`
 - `tracejoin.trace_bin+map >= 2300 ops/s`
 
+## CI Runner Profile
+
+I support a CI profile for hosted runners by setting:
+- `L0_PERF_PROFILE=ci`
+
+This uses conservative floors intended for shared GitHub-hosted runner variance.
+My local/pinned production profile remains the default when this variable is not set.
+
 ## Out of Scope in v1
 
 - Cross-machine or cross-CPU performance comparability guarantees.
