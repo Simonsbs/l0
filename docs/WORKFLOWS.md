@@ -346,6 +346,18 @@ bash tests/llm_usability_bench.sh ./bin/l0c . cmd \
   docs/LLM_BENCHMARK_RESULTS.md
 ```
 
+I can run this directly with OpenAI:
+
+```sh
+OPENAI_API_KEY='<your key>' \
+L0_OPENAI_MODEL='gpt-4.1-mini' \
+L0_LLM_ADAPTER_CMD='tests/llm_bench/adapters/openai_l0.sh' \
+L0_LLM_MAX_ATTEMPTS=3 \
+bash tests/llm_usability_bench.sh ./bin/l0c . cmd \
+  docs/LLM_BENCHMARK_RESULTS.json \
+  docs/LLM_BENCHMARK_RESULTS.md
+```
+
 Expected stable output:
 - `ok`
 - report includes `pass@k`, `avg_attempts_used`, and `error_class_counts`
@@ -358,6 +370,20 @@ I use this when I want apples-to-apples LLM usability comparisons across multipl
 make
 L0_LLM_ADAPTER_CMD='<your command>' \
 L0_LLM_MODELS='model-a,model-b,model-c' \
+bash tests/llm_model_matrix.sh ./bin/l0c . \
+  docs/LLM_MODEL_LEADERBOARD.json \
+  docs/LLM_MODEL_LEADERBOARD.md \
+  docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl \
+  docs/LLM_MODEL_LEADERBOARD_TRENDS.md
+```
+
+I can run this as an OpenAI model matrix:
+
+```sh
+OPENAI_API_KEY='<your key>' \
+L0_LLM_ADAPTER_CMD='tests/llm_bench/adapters/openai_l0.sh' \
+L0_LLM_MODELS='gpt-4.1-mini,gpt-4.1' \
+L0_LLM_MAX_ATTEMPTS=1 \
 bash tests/llm_model_matrix.sh ./bin/l0c . \
   docs/LLM_MODEL_LEADERBOARD.json \
   docs/LLM_MODEL_LEADERBOARD.md \

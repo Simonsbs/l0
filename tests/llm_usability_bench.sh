@@ -53,6 +53,8 @@ sanitize_candidate() {
   local out="$2"
   local tmp="$WORK_DIR/sanitize.tmp"
   local trimmed="$WORK_DIR/sanitize.trimmed.tmp"
+  local norm="$WORK_DIR/sanitize.norm.tmp"
+  local norm2="$WORK_DIR/sanitize.norm2.tmp"
 
   sed -e 's/\r$//' -e '/^```[a-zA-Z0-9_-]*$/d' -e '/^```$/d' "$in" >"$tmp"
   awk '
@@ -71,6 +73,98 @@ sanitize_candidate() {
   else
     cp "$tmp" "$out"
   fi
+
+  # Normalize common near-canonical top-level section layouts into single-line canonical section forms.
+  awk '
+    function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    BEGIN { insec = 0; sec = ""; buf = "" }
+    {
+      line = $0
+      t = trim(line)
+
+      if (insec == 0) {
+        if (match(t, /^(types|consts|extern|globals)[ \t]*\{[ \t]*$/)) {
+          sec = substr(t, RSTART, RLENGTH)
+          sub(/[ \t]*\{[ \t]*$/, "", sec)
+          insec = 1
+          buf = ""
+          next
+        }
+        if (match(t, /^(types|consts|extern|globals)[ \t]*\{.*\}[ \t]*$/)) {
+          sec = t
+          sub(/[ \t]*\{.*/, "", sec)
+          body = t
+          sub(/^[^{]*\{/, "", body)
+          sub(/\}[ \t]*$/, "", body)
+          body = trim(body)
+          if (body == "") print sec " { }"
+          else print sec " { " body " }"
+          next
+        }
+        print line
+      } else {
+        if (t ~ /^\}[ \t]*$/) {
+          body = trim(buf)
+          if (body == "") print sec " { }"
+          else print sec " { " body " }"
+          insec = 0
+          sec = ""
+          buf = ""
+          next
+        }
+        if (t != "") {
+          if (buf == "") buf = t
+          else buf = buf " " t
+        }
+      }
+    }
+    END {
+      if (insec == 1) {
+        body = trim(buf)
+        if (body == "") print sec " { }"
+        else print sec " { " body " }"
+      }
+    }
+  ' "$out" >"$norm"
+  awk '
+    function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    BEGIN { in_fn = 0 }
+    {
+      line = $0
+      t = trim(line)
+      if (t == "") next
+
+      if (t == "fns{" || t == "fns {") {
+        print "fns {"
+        next
+      }
+
+      if (t ~ /^fn[ \t]/) {
+        print t
+        in_fn = 1
+        next
+      }
+
+      if (t ~ /^b[0-9]+:$/) {
+        print t
+        next
+      }
+
+      if (t == "}") {
+        print "}"
+        if (in_fn == 1) in_fn = 0
+        next
+      }
+
+      if (in_fn == 1) {
+        print "  " t
+        next
+      }
+
+      print t
+    }
+  ' "$norm" >"$norm2"
+  cp "$norm2" "$out"
 }
 
 canon_fix_candidate() {

@@ -40,6 +40,19 @@ bash tests/llm_usability_bench.sh ./bin/l0c . cmd
 
 The adapter command must read prompt text from stdin and output L0 source on stdout.
 
+I keep ready-to-run adapters in:
+- `tests/llm_bench/adapters/ollama_l0.sh`
+- `tests/llm_bench/adapters/openai_l0.sh`
+
+OpenAI adapter example:
+
+```sh
+OPENAI_API_KEY='<your key>' \
+L0_OPENAI_MODEL='gpt-4.1-mini' \
+L0_LLM_ADAPTER_CMD='tests/llm_bench/adapters/openai_l0.sh' \
+bash tests/llm_usability_bench.sh ./bin/l0c . cmd
+```
+
 ## Repair Loop and Canonicalization Controls
 
 In `cmd` mode, I support a verify-guided repair loop:

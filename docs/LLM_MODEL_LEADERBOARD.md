@@ -2,16 +2,16 @@
 
 I generated this report with `tests/llm_model_matrix.sh`.
 
-- generated_utc: `2026-03-02T15:20:28Z`
+- generated_utc: `2026-03-02T16:17:15Z`
 - total_models: `2`
-- recommended_model: `qwen2.5:1.5b`
+- recommended_model: `qwen2.5:3b`
 
 ## Leaderboard
 
 | Model | Verify % | Semantic % | Avg attempts | Prompt tok | Completion tok | L0/C ratio | Duration sec |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| qwen2.5:1.5b | 0 | 0 | 3 | 242 | 242 | 8.70685 | 1 |
-| qwen2.5:3b | 0 | 0 | 3 | 242 | 242 | 8.70685 | 0 |
+| qwen2.5:3b | 16.666666666666668 | 16.666666666666668 | 1 | 24.333333333333332 | 59.666666666666664 | 3.460516666666667 | 45 |
+| qwen3:8b | 0 | 0 | 1 | 24.333333333333332 | 0 | 0 | 270 |
 
 ## Notes
 

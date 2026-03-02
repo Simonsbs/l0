@@ -4,8 +4,8 @@
 
 I generated this report with `tests/llm_usability_bench.sh`.
 
-- generated_utc: `2026-03-02T15:05:45Z`
-- mode: `reference`
+- generated_utc: `2026-03-02T16:19:08Z`
+- mode: `cmd`
 - max_attempts: `1`
 - total_tasks: `6`
 
@@ -13,39 +13,40 @@ I generated this report with `tests/llm_usability_bench.sh`.
 
 | Metric | Value |
 |---|---:|
-| Verify success rate | 100% |
-| Semantic success rate | 100% |
-| Avg turns to pass | 1 |
+| Verify success rate | 16.666666666666668% |
+| Semantic success rate | 16.666666666666668% |
+| Avg turns to pass | 0.16666666666666666 |
 | Avg attempts used | 1 |
 | Avg prompt tokens base (proxy) | 24.333333333333332 |
 | Avg prompt tokens total (proxy) | 24.333333333333332 |
-| Avg completion tokens total (proxy) | 58.333333333333336 |
-| Avg L0 tokens (proxy) | 58.333333333333336 |
+| Avg completion tokens total (proxy) | 59.666666666666664 |
+| Avg L0 tokens (proxy) | 59.666666666666664 |
 | Avg C tokens (proxy) | 17.5 |
-| Avg L0/C token ratio | 3.3720999999999997 |
-| Tokens per verified program | 82.66666666666667 |
-| Tokens per semantic program | 82.66666666666667 |
+| Avg L0/C token ratio | 3.460516666666667 |
+| Tokens per verified program | 504 |
+| Tokens per semantic program | 504 |
 
 ## Pass@K
 
 | K | Verify pass@k | Semantic pass@k |
 |---:|---:|---:|
-| 1 | 100% | 100% |
+| 1 | 16.666666666666668% | 16.666666666666668% |
 
 ## Task Matrix
 
 | Task | Verify | Semantic | Turns | Attempts | Err class | Prompt tok | Out tok | L0 tok | C tok | L0/C |
 |---|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|
 | t01_add | true | true | 1 | 1/1 | none | 20 | 45 | 45 | 13 | 3.4615 |
-| t02_icmp_eq | true | true | 1 | 1/1 | none | 22 | 46 | 46 | 13 | 3.5385 |
-| t03_cbr_select | true | true | 1 | 1/1 | none | 26 | 40 | 40 | 13 | 3.0769 |
-| t04_mem_roundtrip | true | true | 1 | 1/1 | none | 26 | 49 | 49 | 13 | 3.7692 |
-| t05_call_add | true | true | 1 | 1/1 | none | 28 | 73 | 73 | 24 | 3.0417 |
-| t06_sysv_sum6 | true | true | 1 | 1/1 | none | 24 | 97 | 97 | 29 | 3.3448 |
+| t02_icmp_eq | false | false | 0 | 1/1 | non_canonical | 22 | 52 | 52 | 13 | 4.0000 |
+| t03_cbr_select | false | false | 0 | 1/1 | non_canonical | 26 | 48 | 48 | 13 | 3.6923 |
+| t04_mem_roundtrip | false | false | 0 | 1/1 | non_canonical | 26 | 41 | 41 | 13 | 3.1538 |
+| t05_call_add | false | false | 0 | 1/1 | non_canonical | 28 | 73 | 73 | 24 | 3.0417 |
+| t06_sysv_sum6 | false | false | 0 | 1/1 | non_canonical | 24 | 99 | 99 | 29 | 3.4138 |
 
 ## Error Class Counts
 
-- none: 6
+- non_canonical: 5
+- none: 1
 
 ## Notes
 
