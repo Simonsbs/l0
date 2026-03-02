@@ -978,11 +978,31 @@ Last updated: 2026-03-02
 
 ### M62: Trace Schema Freeze v1
 
-- Status: planned
-- Planned (measurable):
-  - freeze trace record schema and decode rules
-  - add compatibility fixture corpus for trace tooling
-  - acceptance: `schemacat`, `tracecat`, `tracejoin` pass compatibility and tamper suites
+- Status: complete
+- Scope completed:
+  - froze versioned trace compatibility contract surface as `traceschema.v1`
+  - documented frozen schema artifact and trace decode/join contracts in:
+    - `docs/TRACE_SCHEMA.md`
+  - added dedicated trace-schema compatibility harness:
+    - `tests/trace_schema_contracts.sh`
+  - added compatibility fixture corpus in harness for trace tooling:
+    - canonical 32-byte schema fixture for `schemacat`
+    - one-record and two-record trace fixtures for `tracecat`
+    - two-entry debug-map + two-record trace fixture for `tracejoin`
+  - added strict tamper rejection matrix in harness:
+    - schema: bad magic/version/record_size/field_count/truncation
+    - trace payload: non-16-byte alignment
+    - join: unknown trace ids
+  - integrated schema harness into default automation:
+    - `tests/run.sh` now requires `trace_schema_contracts.sh` to report `ok`
+  - aligned top-level docs/spec references with the frozen trace contract doc:
+    - `README.md`
+    - `docs/SPEC.md`
+    - `docs/IMPLEMENTABLE_SPEC.md`
+    - `docs/WORKFLOWS.md`
+  - acceptance:
+    - `schemacat`, `tracecat`, `tracejoin` pass compatibility and tamper suites
+    - full suite passes under `make test`
 
 ### M63: Deterministic Build Guarantees
 

@@ -248,3 +248,14 @@ bash tests/debug_map_schema.sh ./bin/l0c
 
 Expected stable output:
 - `ok`
+
+## Workflow 13: Trace Schema Contract Gate
+
+I use this when I want to enforce the frozen trace schema contract surface (`traceschema.v1`) in one command.
+
+```sh
+bash tests/trace_schema_contracts.sh ./bin/l0c
+```
+
+Expected stable output:
+- `ok`

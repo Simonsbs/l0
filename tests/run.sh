@@ -36,6 +36,12 @@ if ! grep -q '^ok$' /tmp/l0_m61_debug_map_schema.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/trace_schema_contracts.sh" "$BIN" >/tmp/l0_m62_trace_schema_contracts.out
+if ! grep -q '^ok$' /tmp/l0_m62_trace_schema_contracts.out; then
+  echo "FAIL: trace schema contracts did not report ok"
+  exit 1
+fi
+
 # M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
 "$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
 if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then
