@@ -128,7 +128,8 @@ Current bootstrap status:
 - I now consider my M47 intrinsic dead-pure stress-matrix milestone complete: I lock multi-dead-pure intrinsic variants (`const` + `icmp.eq`) plus cross-function dead-icmp id-reuse variants, while preserving strict write `alloca 0` cross-function guardrail fallback.
 - I now consider my M48 intrinsic debug/trace stress-coverage milestone complete: I lock debug-map layouts for multi-dead-pure intrinsic fixtures, assert cross-function tracejoin decode behavior, and enforce artifact-tamper rejection on those emitted maps and traces.
 - I now consider my M49 call/compare debug-trace coverage milestone complete: I lock dead-pure call/compare map layouts and enforce tracejoin decode/tamper rejection checks using artifacts from those families.
-- I track my next milestone as M50: language-level documentation consolidation pass with a single canonical “how to write L0” reference plus debug/tracing workflow examples.
+- I now consider my M50 documentation consolidation milestone complete: I added a canonical “how I write L0” guide, added runnable docs examples, and wired docs example verification into `make test`.
+- I track my next milestone as M51: docs-driven execution walkthrough coverage that demonstrates build/run/debug-map/trace-schema/tracejoin workflows end-to-end from `docs/examples`.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -159,6 +160,7 @@ Current bootstrap status:
 
 ## Documentation
 
+- Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
 - MVP/compiler spec: `docs/SPEC.md`
@@ -167,6 +169,7 @@ Current bootstrap status:
 - Canonicalization notes: `docs/CANON.md`
 - ABI notes: `docs/ABI_SYSV_AMD64.md`
 - Execution plan: `docs/PLAN.md`
+- Runnable examples: `docs/examples/*.l0`
 
 ## Build
 

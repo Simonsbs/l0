@@ -4,6 +4,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="$ROOT/bin/l0c"
 
+for f in "$ROOT"/docs/examples/*.l0; do
+  "$BIN" verify "$f" >/tmp/l0_docs_example_verify.out
+  if ! grep -q '^ok$' /tmp/l0_docs_example_verify.out; then
+    echo "FAIL: verify docs example $(basename "$f")"
+    exit 1
+  fi
+done
+
 "$BIN" verify "$ROOT/tests/valid_min.l0" >/tmp/l0_ok.out
 if ! grep -q '^ok$' /tmp/l0_ok.out; then
   echo "FAIL: verify valid_min"

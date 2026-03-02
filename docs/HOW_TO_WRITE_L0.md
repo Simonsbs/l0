@@ -1,0 +1,102 @@
+# How I Write L0
+
+I use this document as my canonical quick-start for writing valid L0 modules.
+
+## What I keep fixed
+
+I always keep module sections in this exact order:
+
+1. `ver`
+2. `types`
+3. `consts`
+4. `extern`
+5. `globals`
+6. `fns`
+
+I always include every section, even when empty.
+
+## How I name ids
+
+I keep numeric ids deterministic and contiguous by family:
+
+- types: `t0`, `t1`, ...
+- constants: `k0`, `k1`, ...
+- globals: `g0`, `g1`, ...
+- functions: `f0`, `f1`, ...
+- blocks: `b0`, `b1`, ...
+- SSA values: `v0`, `v1`, ...
+
+## How I format instructions
+
+I write one instruction per line.
+
+- value-producing: `vX = OP arg... : tY`
+- non-value: `OP arg...`
+- terminators: `br bK`, `cbr vX bT bF`, `ret vX`, `ret`
+
+I avoid expression nesting, implicit casts, and non-canonical spacing.
+
+## How I keep verifier-safe dataflow
+
+I keep every block terminated exactly once. I define values before I use them. I keep `arg` indices within function arity. I ensure every branch target block exists in the same function.
+
+## Runnable examples
+
+I keep runnable examples in [`docs/examples/`](examples):
+
+- arithmetic: `01_arithmetic_add_wrap.l0`
+- compare: `02_compare_icmp_eq.l0`
+- control flow: `03_control_cbr_select.l0`
+- memory: `04_memory_roundtrip.l0`, `05_memory_gep_roundtrip.l0`
+- calls: `06_call_add_two_function.l0`
+- intrinsics: `07_intrinsic_malloc.l0`, `08_intrinsic_free.l0`, `09_intrinsic_write.l0`, `10_intrinsic_trace.l0`, `11_intrinsic_exit.l0`
+
+I verify them with:
+
+```sh
+for f in docs/examples/*.l0; do
+  ./bin/l0c verify "$f"
+done
+```
+
+## My debug and trace workflow
+
+I emit side artifacts while building:
+
+```sh
+./bin/l0c build docs/examples/10_intrinsic_trace.l0 /tmp/trace_example.l0img \
+  --debug-map /tmp/trace_example.map \
+  --trace-schema /tmp/trace_example.schema
+```
+
+I inspect those artifacts with:
+
+```sh
+./bin/l0c mapcat /tmp/trace_example.map
+./bin/l0c schemacat /tmp/trace_example.schema
+./bin/l0c tracecat /tmp/trace.bin
+./bin/l0c tracejoin /tmp/trace.bin /tmp/trace_example.map
+```
+
+I use `mapcat` to inspect stable instruction ranges, `tracecat` to decode raw binary records, and `tracejoin` to map trace ids to instruction ranges.
+
+## LLM output checklist
+
+Before I accept generated L0, I check:
+
+- section order is exact and complete
+- ids are canonical by family
+- value lines use `vX = ... : tY`
+- every block has exactly one terminator at the end
+- no use-before-def for any `vN`
+- branch targets and call targets exist
+- declared and used types match
+- `./bin/l0c verify <file>` returns `ok`
+
+## Where I keep full details
+
+I keep complete details in:
+
+- language reference: [`docs/LANGUAGE.md`](LANGUAGE.md)
+- full compiler/spec contract: [`docs/SPEC.md`](SPEC.md)
+- implementable token-level contract: [`docs/IMPLEMENTABLE_SPEC.md`](IMPLEMENTABLE_SPEC.md)

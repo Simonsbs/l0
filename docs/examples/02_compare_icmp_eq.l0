@@ -1,0 +1,14 @@
+ver 1
+types { t0=i64, t1=i1 }
+consts { }
+extern { }
+globals { }
+fns {
+fn f0 (t0,t0)->t1 {
+b0:
+  v0 = arg 0 : t0
+  v1 = arg 1 : t0
+  v2 = icmp.eq v0 v1 : t1
+  ret v2
+}
+}

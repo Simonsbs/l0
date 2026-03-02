@@ -2,7 +2,7 @@
 
 I maintain this file as my current implementation status for the L0 bootstrap.
 
-Last updated: 2026-03-01
+Last updated: 2026-03-02
 
 ## Overall
 
@@ -665,13 +665,37 @@ Last updated: 2026-03-01
 
 ### M50: Documentation Consolidation
 
+- Status: complete
+- Scope completed:
+  - added a canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
+  - linked the writing guide to language/spec details:
+    - `docs/LANGUAGE.md`
+    - `docs/SPEC.md`
+    - `docs/IMPLEMENTABLE_SPEC.md`
+  - added 11 runnable documentation examples under `docs/examples`:
+    - arithmetic: `01_arithmetic_add_wrap.l0`
+    - compare: `02_compare_icmp_eq.l0`
+    - control flow: `03_control_cbr_select.l0`
+    - memory: `04_memory_roundtrip.l0`, `05_memory_gep_roundtrip.l0`
+    - call kernel: `06_call_add_two_function.l0`
+    - intrinsics: `07_intrinsic_malloc.l0`, `08_intrinsic_free.l0`, `09_intrinsic_write.l0`, `10_intrinsic_trace.l0`, `11_intrinsic_exit.l0`
+  - added dedicated debug/tracing workflow commands in the guide:
+    - `build --debug-map --trace-schema`
+    - `mapcat`, `schemacat`, `tracecat`, `tracejoin`
+  - added an explicit LLM output checklist in the guide (canonical order, ids, terminators, use-before-def, verifier pass)
+  - wired docs-example verification into `tests/run.sh` so `make test` verifies every `docs/examples/*.l0` file
+  - validated with full-suite pass
+
+### M51: Docs-Driven Execution Walkthroughs
+
 - Status: planned
 - Planned (measurable):
-  - consolidate language docs into a single canonical “how to write L0” reference that links out to spec details
-  - include at least 10 runnable L0 examples covering arithmetic, control flow, memory, call kernels, and intrinsics
-  - include a dedicated debug/tracing workflow section (`build --debug-map`, `build --trace-schema`, `tracecat`, `tracejoin`, `mapcat`)
-  - add a short “LLM output checklist” section for canonical formatting and verifier expectations
-  - acceptance: docs build/read pass by full-suite `make test`, and all listed example files verify successfully in scripted checks
+  - add a docs section that demonstrates complete end-to-end workflows from `docs/examples`:
+    - verify -> build -> imgcheck/imgmeta -> run
+    - build with `--debug-map` and `--trace-schema`
+    - decode and join traces with `tracecat`/`tracejoin`
+  - add scripted assertions in `tests/run.sh` for at least 3 docs-driven walkthroughs that check deterministic tool output patterns
+  - acceptance: full-suite `make test` passes with the new walkthrough checks enabled by default
 
 ## Documentation status
 
