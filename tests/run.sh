@@ -4023,6 +4023,78 @@ if [ "$(od -An -t x1 /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lower
   exit 1
 fi
 
+"$BIN" build "$ROOT/tests/valid_malloc_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_malloc_with_multi_dead_pure_map.img --debug-map /tmp/l0_malloc_with_multi_dead_pure_debug_map.bin >/tmp/l0_build_malloc_with_multi_dead_pure_map.out
+if ! grep -q '^ok$' /tmp/l0_build_malloc_with_multi_dead_pure_map.out; then
+  echo "FAIL: build valid_malloc_with_multi_dead_pure_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_malloc_with_multi_dead_pure_debug_map.bin >/tmp/l0_malloc_with_multi_dead_pure_mapcat.out
+if [ "$(cat /tmp/l0_malloc_with_multi_dead_pure_mapcat.out)" != $'entries 4\ncode_size 40\ninst_id 1\nstart 0\nend 6\ninst_id 2\nstart 6\nend 20\ninst_id 3\nstart 20\nend 34\ninst_id 4\nstart 34\nend 40' ]; then
+  echo "FAIL: malloc multi-dead-pure debug-map layout"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_write_newline_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_write_newline_with_multi_dead_pure_map.img --debug-map /tmp/l0_write_newline_with_multi_dead_pure_debug_map.bin >/tmp/l0_build_write_newline_with_multi_dead_pure_map.out
+if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_multi_dead_pure_map.out; then
+  echo "FAIL: build valid_write_newline_with_multi_dead_pure_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_write_newline_with_multi_dead_pure_debug_map.bin >/tmp/l0_write_newline_with_multi_dead_pure_mapcat.out
+if [ "$(cat /tmp/l0_write_newline_with_multi_dead_pure_mapcat.out)" != $'entries 4\ncode_size 46\ninst_id 1\nstart 0\nend 12\ninst_id 2\nstart 12\nend 38\ninst_id 3\nstart 38\nend 45\ninst_id 4\nstart 45\nend 46' ]; then
+  echo "FAIL: write newline multi-dead-pure debug-map layout"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_trace_noop_with_multi_dead_pure_general_lowered.l0" /tmp/l0_test_trace_noop_with_multi_dead_pure_map.img --debug-map /tmp/l0_trace_noop_with_multi_dead_pure_debug_map.bin >/tmp/l0_build_trace_noop_with_multi_dead_pure_map.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_multi_dead_pure_map.out; then
+  echo "FAIL: build valid_trace_noop_with_multi_dead_pure_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_trace_noop_with_multi_dead_pure_debug_map.bin >/tmp/l0_trace_noop_with_multi_dead_pure_mapcat.out
+if [ "$(cat /tmp/l0_trace_noop_with_multi_dead_pure_mapcat.out)" != $'entries 2\ncode_size 51\ninst_id 1\nstart 0\nend 17\ninst_id 2\nstart 17\nend 51' ]; then
+  echo "FAIL: trace noop multi-dead-pure debug-map layout"
+  exit 1
+fi
+
+"$BIN" build "$ROOT/tests/valid_trace_noop_with_dead_icmp_crossfn_general_lowered.l0" /tmp/l0_test_trace_noop_with_dead_icmp_crossfn_map.img --debug-map /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin >/tmp/l0_build_trace_noop_with_dead_icmp_crossfn_map.out
+if ! grep -q '^ok$' /tmp/l0_build_trace_noop_with_dead_icmp_crossfn_map.out; then
+  echo "FAIL: build valid_trace_noop_with_dead_icmp_crossfn_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin >/tmp/l0_tracejoin_with_dead_icmp_crossfn.out
+if [ "$(cat /tmp/l0_tracejoin_with_dead_icmp_crossfn.out)" != $'id 1\nval 123\nstart 0\nend 17' ]; then
+  echo "FAIL: tracejoin dead-icmp crossfn decoded output"
+  exit 1
+fi
+
+cp /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_truncated.bin
+printf '\x00' >> /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_truncated.bin
+if "$BIN" tracejoin /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_truncated.bin >/tmp/l0_bad_tracejoin_with_dead_icmp_crossfn_map_truncated.out 2>/tmp/l0_bad_tracejoin_with_dead_icmp_crossfn_map_truncated.err; then
+  echo "FAIL: tracejoin accepted truncated crossfn trace debug-map payload"
+  exit 1
+fi
+
+cp /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_count.bin
+printf '\x03\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_count.bin bs=1 seek=16 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_count.bin >/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_count.out 2>/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_map_count.err; then
+  echo "FAIL: mapcat accepted bad entry count in crossfn trace debug-map"
+  exit 1
+fi
+
+cp /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_unknown_id.err
+printf '\x09\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_unknown_id.err bs=1 seek=0 conv=notrunc status=none
+if "$BIN" tracejoin /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_unknown_id.err /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin >/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_unknown_id.out 2>/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_unknown_id.errlog; then
+  echo "FAIL: tracejoin accepted unknown trace id for crossfn trace artifact"
+  exit 1
+fi
+
+cp /tmp/l0_trace_noop_with_dead_icmp_crossfn_debug_map.bin /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_nonmonotonic.bin
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_nonmonotonic.bin bs=1 seek=64 conv=notrunc status=none
+if "$BIN" tracejoin /tmp/l0_run_trace_noop_with_dead_icmp_crossfn_general_lowered.err /tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_nonmonotonic.bin >/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_nonmonotonic.out 2>/tmp/l0_bad_trace_noop_with_dead_icmp_crossfn_nonmonotonic.err; then
+  echo "FAIL: tracejoin accepted non-monotonic crossfn trace debug-map ranges"
+  exit 1
+fi
+
 "$BIN" build "$ROOT/tests/valid_write_newline_with_two_dead_consts_general_unlowered.l0" /tmp/l0_test_write_newline_with_two_dead_consts_general_unlowered.img >/tmp/l0_build_write_newline_with_two_dead_consts_general_unlowered.out
 if ! grep -q '^ok$' /tmp/l0_build_write_newline_with_two_dead_consts_general_unlowered.out; then
   echo "FAIL: build valid_write_newline_with_two_dead_consts_general_unlowered"

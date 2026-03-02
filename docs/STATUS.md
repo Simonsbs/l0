@@ -631,13 +631,32 @@ Last updated: 2026-03-01
 
 ### M48: Intrinsic Debug/Trace Stress Coverage
 
+- Status: complete
+- Scope completed:
+  - added debug-map and tracejoin stress coverage for intrinsic dead-pure/cross-function fixtures
+  - asserted stable debug-map entry layouts for 3 intrinsic families under multi-dead-pure variants:
+    - `malloc`
+    - `write`
+    - `trace`
+  - added tracejoin decode assertions for cross-function trace fixture outputs (`id 1`, `val 123`, `start 0`, `end 17`)
+  - added tamper-rejection tests on emitted cross-function trace artifacts:
+    - truncated debug-map payload
+    - bad debug-map entry count header
+    - unknown trace id in emitted trace payload
+    - non-monotonic debug-map range mutation
+  - validated with full-suite pass
+
+### M49: Call/Compare Debug-Trace Coverage Expansion
+
 - Status: planned
 - Planned (measurable):
-  - add debug-map and tracejoin stress coverage for new intrinsic dead-pure/cross-function fixtures
-  - assert stable debug-map entry layouts for at least 3 intrinsic families under multi-dead-pure variants (`write`, `malloc`, `trace`)
-  - add tracejoin decode assertions for cross-function trace fixture outputs
-  - add at least 4 tamper tests on emitted artifacts from these new fixtures (truncated map, bad entry count, unknown trace id, non-monotonic ranges)
-  - acceptance: full suite pass with deterministic mapcat/tracejoin output checks and deterministic rejection checks for malformed artifacts
+  - extend debug-map layout lock assertions to dead-pure call and compare/select fixture families
+  - add at least 3 new map-layout assertions:
+    - call dead-pure fixture map layout
+    - compare dead-pure fixture map layout
+    - compare/select dead-pure fixture map layout
+  - add at least 3 new tracejoin/tamper checks using emitted artifacts from those families
+  - acceptance: full suite pass with deterministic mapcat/tracejoin outputs and deterministic failure checks for malformed artifacts
 
 ## Documentation status
 
