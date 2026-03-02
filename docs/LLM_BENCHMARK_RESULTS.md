@@ -2,34 +2,34 @@
 
 I generated this report with `tests/llm_usability_bench.sh`.
 
-- generated_utc: `2026-03-02T14:15:10Z`
-- mode: `reference`
+- generated_utc: `2026-03-02T14:43:06Z`
+- mode: `cmd`
 - total_tasks: `6`
 
 ## Summary
 
 | Metric | Value |
 |---|---:|
-| Verify success rate | 100% |
-| Semantic success rate | 100% |
-| Avg turns to pass | 1 |
+| Verify success rate | 0% |
+| Semantic success rate | 0% |
+| Avg turns to pass | 0 |
 | Avg prompt tokens (proxy) | 24.333333333333332 |
-| Avg L0 tokens (proxy) | 58.333333333333336 |
+| Avg L0 tokens (proxy) | 10.666666666666666 |
 | Avg C tokens (proxy) | 17.5 |
-| Avg L0/C token ratio | 3.3720999999999997 |
-| Tokens per verified program | 82.66666666666667 |
-| Tokens per semantic program | 82.66666666666667 |
+| Avg L0/C token ratio | 0.6202 |
+| Tokens per verified program | null |
+| Tokens per semantic program | null |
 
 ## Task Matrix
 
 | Task | Verify | Semantic | Prompt tok | L0 tok | C tok | L0/C |
 |---|---:|---:|---:|---:|---:|---:|
-| t01_add | true | true | 20 | 45 | 13 | 3.4615 |
-| t02_icmp_eq | true | true | 22 | 46 | 13 | 3.5385 |
-| t03_cbr_select | true | true | 26 | 40 | 13 | 3.0769 |
-| t04_mem_roundtrip | true | true | 26 | 49 | 13 | 3.7692 |
-| t05_call_add | true | true | 28 | 73 | 24 | 3.0417 |
-| t06_sysv_sum6 | true | true | 24 | 97 | 29 | 3.3448 |
+| t01_add | false | false | 20 | 3 | 13 | 0.2308 |
+| t02_icmp_eq | false | false | 22 | 7 | 13 | 0.5385 |
+| t03_cbr_select | false | false | 26 | 12 | 13 | 0.9231 |
+| t04_mem_roundtrip | false | false | 26 | 13 | 13 | 1.0000 |
+| t05_call_add | false | false | 28 | 4 | 24 | 0.1667 |
+| t06_sysv_sum6 | false | false | 24 | 25 | 29 | 0.8621 |
 
 ## Notes
 

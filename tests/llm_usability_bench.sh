@@ -125,26 +125,33 @@ done < "$TASKS"
 
 jq -s '
   . as $rows
+  | ($rows | map(select(.verify_ok)) | length) as $verify_count
+  | ($rows | map(select(.semantic_ok)) | length) as $semantic_count
+  | ($rows | length) as $total
   | {
       generated_utc: (now | todateiso8601),
       mode: ($rows[0].mode // "unknown"),
-      total_tasks: ($rows | length),
-      verify_success_count: ($rows | map(select(.verify_ok)) | length),
-      verify_success_rate_pct: (($rows | map(select(.verify_ok)) | length) * 100.0 / (($rows | length) // 1)),
-      semantic_success_count: ($rows | map(select(.semantic_ok)) | length),
-      semantic_success_rate_pct: (($rows | map(select(.semantic_ok)) | length) * 100.0 / (($rows | length) // 1)),
-      avg_turns_to_pass: (($rows | map(.turns_to_pass) | add) / (($rows | length) // 1)),
-      avg_prompt_tokens: (($rows | map(.prompt_tokens) | add) / (($rows | length) // 1)),
-      avg_l0_tokens: (($rows | map(.l0_tokens) | add) / (($rows | length) // 1)),
-      avg_c_tokens: (($rows | map(.c_tokens) | add) / (($rows | length) // 1)),
-      avg_l0_vs_c_token_ratio: (($rows | map(.l0_vs_c_token_ratio) | add) / (($rows | length) // 1)),
+      total_tasks: $total,
+      verify_success_count: $verify_count,
+      verify_success_rate_pct: (if $total > 0 then ($verify_count * 100.0 / $total) else 0 end),
+      semantic_success_count: $semantic_count,
+      semantic_success_rate_pct: (if $total > 0 then ($semantic_count * 100.0 / $total) else 0 end),
+      avg_turns_to_pass: (if $total > 0 then (($rows | map(.turns_to_pass) | add) / $total) else 0 end),
+      avg_prompt_tokens: (if $total > 0 then (($rows | map(.prompt_tokens) | add) / $total) else 0 end),
+      avg_l0_tokens: (if $total > 0 then (($rows | map(.l0_tokens) | add) / $total) else 0 end),
+      avg_c_tokens: (if $total > 0 then (($rows | map(.c_tokens) | add) / $total) else 0 end),
+      avg_l0_vs_c_token_ratio: (if $total > 0 then (($rows | map(.l0_vs_c_token_ratio) | add) / $total) else 0 end),
       tokens_per_verified_program: (
-        ($rows | map(.prompt_tokens + .l0_tokens) | add) /
-        ((($rows | map(select(.verify_ok)) | length) // 1))
+        if $verify_count > 0
+        then (($rows | map(.prompt_tokens + .l0_tokens) | add) / $verify_count)
+        else null
+        end
       ),
       tokens_per_semantic_program: (
-        ($rows | map(.prompt_tokens + .l0_tokens) | add) /
-        ((($rows | map(select(.semantic_ok)) | length) // 1))
+        if $semantic_count > 0
+        then (($rows | map(.prompt_tokens + .l0_tokens) | add) / $semantic_count)
+        else null
+        end
       ),
       notes: [
         "Token counts are deterministic whitespace-token proxies for relative comparison.",
