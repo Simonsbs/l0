@@ -784,11 +784,30 @@ Last updated: 2026-03-02
 
 ### M55: General CFG Lowering v1
 
-- Status: planned
-- Planned (measurable):
-  - implement lowering path for non-template multi-block function shapes
-  - preserve deterministic fallback behavior for unsupported patterns
-  - acceptance: new non-template CFG fixtures lower and run correctly with deterministic metadata
+- Status: complete
+- Scope completed:
+  - added generalized selector stage for a non-template multi-block CFG family:
+    - canonical branch-const-select shape (`cbr` in `b0`, branch-local `const` returns in `b1`/`b2`)
+  - added dynamic code emission for branch-const-select lowering:
+    - generated x86-64 path emits condition test + branch-local immediate returns
+    - assigned deterministic kernel kind id `26`
+  - integrated generalized normalized selector path:
+    - `try_select_general_branch_const_select_kernel_code`
+    - dead-const normalized variants lower through the same path
+  - preserved strict fallback guardrails for unsupported branch-return mappings
+  - extended debug-map emission for kernel kind `26` with deterministic ranges:
+    - `inst_id 1: [0,5)`
+    - `inst_id 2: [5,16)`
+    - `inst_id 3: [16,27)`
+  - extended image/meta schema range checks to include kernel kind `26`
+  - added deterministic fixtures and assertions:
+    - lowered: `valid_branch_const_select_lowered.l0`
+    - lowered (dead-const normalized): `valid_branch_const_select_with_dead_const_general_lowered.l0`
+    - guardrail fallback: `valid_branch_const_select_guardrail_fallback.l0`
+  - added runnable docs example:
+    - `docs/examples/15_cfg_branch_const_select.l0`
+  - integrated checks into `tests/run.sh` (verify/build/run/debug-map/fallback assertions)
+  - validated with full-suite pass
 
 ### M56: SSA Join and Merge Lowering
 

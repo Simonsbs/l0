@@ -327,6 +327,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - mismatch memory-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - mismatch memory-gep-roundtrip load/return-id dataflow shapes remain intentionally unlowered in current bootstrap selector and are regression-tested
     - canonical branch-identity multi-block modules (`cbr vN b1 b2` with both branches returning `vN`) are now directly lowered in bootstrap instead of falling back to the single-byte `ret` stub
+    - canonical branch-const-select multi-block modules (`cbr vN b1 b2` with branch-local `const` returns) are now directly lowered in bootstrap, including dead-const-normalized variants, while unsupported branch-return mappings remain strict fallback guardrails
     - const-return kernel (`const N` or `const -N` -> `ret v0`)
     - const-return kernels also accept nonzero const-def value ids when the same id is returned (`vN = const ...`, `ret vN`)
 - fallback payload for other verified modules: single-byte `ret` (`0xC3`)

@@ -148,6 +148,21 @@ if ! grep -q '^ok$' /tmp/l0_ok_branch.out; then
   echo "FAIL: verify valid_branch"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_branch_const_select_lowered.l0" >/tmp/l0_ok_branch_const_select_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_branch_const_select_lowered.out; then
+  echo "FAIL: verify valid_branch_const_select_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_branch_const_select_with_dead_const_general_lowered.l0" >/tmp/l0_ok_branch_const_select_with_dead_const_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_branch_const_select_with_dead_const_general_lowered.out; then
+  echo "FAIL: verify valid_branch_const_select_with_dead_const_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_branch_const_select_guardrail_fallback.l0" >/tmp/l0_ok_branch_const_select_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_branch_const_select_guardrail_fallback.out; then
+  echo "FAIL: verify valid_branch_const_select_guardrail_fallback"
+  exit 1
+fi
 "$BIN" canon "$ROOT/tests/valid_min.l0" -o /tmp/l0_canon_min.l0 >/tmp/l0_canon_min_cmd.out
 if ! grep -q '^ok$' /tmp/l0_canon_min_cmd.out; then
   echo "FAIL: canon -o valid_min"
@@ -2672,6 +2687,59 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select.img 9 8 >/tmp/l0_run_cbr_eq_select_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_f.out)" != "8" ]; then
   echo "FAIL: run cbr eq-select false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_branch_const_select_lowered.l0" /tmp/l0_test_branch_const_select.img >/tmp/l0_build_branch_const_select.out
+if ! grep -q '^ok$' /tmp/l0_build_branch_const_select.out; then
+  echo "FAIL: build valid_branch_const_select_lowered"
+  exit 1
+fi
+branch_const_select_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_branch_const_select.img | tr -d ' ')
+branch_const_select_kernel_kind=$(od -An -t u8 -j "$((branch_const_select_dbg_off + 32))" -N 8 /tmp/l0_test_branch_const_select.img | tr -d ' ')
+if [ "$branch_const_select_kernel_kind" != "26" ]; then
+  echo "FAIL: branch const-select kernel kind"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_branch_const_select.img 1 >/tmp/l0_run_branch_const_select_true.out
+if [ "$(tr -d '\n' < /tmp/l0_run_branch_const_select_true.out)" != "11" ]; then
+  echo "FAIL: run branch const-select true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_branch_const_select.img 0 >/tmp/l0_run_branch_const_select_false.out
+if [ "$(tr -d '\n' < /tmp/l0_run_branch_const_select_false.out)" != "22" ]; then
+  echo "FAIL: run branch const-select false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_branch_const_select_lowered.l0" /tmp/l0_test_branch_const_select_map.img --debug-map /tmp/l0_branch_const_select_debug_map.bin >/tmp/l0_build_branch_const_select_map.out
+if ! grep -q '^ok$' /tmp/l0_build_branch_const_select_map.out; then
+  echo "FAIL: build valid_branch_const_select_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_branch_const_select_debug_map.bin >/tmp/l0_branch_const_select_mapcat.out
+if [ "$(cat /tmp/l0_branch_const_select_mapcat.out)" != $'entries 3\ncode_size 27\ninst_id 1\nstart 0\nend 5\ninst_id 2\nstart 5\nend 16\ninst_id 3\nstart 16\nend 27' ]; then
+  echo "FAIL: branch const-select debug-map layout"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_branch_const_select_with_dead_const_general_lowered.l0" /tmp/l0_test_branch_const_select_dead_const.img >/tmp/l0_build_branch_const_select_dead_const.out
+if ! grep -q '^ok$' /tmp/l0_build_branch_const_select_dead_const.out; then
+  echo "FAIL: build valid_branch_const_select_with_dead_const_general_lowered"
+  exit 1
+fi
+branch_const_select_dead_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_branch_const_select_dead_const.img | tr -d ' ')
+branch_const_select_dead_kernel_kind=$(od -An -t u8 -j "$((branch_const_select_dead_dbg_off + 32))" -N 8 /tmp/l0_test_branch_const_select_dead_const.img | tr -d ' ')
+if [ "$branch_const_select_dead_kernel_kind" != "26" ]; then
+  echo "FAIL: branch const-select dead-const kernel kind"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_branch_const_select_guardrail_fallback.l0" /tmp/l0_test_branch_const_select_guardrail_fallback.img >/tmp/l0_build_branch_const_select_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_branch_const_select_guardrail_fallback.out; then
+  echo "FAIL: build valid_branch_const_select_guardrail_fallback"
+  exit 1
+fi
+branch_const_select_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_branch_const_select_guardrail_fallback.img | tr -d ' ')
+branch_const_select_guardrail_kernel_kind=$(od -An -t u8 -j "$((branch_const_select_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_branch_const_select_guardrail_fallback.img | tr -d ' ')
+if [ "$branch_const_select_guardrail_kernel_kind" != "0" ]; then
+  echo "FAIL: branch const-select guardrail expected fallback kernel kind 0"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_swapped.l0" /tmp/l0_test_cbr_eq_select_swapped.img >/tmp/l0_build_cbr_eq_select_swapped.out

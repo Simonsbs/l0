@@ -115,3 +115,23 @@ bash tests/verifier_matrix.sh ./bin/l0c tests/verifier_matrix.tsv
 
 Expected stable output:
 - `ok`
+
+## Workflow 6: Multi-Block Branch-Const CFG
+
+I use this when I want to validate generalized multi-block CFG lowering for branch-local constant returns.
+
+```sh
+./bin/l0c verify docs/examples/15_cfg_branch_const_select.l0
+./bin/l0c build docs/examples/15_cfg_branch_const_select.l0 /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c imgcheck /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c imgmeta /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c run /tmp/l0_wf_cfg_branch_const.img 1
+./bin/l0c run /tmp/l0_wf_cfg_branch_const.img 0
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 26`, `code_size 27`
+- `run ... 1` prints: `11`
+- `run ... 0` prints: `22`

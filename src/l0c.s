@@ -384,6 +384,24 @@ pat_branch_mid_c: .ascii "\nb2:\n  ret v"
 pat_branch_mid_c_len = . - pat_branch_mid_c
 pat_branch_tail: .ascii "\n}\n"
 pat_branch_tail_len = . - pat_branch_tail
+pat_branch_const_head: .ascii "fn f0 (t0)->t1 {\nb0:\n  v"
+pat_branch_const_head_len = . - pat_branch_const_head
+pat_branch_const_mid_a: .ascii " = arg 0 : t0\n  cbr v"
+pat_branch_const_mid_a_len = . - pat_branch_const_mid_a
+pat_branch_const_mid_b: .ascii " b1 b2\nb1:\n  v"
+pat_branch_const_mid_b_len = . - pat_branch_const_mid_b
+pat_branch_const_mid_c: .ascii " = const "
+pat_branch_const_mid_c_len = . - pat_branch_const_mid_c
+pat_branch_const_mid_d: .ascii " : t1\n  ret v"
+pat_branch_const_mid_d_len = . - pat_branch_const_mid_d
+pat_branch_const_mid_e: .ascii "\nb2:\n  v"
+pat_branch_const_mid_e_len = . - pat_branch_const_mid_e
+pat_branch_const_mid_f: .ascii " = const "
+pat_branch_const_mid_f_len = . - pat_branch_const_mid_f
+pat_branch_const_mid_g: .ascii " : t1\n  ret v"
+pat_branch_const_mid_g_len = . - pat_branch_const_mid_g
+pat_branch_const_tail: .ascii "\n}\n"
+pat_branch_const_tail_len = . - pat_branch_const_tail
 pat_call_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_head_len = . - pat_call_head
 pat_call_head_alt: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v1 = arg 0 : t0\n  v0 = arg 1 : t0\n  v"
@@ -954,6 +972,14 @@ do_build:
     mov rsi, rbx
     call try_select_general_branch_identity_kernel_code
     cmp rax, 1
+    jne .build_try_general_branch_const_select
+    jmp .build_code_selected
+
+.build_try_general_branch_const_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_branch_const_select_kernel_code
+    cmp rax, 1
     jne .build_try_general_cbr_eq_select
     jmp .build_code_selected
 
@@ -1179,6 +1205,8 @@ do_build:
     je .build_dbg_map_case_two_17
     cmp rax, 25
     je .build_dbg_map_case_single_full
+    cmp rax, 26
+    je .build_dbg_map_case_three_5_16
     jmp .build_dbg_map_case_synth
 
 .build_dbg_map_case_single_full:
@@ -1216,6 +1244,19 @@ do_build:
     mov qword ptr [r11+56], 2
     mov qword ptr [r11+64], 17
     mov qword ptr [r11+72], r15
+    jmp .build_dbg_map_finish
+
+.build_dbg_map_case_three_5_16:
+    mov r12, 3
+    mov qword ptr [r11+32], 1
+    mov qword ptr [r11+40], 0
+    mov qword ptr [r11+48], 5
+    mov qword ptr [r11+56], 2
+    mov qword ptr [r11+64], 5
+    mov qword ptr [r11+72], 16
+    mov qword ptr [r11+80], 3
+    mov qword ptr [r11+88], 16
+    mov qword ptr [r11+96], r15
     jmp .build_dbg_map_finish
 
 .build_dbg_map_case_three_3_6:
@@ -1553,9 +1594,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
-    # L0IX kernel kind id must be within known bootstrap range [0,25]
+    # L0IX kernel kind id must be within known bootstrap range [0,26]
     mov rax, qword ptr [r8+r9+32]
-    cmp rax, 25
+    cmp rax, 26
     ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
@@ -1654,7 +1695,7 @@ do_imgmeta:
     cmp rax, 1
     jne fail_img
     mov rax, qword ptr [r8+r9+32]  # kernel kind
-    cmp rax, 25
+    cmp rax, 26
     ja fail_img
     mov rax, qword ptr [r8+r9+40]  # debug code_size
     cmp rax, qword ptr [r8+56]
@@ -12589,6 +12630,430 @@ try_select_branch_identity_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsbi_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_branch_const_select_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_branch_const_select_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 96
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_branch_const_head]
+    mov rcx, pat_branch_const_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsbcs_no
+
+    mov r8, rax
+    add r8, pat_branch_const_head_len   # arg value-id start
+    cmp r8, r13
+    jae .tsbcs_no
+    mov r9, r8
+.tsbcs_arg_vid_loop:
+    cmp r9, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbcs_arg_vid_done
+    cmp al, '9'
+    ja .tsbcs_arg_vid_done
+    inc r9
+    jmp .tsbcs_arg_vid_loop
+.tsbcs_arg_vid_done:
+    cmp r9, r8
+    je .tsbcs_no
+    mov qword ptr [rsp+0], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+8], rax
+
+    mov r10, r9
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_a_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_a]
+    mov rdx, pat_branch_const_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_a_len
+
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, qword ptr [rsp+8]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_b_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_b]
+    mov rdx, pat_branch_const_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_b_len
+
+    # b1 const value-id
+    cmp r10, r13
+    jae .tsbcs_no
+    mov r8, r10
+    mov r9, r8
+.tsbcs_c1_vid_loop:
+    cmp r9, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbcs_c1_vid_done
+    cmp al, '9'
+    ja .tsbcs_c1_vid_done
+    inc r9
+    jmp .tsbcs_c1_vid_loop
+.tsbcs_c1_vid_done:
+    cmp r9, r8
+    je .tsbcs_no
+    mov qword ptr [rsp+16], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+24], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_c_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_c]
+    mov rdx, pat_branch_const_mid_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_c_len      # const1 literal start
+    cmp r10, r13
+    jae .tsbcs_no
+
+    xor r9, r9                                 # sign flag
+    mov al, byte ptr [r12+r10]
+    cmp al, '-'
+    jne .tsbcs_c1_digits
+    mov r9, 1
+    inc r10
+    cmp r10, r13
+    jae .tsbcs_no
+.tsbcs_c1_digits:
+    mov r8, r10
+    xor rbx, rbx
+.tsbcs_c1_loop:
+    cmp r10, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsbcs_c1_done
+    cmp al, '9'
+    ja .tsbcs_c1_done
+    imul rbx, rbx, 10
+    movzx rax, al
+    sub rax, '0'
+    add rbx, rax
+    inc r10
+    jmp .tsbcs_c1_loop
+.tsbcs_c1_done:
+    cmp r10, r8
+    je .tsbcs_no
+    cmp r9, 1
+    jne .tsbcs_c1_store
+    neg rbx
+.tsbcs_c1_store:
+    mov qword ptr [rsp+48], rbx
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_d_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_d]
+    mov rdx, pat_branch_const_mid_d_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_d_len       # ret1 value-id start
+
+    cmp r10, r13
+    jae .tsbcs_no
+    mov r8, r10
+    mov r9, r8
+.tsbcs_ret1_vid_loop:
+    cmp r9, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbcs_ret1_vid_done
+    cmp al, '9'
+    ja .tsbcs_ret1_vid_done
+    inc r9
+    jmp .tsbcs_ret1_vid_loop
+.tsbcs_ret1_vid_done:
+    cmp r9, r8
+    je .tsbcs_no
+    mov rax, r9
+    sub rax, r8
+    cmp rax, qword ptr [rsp+24]
+    jne .tsbcs_no
+    mov rdi, r12
+    add rdi, r8
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_e_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_e]
+    mov rdx, pat_branch_const_mid_e_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_e_len
+
+    # b2 const value-id
+    cmp r10, r13
+    jae .tsbcs_no
+    mov r8, r10
+    mov r9, r8
+.tsbcs_c2_vid_loop:
+    cmp r9, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbcs_c2_vid_done
+    cmp al, '9'
+    ja .tsbcs_c2_vid_done
+    inc r9
+    jmp .tsbcs_c2_vid_loop
+.tsbcs_c2_vid_done:
+    cmp r9, r8
+    je .tsbcs_no
+    mov qword ptr [rsp+32], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+40], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_f_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_f]
+    mov rdx, pat_branch_const_mid_f_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_f_len      # const2 literal start
+    cmp r10, r13
+    jae .tsbcs_no
+
+    xor r9, r9                                 # sign flag
+    mov al, byte ptr [r12+r10]
+    cmp al, '-'
+    jne .tsbcs_c2_digits
+    mov r9, 1
+    inc r10
+    cmp r10, r13
+    jae .tsbcs_no
+.tsbcs_c2_digits:
+    mov r8, r10
+    xor rbx, rbx
+.tsbcs_c2_loop:
+    cmp r10, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsbcs_c2_done
+    cmp al, '9'
+    ja .tsbcs_c2_done
+    imul rbx, rbx, 10
+    movzx rax, al
+    sub rax, '0'
+    add rbx, rax
+    inc r10
+    jmp .tsbcs_c2_loop
+.tsbcs_c2_done:
+    cmp r10, r8
+    je .tsbcs_no
+    cmp r9, 1
+    jne .tsbcs_c2_store
+    neg rbx
+.tsbcs_c2_store:
+    mov qword ptr [rsp+56], rbx
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_mid_g_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_mid_g]
+    mov rdx, pat_branch_const_mid_g_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    add r10, pat_branch_const_mid_g_len       # ret2 value-id start
+
+    cmp r10, r13
+    jae .tsbcs_no
+    mov r8, r10
+    mov r9, r8
+.tsbcs_ret2_vid_loop:
+    cmp r9, r13
+    jae .tsbcs_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsbcs_ret2_vid_done
+    cmp al, '9'
+    ja .tsbcs_ret2_vid_done
+    inc r9
+    jmp .tsbcs_ret2_vid_loop
+.tsbcs_ret2_vid_done:
+    cmp r9, r8
+    je .tsbcs_no
+    mov rax, r9
+    sub rax, r8
+    cmp rax, qword ptr [rsp+40]
+    jne .tsbcs_no
+    mov rdi, r12
+    add rdi, r8
+    mov rsi, r12
+    add rsi, qword ptr [rsp+32]
+    mov rdx, qword ptr [rsp+40]
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_branch_const_tail_len
+    jb .tsbcs_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_branch_const_tail]
+    mov rdx, pat_branch_const_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsbcs_no
+
+    # Emit: test rdi,rdi ; je +11 ; mov rax,imm_true ; ret ; mov rax,imm_false ; ret
+    lea rdi, [rip+codegen_buf]
+    mov byte ptr [rdi+0], 0x48
+    mov byte ptr [rdi+1], 0x85
+    mov byte ptr [rdi+2], 0xff
+    mov byte ptr [rdi+3], 0x74
+    mov byte ptr [rdi+4], 0x0b
+    mov byte ptr [rdi+5], 0x48
+    mov byte ptr [rdi+6], 0xb8
+    mov rax, qword ptr [rsp+48]
+    mov qword ptr [rdi+7], rax
+    mov byte ptr [rdi+15], 0xc3
+    mov byte ptr [rdi+16], 0x48
+    mov byte ptr [rdi+17], 0xb8
+    mov rax, qword ptr [rsp+56]
+    mov qword ptr [rdi+18], rax
+    mov byte ptr [rdi+26], 0xc3
+    lea r14, [rip+codegen_buf]
+    mov r15, 27
+    mov qword ptr [rip+build_kernel_kind], 26
+    mov rax, 1
+    jmp .tsbcs_done
+
+.tsbcs_no:
+    xor rax, rax
+.tsbcs_done:
+    add rsp, 96
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsbcs_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsbcs_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_branch_const_select_kernel_code
+# generalized pre-lowering normalization for branch-const-select kernel:
+# - removes canonical dead const value lines
+# - reuses branch const-select selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_branch_const_select_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgbcs_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_branch_const_select_kernel_code
+    cmp rax, 1
+    jne .tsgbcs_no
+    mov rax, 1
+    jmp .tsgbcs_done
+
+.tsgbcs_no:
+    xor rax, rax
+.tsgbcs_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgbcs_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgbcs_keep_out:
     pop r13
     pop r12
     pop rbx
