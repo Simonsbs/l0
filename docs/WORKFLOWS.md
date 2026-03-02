@@ -237,3 +237,14 @@ bash tests/intrinsic_contracts.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 12: Debug-Map Schema Contract Gate
+
+I use this when I want to enforce the frozen debug-map schema contract surface (`debugmap.v1`) in one command.
+
+```sh
+bash tests/debug_map_schema.sh ./bin/l0c
+```
+
+Expected stable output:
+- `ok`

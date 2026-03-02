@@ -3,6 +3,7 @@
 I use this document as my coding-facing contract for L0.
 I keep every rule deterministic and machine-checkable.
 I freeze runtime intrinsic compatibility in `docs/INTRINSIC_CONTRACTS.md` as `intrinsics.v1`.
+I freeze debug-map compatibility in `docs/DEBUG_MAP_SCHEMA.md` as `debugmap.v1`.
 
 ## 1) Token-Level Grammar (Bootstrap-Implemented)
 

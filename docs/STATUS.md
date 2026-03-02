@@ -948,11 +948,33 @@ Last updated: 2026-03-02
 
 ### M61: Debug-Map Schema Freeze v1
 
-- Status: planned
-- Planned (measurable):
-  - freeze debug-map format and compatibility constraints
-  - add compatibility fixtures for schema-stability checks
-  - acceptance: schema fixtures decode identically and tamper checks remain strict
+- Status: complete
+- Scope completed:
+  - froze versioned debug-map compatibility contract surface as `debugmap.v1`
+  - documented the frozen schema, decode contract, join contract, and strict validation rules in:
+    - `docs/DEBUG_MAP_SCHEMA.md`
+  - added dedicated debug-map schema compatibility harness:
+    - `tests/debug_map_schema.sh`
+  - added compatibility fixtures in harness for deterministic decode/join behavior:
+    - one-entry map fixture
+    - two-entry map fixture
+  - added strict tamper rejection matrix in harness for both `mapcat` and `tracejoin`:
+    - bad magic
+    - bad version
+    - mismatched `entry_count`
+    - non-increasing `inst_id`
+    - overlapping ranges
+  - integrated schema harness into default automation:
+    - `tests/run.sh` now requires `debug_map_schema.sh` to report `ok`
+  - aligned top-level docs/spec references with the frozen debug-map contract doc:
+    - `README.md`
+    - `docs/SPEC.md`
+    - `docs/IMPLEMENTABLE_SPEC.md`
+    - `docs/WORKFLOWS.md`
+  - acceptance:
+    - schema fixtures decode identically
+    - tamper checks remain strict
+    - full suite passes under `make test`
 
 ### M62: Trace Schema Freeze v1
 

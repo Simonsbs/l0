@@ -141,7 +141,8 @@ Current bootstrap status:
 - I now consider my M58 SysV AMD64 ABI completeness milestone complete: I added deterministic 3-6 argument SysV entry-kernel lowering coverage, wired `run` argument passing across all six SysV integer argument registers, and locked an ABI-focused runtime fixture matrix.
 - I now consider my M59 object output path (ELF) v1 milestone complete: I added native deterministic ELF64 relocatable object emission with a global `f0` symbol and locked link-and-run checks in the test suite.
 - I now consider my M60 runtime intrinsic contract freeze v1 milestone complete: I froze versioned contracts for `malloc`, `free`, `exit`, `write`, and `trace`, and I enforce them with a dedicated contract harness in default `make test`.
-- I track my next milestone as M61: debug-map schema freeze v1.
+- I now consider my M61 debug-map schema freeze v1 milestone complete: I froze the debug-map compatibility surface as `debugmap.v1` and enforce it with a dedicated schema harness in default `make test`.
+- I track my next milestone as M62: trace schema freeze v1.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -175,6 +176,7 @@ Current bootstrap status:
 - Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
 - Workflow reference: `docs/WORKFLOWS.md`
 - Runtime intrinsic contracts: `docs/INTRINSIC_CONTRACTS.md`
+- Debug-map schema contracts: `docs/DEBUG_MAP_SCHEMA.md`
 - Verifier rule map: `docs/VERIFIER_RULE_MAP.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
