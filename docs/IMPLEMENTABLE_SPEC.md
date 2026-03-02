@@ -9,6 +9,7 @@ I freeze deterministic build guarantees in `docs/DETERMINISTIC_BUILDS.md` as `de
 I freeze differential semantic runtime-equivalence guarantees in `docs/DIFFERENTIAL_TESTING.md` as `diffsem.v1`.
 I freeze fuzz and malformed-input crash-free stress guarantees in `docs/FUZZ_STRESS.md` as `fuzzstress.v1`.
 I freeze performance baseline and throughput-floor guarantees in `docs/PERFORMANCE_BASELINES.md` as `perfbase.v1`.
+I freeze CLI error category/message stability guarantees in `docs/ERROR_MODEL.md` as `errmodel.v1`.
 
 ## 1) Token-Level Grammar (Bootstrap-Implemented)
 

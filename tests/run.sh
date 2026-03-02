@@ -66,6 +66,12 @@ if ! grep -q '^ok$' /tmp/l0_m66_performance_gates.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/error_model.sh" "$BIN" "$ROOT" >/tmp/l0_m67_error_model.out
+if ! grep -q '^ok$' /tmp/l0_m67_error_model.out; then
+  echo "FAIL: M67 error model did not report ok"
+  exit 1
+fi
+
 # M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
 "$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
 if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then

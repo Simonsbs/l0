@@ -10,6 +10,7 @@ For deterministic build guarantees, I freeze `docs/DETERMINISTIC_BUILDS.md` as `
 For differential semantic runtime-equivalence guarantees, I freeze `docs/DIFFERENTIAL_TESTING.md` as `diffsem.v1`.
 For fuzz and malformed-input crash-free stress guarantees, I freeze `docs/FUZZ_STRESS.md` as `fuzzstress.v1`.
 For performance baseline and throughput-floor guarantees, I freeze `docs/PERFORMANCE_BASELINES.md` as `perfbase.v1`.
+For CLI error category/message stability guarantees, I freeze `docs/ERROR_MODEL.md` as `errmodel.v1`.
 
 ## Module shape (strict)
 

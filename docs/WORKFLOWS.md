@@ -303,3 +303,14 @@ bash tests/performance_gates.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 18: Error Model Contract Gate
+
+I use this when I want to enforce deterministic CLI exit-code and stderr behavior (`errmodel.v1`) across representative failure classes.
+
+```sh
+bash tests/error_model.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

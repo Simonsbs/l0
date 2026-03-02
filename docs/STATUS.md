@@ -1109,11 +1109,26 @@ Last updated: 2026-03-02
 
 ### M67: Error Model Stabilization
 
-- Status: planned
-- Planned (measurable):
-  - normalize deterministic error categories/messages across CLI commands
-  - add assertion coverage for representative failure classes
-  - acceptance: error-behavior fixtures pass with stable output contracts
+- Status: complete
+- Scope completed:
+  - added dedicated deterministic error-model harness:
+    - `tests/error_model.sh`
+  - normalized and froze CLI error categories/messages as versioned contract:
+    - `docs/ERROR_MODEL.md` (`errmodel.v1`)
+  - harness asserts deterministic exit-code and stderr behavior for representative failure classes:
+    - usage/argument-shape failures
+    - input open/read failures
+    - parse/decode failures
+    - output write failures
+    - corrupt image failures
+    - run argument parse failures
+  - harness enforces stderr prefix normalization:
+    - usage failures use canonical `usage: ...`
+    - non-usage failures use canonical `error: ...`
+  - integrated M67 error-model gate into default automation:
+    - `tests/run.sh` now requires `error_model.sh` to report `ok`
+  - acceptance:
+    - error-behavior fixtures pass with stable output contracts in default `make test`
 
 ### M68: Packaging and Release Pipeline
 
