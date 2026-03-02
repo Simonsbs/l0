@@ -8,6 +8,7 @@ For debug-map compatibility guarantees, I freeze `docs/DEBUG_MAP_SCHEMA.md` as `
 For trace-schema compatibility guarantees, I freeze `docs/TRACE_SCHEMA.md` as `traceschema.v1`.
 For deterministic build guarantees, I freeze `docs/DETERMINISTIC_BUILDS.md` as `detbuild.v1`.
 For differential semantic runtime-equivalence guarantees, I freeze `docs/DIFFERENTIAL_TESTING.md` as `diffsem.v1`.
+For fuzz and malformed-input crash-free stress guarantees, I freeze `docs/FUZZ_STRESS.md` as `fuzzstress.v1`.
 
 ## Module shape (strict)
 

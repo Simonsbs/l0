@@ -281,3 +281,14 @@ bash tests/differential_semantics.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 16: Fuzz and Malformed-Input Stress Gate
+
+I use this when I want to enforce deterministic crash-free malformed-input stress checks (`fuzzstress.v1`) across parser, verifier, image, and trace tooling surfaces.
+
+```sh
+bash tests/m65_fuzz_stress.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

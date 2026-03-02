@@ -1058,11 +1058,28 @@ Last updated: 2026-03-02
 
 ### M65: Fuzzing and Malformed-Input Stress
 
-- Status: planned
-- Planned (measurable):
-  - expand parser/verifier/image/trace fuzz harness and corpus
-  - convert discovered failures into locked regression fixtures
-  - acceptance: fuzz regression suite is stable and crash-free across fixed budget runs
+- Status: complete
+- Scope completed:
+  - added dedicated deterministic malformed-input stress harness:
+    - `tests/m65_fuzz_stress.sh`
+  - expanded fuzz seed corpus across parser and verifier surfaces:
+    - `tests/fuzz/parser_seeds/`
+    - `tests/fuzz/verifier_seeds/`
+  - added locked malformed regression fixtures:
+    - `tests/fuzz/m65_regressions/`
+  - harness now stress-checks four surfaces under deterministic mutation families:
+    - parser (`verify` + `canon`)
+    - verifier (`verify`)
+    - image tooling (`imgcheck` + `imgmeta`)
+    - trace/debug tooling (`tracecat`, `tracejoin`, `mapcat`, `schemacat`)
+  - harness enforces fixed minimum command budgets for measurable coverage:
+    - parser `>=120`, verifier `>=30`, image `>=20`, trace `>=35`
+  - documented frozen fuzz-stress contract surface as `fuzzstress.v1`:
+    - `docs/FUZZ_STRESS.md`
+  - integrated M65 stress harness into default automation:
+    - `tests/run.sh` now requires `m65_fuzz_stress.sh` to report `ok`
+  - acceptance:
+    - fuzz regression suite is stable and crash-free across fixed budget runs in default `make test`
 
 ### M66: Performance Baseline and Regression Gates
 

@@ -54,6 +54,12 @@ if ! grep -q '^ok$' /tmp/l0_m64_differential_semantics.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/m65_fuzz_stress.sh" "$BIN" "$ROOT" >/tmp/l0_m65_fuzz_stress.out
+if ! grep -q '^ok$' /tmp/l0_m65_fuzz_stress.out; then
+  echo "FAIL: M65 fuzz stress did not report ok"
+  exit 1
+fi
+
 # M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
 "$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
 if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then
