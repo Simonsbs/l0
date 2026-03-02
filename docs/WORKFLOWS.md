@@ -358,3 +358,14 @@ bash tests/wiki_sync.sh .
 
 Expected stable output:
 - `ok`
+
+## Workflow 23: Docs Coverage Gate
+
+I use this when I want to enforce that command/op/example documentation coverage stays complete and deterministic.
+
+```sh
+bash tests/docs_coverage.sh .
+```
+
+Expected stable output:
+- `ok`

@@ -186,6 +186,10 @@ Current bootstrap status:
 - Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
 - Workflow reference: `docs/WORKFLOWS.md`
 - Documentation roadmap: `docs/DOCUMENTATION_ROADMAP.md`
+- Command reference: `docs/COMMAND_REFERENCE.md`
+- Examples catalog: `docs/EXAMPLES_CATALOG.md`
+- Docs coverage matrix: `docs/COVERAGE_MATRIX.md`
+- LLM quick reference: `docs/LLM_QUICK_REFERENCE.md`
 - Runtime intrinsic contracts: `docs/INTRINSIC_CONTRACTS.md`
 - Debug-map schema contracts: `docs/DEBUG_MAP_SCHEMA.md`
 - Trace schema contracts: `docs/TRACE_SCHEMA.md`
@@ -217,6 +221,7 @@ Current bootstrap status:
 - M69 compatibility matrix harness: `tests/compatibility_matrix.sh`
 - M70 production readiness harness: `tests/production_readiness.sh`
 - Docs/wiki sync harness: `tests/wiki_sync.sh`
+- Docs coverage harness: `tests/docs_coverage.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 - Wiki sync script: `scripts/sync_wiki.sh`
 

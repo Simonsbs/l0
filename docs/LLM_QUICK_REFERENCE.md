@@ -1,0 +1,68 @@
+# L0 LLM Quick Reference
+
+I use this page as a compact prompt-time reference for L0 generation and analysis.
+
+## Canonical Module Skeleton
+
+```text
+ver 1
+types { t0=i64 }
+consts { }
+extern { }
+globals { }
+fns {
+fn f0 (t0,t0)->t0 {
+b0:
+  v0 = arg 0 : t0
+  v1 = arg 1 : t0
+  v2 = add.wrap v0 v1 : t0
+  ret v2
+}
+}
+```
+
+## Id Families
+
+- types: `tN`
+- functions: `fN`
+- blocks: `bN`
+- values: `vN`
+
+## Instruction Shapes
+
+- value op: `vN = OP ... : tM`
+- non-value op: `OP ...`
+- terminator: `br bK` | `cbr vC bT bF` | `ret` | `ret vN`
+
+## Core Ops (current)
+
+- values: `arg`, `const`, `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap`, `and`, `or`, `xor`, `shl`, `shr`, `icmp.eq`, `call`, `alloca`, `ld`, `gep`, `malloc`
+- non-values: `st`, `free`, `write`, `exit`, `trace`
+
+## CLI Quick Use
+
+```sh
+./bin/l0c verify <module.l0>
+./bin/l0c build <module.l0> <out.l0img>
+./bin/l0c run <out.l0img> [u64 args...]
+```
+
+## Common Build+Debug Loop
+
+```sh
+./bin/l0c build <module.l0> /tmp/x.img --debug-map /tmp/x.map --trace-schema /tmp/x.schema
+./bin/l0c run /tmp/x.img 123 >/tmp/x.out 2>/tmp/x.trace
+./bin/l0c tracecat /tmp/x.trace
+./bin/l0c tracejoin /tmp/x.trace /tmp/x.map
+```
+
+## Failure Model
+
+- parser/verifier/decode failure class: `error: invalid module shape or non-canonical input`
+- corrupt image class: `error: invalid or corrupt L0IMG`
+- run arg failure class: `error: invalid run argument (expected unsigned decimal)`
+
+Full contract references:
+- `docs/IMPLEMENTABLE_SPEC.md`
+- `docs/ERROR_MODEL.md`
+- `docs/WORKFLOWS.md`

@@ -24,3 +24,7 @@ I use this wiki mirror as a fast navigation layer over my canonical docs in `doc
 - [Production-Readiness](Production-Readiness.md)
 - [Project-Status](Project-Status.md)
 - [Documentation-Roadmap](Documentation-Roadmap.md)
+- [Command-Reference](Command-Reference.md)
+- [Examples-Catalog](Examples-Catalog.md)
+- [Coverage-Matrix](Coverage-Matrix.md)
+- [LLM-Quick-Reference](LLM-Quick-Reference.md)

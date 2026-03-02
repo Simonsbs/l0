@@ -1209,4 +1209,7 @@ Last updated: 2026-03-02
   - `scripts/sync_wiki.sh`
   - `wiki/SOURCE_MAP.tsv`
   - `tests/wiki_sync.sh`
+- I keep command/op/example documentation coverage enforced via:
+  - `docs/COVERAGE_MATRIX.md`
+  - `tests/docs_coverage.sh`
 - I use this file (`docs/STATUS.md`) as the quick project-progress dashboard.

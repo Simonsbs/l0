@@ -18,6 +18,12 @@ if ! grep -q '^ok$' /tmp/l0_docs_wiki_sync.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/docs_coverage.sh" "$ROOT" >/tmp/l0_docs_coverage.out
+if ! grep -q '^ok$' /tmp/l0_docs_coverage.out; then
+  echo "FAIL: docs coverage gate did not report ok"
+  exit 1
+fi
+
 bash "$ROOT/tests/parser_fuzz_regress.sh" "$BIN" "$ROOT/tests/fuzz/parser_seeds" >/tmp/l0_m52_parser_fuzz.out
 if ! grep -q '^ok$' /tmp/l0_m52_parser_fuzz.out; then
   echo "FAIL: parser fuzz regression did not report ok"
