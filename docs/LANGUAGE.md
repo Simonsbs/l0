@@ -277,6 +277,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - `icmp.eq` compare kernels also accept nonzero result ids when `ret` references the same compare result value id
     - `icmp.eq + cbr` kernels also accept nonzero compare-result ids when `cbr` references the same compare result value id
     - `icmp.eq + cbr` kernels now also lower deterministic reverse return mappings where `b1` returns arg1 and `b2` returns arg0 (including normalized dead-const variants)
+    - `icmp.eq + cbr` kernels now also tolerate extra dead pure value lines (`const` or `icmp.eq`) in `b0`, `b1`, and `b2` when compare id/dataflow and branch-return mapping still match supported selector shapes
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - before memory-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match

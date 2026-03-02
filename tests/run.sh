@@ -488,6 +488,21 @@ if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_ret_mismatch_with_dead_const_unlowe
   echo "FAIL: verify valid_cbr_eq_select_ret_mismatch_with_dead_const_unlowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_dead_line_b0_general_lowered.l0" >/tmp/l0_ok_cbr_eq_select_dead_line_b0_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_dead_line_b0_general_lowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_dead_line_b0_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_dead_lines_b1_b2_general_lowered.l0" >/tmp/l0_ok_cbr_eq_select_dead_lines_b1_b2_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_dead_lines_b1_b2_general_lowered.out; then
+  echo "FAIL: verify valid_cbr_eq_select_dead_lines_b1_b2_general_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_cbr_eq_select_dead_lines_guardrail_fallback.l0" >/tmp/l0_ok_cbr_eq_select_dead_lines_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_cbr_eq_select_dead_lines_guardrail_fallback.out; then
+  echo "FAIL: verify valid_cbr_eq_select_dead_lines_guardrail_fallback"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_memory_ops.l0" >/tmp/l0_ok_memory_ops.out
 if ! grep -q '^ok$' /tmp/l0_ok_memory_ops.out; then
   echo "FAIL: verify valid_memory_ops"
@@ -2445,6 +2460,65 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.img 9 8 >/tmp/l0_run_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_ret_mismatch_with_dead_const_unlowered.out)" != "9" ]; then
   echo "FAIL: run cbr eq-select dead-const reverse result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_dead_line_b0_general_lowered.l0" /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img >/tmp/l0_build_cbr_eq_select_dead_line_b0_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_dead_line_b0_general_lowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_dead_line_b0_general_lowered"
+  exit 1
+fi
+cbr_dead_line_b0_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img | tr -d ' ')
+cbr_dead_line_b0_kernel_kind=$(od -An -t u8 -j "$((cbr_dead_line_b0_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img | tr -d ' ')
+if [ "$cbr_dead_line_b0_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select dead-line b0 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img 9 9 >/tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select dead-line b0 true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img 9 8 >/tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select dead-line b0 false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_dead_lines_b1_b2_general_lowered.l0" /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img >/tmp/l0_build_cbr_eq_select_dead_lines_b1_b2_general_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_dead_lines_b1_b2_general_lowered.out; then
+  echo "FAIL: build valid_cbr_eq_select_dead_lines_b1_b2_general_lowered"
+  exit 1
+fi
+cbr_dead_lines_b1_b2_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img | tr -d ' ')
+cbr_dead_lines_b1_b2_kernel_kind=$(od -An -t u8 -j "$((cbr_dead_lines_b1_b2_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img | tr -d ' ')
+if [ "$cbr_dead_lines_b1_b2_kernel_kind" != "12" ]; then
+  echo "FAIL: cbr eq-select dead-lines b1/b2 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img 9 9 >/tmp/l0_run_cbr_eq_select_dead_lines_b1_b2_general_lowered_t.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_lines_b1_b2_general_lowered_t.out)" != "9" ]; then
+  echo "FAIL: run cbr eq-select dead-lines b1/b2 true result"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img 9 8 >/tmp/l0_run_cbr_eq_select_dead_lines_b1_b2_general_lowered_f.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_lines_b1_b2_general_lowered_f.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select dead-lines b1/b2 false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_dead_lines_guardrail_fallback.l0" /tmp/l0_test_cbr_eq_select_dead_lines_guardrail_fallback.img >/tmp/l0_build_cbr_eq_select_dead_lines_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_dead_lines_guardrail_fallback.out; then
+  echo "FAIL: build valid_cbr_eq_select_dead_lines_guardrail_fallback"
+  exit 1
+fi
+cbr_dead_lines_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_cbr_eq_select_dead_lines_guardrail_fallback.img | tr -d ' ')
+cbr_dead_lines_guardrail_kernel_kind=$(od -An -t u8 -j "$((cbr_dead_lines_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_cbr_eq_select_dead_lines_guardrail_fallback.img | tr -d ' ')
+cbr_dead_lines_guardrail_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_cbr_eq_select_dead_lines_guardrail_fallback.img | tr -d ' ')
+if [ "$cbr_dead_lines_guardrail_kernel_kind" != "0" ] || [ "$cbr_dead_lines_guardrail_code_size" != "1" ]; then
+  echo "FAIL: cbr eq-select dead-lines guardrail unexpectedly lowered"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_cbr_eq_select_dead_lines_guardrail_fallback.img 9 8 >/tmp/l0_run_cbr_eq_select_dead_lines_guardrail_fallback.out
+if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_lines_guardrail_fallback.out)" != "8" ]; then
+  echo "FAIL: run cbr eq-select dead-lines guardrail fallback result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_argids_v7_v9_lowered.l0" /tmp/l0_test_cbr_eq_select_argids_v7_v9_lowered.img >/tmp/l0_build_cbr_eq_select_argids_v7_v9_lowered.out

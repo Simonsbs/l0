@@ -123,6 +123,7 @@ I also enforce a structural subset inside `fns`:
   - before `icmp.eq + cbr` kernel selection, I normalize by stripping canonical dead `const` and dead `icmp.eq` value lines so interleaved dead defs do not block lowering
   - I also accept canonical nonzero compare-result ids in that select kernel when `cbr` references the same value id (`vN = icmp.eq ...`, `cbr vN ...`)
   - I also lower deterministic reverse return mapping in that select kernel (`b1: ret arg1`, `b2: ret arg0`), including normalized dead-const variants
+  - I also tolerate extra dead pure value lines (`const` or `icmp.eq`) in `b0`, `b1`, and `b2` for that select kernel while preserving compare-id/dataflow checks and branch-return mapping guardrails
   - I lower canonical memory roundtrip kernel shape:
     - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)
     - `st v1 v0`

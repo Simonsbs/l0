@@ -122,7 +122,8 @@ Current bootstrap status:
 - I now consider my M41 non-returning-exit generalization milestone complete: I lower canonical `exit` shapes when arg-to-exit mapping is valid even if trailing return-path lines are unreachable, including dead-const variants.
 - I now consider my M42 dead-compare normalization milestone complete: I extended generalized normalization to strip dead `icmp.eq` value lines and now lower compare/select shapes that include extra unused compare defs.
 - I now consider my M43 memory arg-return generalization milestone complete: I lower canonical memory roundtrip and memory-gep roundtrip shapes when `ret` returns the stored arg id instead of the load id.
-- I track my next milestone as M44: `f0` multi-block compare/select lowering with canonical `b0` compare+`cbr` and `b1`/`b2` return blocks plus one extra side-effect-free value line per block.
+- I now consider my M44 compare/select multi-block tolerant normalization milestone complete: I lower canonical `icmp.eq + cbr` compare/select modules with extra dead pure value lines in `b0`, `b1`, and `b2`, and I keep a strict fallback guardrail for unsupported branch-return mappings.
+- I track my next milestone as M45: call-kernel tolerant normalization in both `f0` and `f1`, with explicit lowered coverage for dead-line injection and explicit fallback coverage for unsupported call-shape mappings.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

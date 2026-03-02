@@ -550,27 +550,31 @@ Last updated: 2026-03-01
 
 ### M44: Compare/Select Multi-Block Tolerant Normalization
 
-- Status: planned
-- Planned (measurable):
-  - expand compare/select normalization to tolerate one extra dead pure value line (`icmp.eq` or `const`) in each block of canonical `icmp.eq + cbr` modules
-  - keep `kernel_kind 12` stable
-  - add at least 3 new regression fixtures:
-    - multi-block with extra dead line in `b0`
-    - multi-block with extra dead line in `b1`/`b2`
-    - one intentional mismatch guardrail case that must remain fallback
-  - acceptance: full suite pass and all new fixtures assert exact kernel kind and runtime behavior
+- Status: complete
+- Scope completed:
+  - expanded compare/select normalization coverage so canonical `icmp.eq + cbr` modules still lower when one extra dead pure value line (`icmp.eq` or `const`) appears in `b0`, `b1`, or `b2`
+  - kept lowered compare/select kernel identity stable (`kernel_kind 12`)
+  - added regression fixtures and assertions:
+    - `valid_cbr_eq_select_dead_line_b0_general_lowered.l0`
+    - `valid_cbr_eq_select_dead_lines_b1_b2_general_lowered.l0`
+    - `valid_cbr_eq_select_dead_lines_guardrail_fallback.l0`
+  - asserted deterministic lowered behavior (kernel kind and true/false runtime outputs) for the two lowered fixtures
+  - asserted deterministic fallback behavior (`kernel_kind 0`, `code_size 1`) for the unsupported branch-return guardrail fixture
+  - validated with full-suite pass
 
 ### M45: Call-Kernel Dead Pure-Line Tolerance
 
 - Status: planned
 - Planned (measurable):
-  - expand call-kernel normalization to tolerate extra dead pure value lines around `call f1 ...` in `f0` and around op-result lines in `f1`
-  - preserve existing non-commutative `sub.wrap` guardrails and kernel kinds
+  - expand call-kernel normalization to tolerate extra dead pure value lines in both function bodies:
+    - `f0` around `call f1 ...`
+    - `f1` around the lowered binary op result line
+  - preserve all existing call-family kernel kinds and non-commutative guardrails (`sub.wrap`, `shl`, `shr`)
   - add at least 4 new regression fixtures:
-    - lowered call->commutative with dead pure lines in `f0`
-    - lowered call->commutative with dead pure lines in `f1`
+    - lowered call->commutative case with dead pure lines in `f0`
+    - lowered call->commutative case with dead pure lines in `f1`
     - lowered call->non-commutative supported mapping with dead pure lines
-    - intentional mismatch/guardrail fallback case
+    - unsupported call-shape guardrail that must remain fallback
   - acceptance: full suite pass and deterministic lowered/fallback assertions for all new fixtures
 
 ### M46: Intrinsic Path Tolerant Normalization
