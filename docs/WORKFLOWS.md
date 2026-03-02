@@ -104,3 +104,14 @@ bash tests/parser_fuzz_regress.sh --repro /tmp/suspect_input.l0 ./bin/l0c
 
 Expected stable output:
 - `ok` when the parser handles that input without crashing
+
+## Workflow 5: Verifier Rule Matrix
+
+I use this when I need to prove that every documented verifier rule has both a passing fixture and a failing fixture.
+
+```sh
+bash tests/verifier_matrix.sh ./bin/l0c tests/verifier_matrix.tsv
+```
+
+Expected stable output:
+- `ok`

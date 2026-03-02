@@ -730,11 +730,18 @@ Last updated: 2026-03-02
 
 ### M53: Verifier Completeness Closure
 
-- Status: planned
-- Planned (measurable):
-  - close verifier rule gaps against documented language constraints
-  - add rule-to-test mapping in docs for verifier behavior
-  - acceptance: every documented verifier rule has at least one positive and one negative test
+- Status: complete
+- Scope completed:
+  - closed verifier coverage gaps by introducing an explicit verifier rule matrix:
+    - `tests/verifier_matrix.tsv`
+  - added deterministic automated matrix runner:
+    - `tests/verifier_matrix.sh`
+  - enforced the verifier matrix in `make test` by wiring it into:
+    - `tests/run.sh`
+  - added first-person verifier rule-to-test mapping documentation:
+    - `docs/VERIFIER_RULE_MAP.md`
+  - locked one positive and one negative fixture for each mapped verifier rule in the matrix
+  - validated with full-suite pass
 
 ### M54: Type-System Expansion and Closure
 

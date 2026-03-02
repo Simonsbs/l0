@@ -1,0 +1,29 @@
+V001|Canonical module section order is required|valid_min.l0|invalid_order.l0
+V002|Every block must end with exactly one terminator|valid_min.l0|invalid_no_terminator.l0
+V003|No instruction is allowed before the first block label|valid_min.l0|invalid_instr_before_block.l0
+V004|No instruction is allowed after a block terminator|valid_min.l0|invalid_instr_after_terminator.l0
+V005|Function signature shape must be canonical|valid_min.l0|invalid_fn_missing_arrow.l0
+V006|Value-producing instruction lines require a type suffix|valid_const.l0|invalid_value_missing_type_suffix.l0
+V007|The first block in every function must be b0|valid_min.l0|invalid_first_block_not_b0.l0
+V008|Block labels must be unique per function|valid_branch.l0|invalid_duplicate_block_label.l0
+V009|arg index must be within declared function arity|valid_add_swapped.l0|invalid_arg_out_of_range.l0
+V010|SSA value definitions must be unique in a function|valid_add_swapped.l0|invalid_duplicate_value_def.l0
+V011|br target must reference an existing block in the function|valid_branch.l0|invalid_br_target_missing.l0
+V012|cbr target blocks must exist in the function|valid_branch.l0|invalid_cbr_target_missing.l0
+V013|cbr condition must be defined and typed as i1|valid_branch.l0|invalid_cbr_cond_not_i1.l0
+V014|Uses must appear after definitions (def-before-use)|valid_add_swapped.l0|invalid_binary_use_before_def.l0
+V015|call target function must exist|valid_call.l0|invalid_call_target_missing_fn.l0
+V016|call arity must match callee signature|valid_call.l0|invalid_call_arity_mismatch.l0
+V017|call return type suffix must match callee return type|valid_call.l0|invalid_call_return_type_mismatch.l0
+V018|binary operand types must be compatible|valid_add_swapped.l0|invalid_binary_operand_type_mismatch.l0
+V019|return value type must match declared function return type|valid_const.l0|invalid_ret_value_type_mismatch.l0
+V020|function IDs must be contiguous and canonical|valid_min.l0|invalid_noncontiguous_fn_id.l0
+V021|first function ID must be f0|valid_min.l0|invalid_first_fn_not_f0.l0
+V022|block IDs must be contiguous and canonical per function|valid_branch.l0|invalid_noncontiguous_block_id.l0
+V023|type IDs must be contiguous and canonical|valid_ptr_type.l0|invalid_types_noncontiguous_id.l0
+V024|type RHS tokens must be from the supported bootstrap type set|valid_ptr_type.l0|invalid_types_bad_token.l0
+V025|unknown opcodes are rejected|valid_add_swapped.l0|invalid_unknown_opcode.l0
+V026|const operands must be immediate integer literals|valid_const.l0|invalid_const_bad_operand.l0
+V027|icmp.eq result must use i1 type|valid_icmp_eq.l0|invalid_icmp_result_not_i1.l0
+V028|pointer-typed operands are required for ld/st/gep/alloca families|valid_memory_ops.l0|invalid_ld_ptr_not_pointer.l0
+V029|intrinsic operand typing is enforced for write|valid_write_newline.l0|invalid_write_len_pointer.l0

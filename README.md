@@ -131,7 +131,8 @@ Current bootstrap status:
 - I now consider my M50 documentation consolidation milestone complete: I added a canonical “how I write L0” guide, added runnable docs examples, and wired docs example verification into `make test`.
 - I now consider my M51 docs-driven execution walkthrough milestone complete: I added deterministic, runnable workflow docs and scripted assertions for arithmetic, control-flow, and trace/debug workflows.
 - I now consider my M52 canonical parser hardening milestone complete: I expanded malformed parser-negative fixtures, added a deterministic parser fuzz seed corpus, and added a crash-repro fuzz harness integrated into `make test`.
-- I track my next milestone as M53: verifier completeness closure with explicit rule-to-test coverage mapping.
+- I now consider my M53 verifier completeness closure milestone complete: I added a rule-to-test verifier matrix with one positive and one negative fixture per rule and I enforce it in `make test`.
+- I track my next milestone as M54: type-system expansion and closure for struct/array/function-type edge handling with deterministic canon/verify examples.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -164,6 +165,7 @@ Current bootstrap status:
 
 - Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
 - Workflow reference: `docs/WORKFLOWS.md`
+- Verifier rule map: `docs/VERIFIER_RULE_MAP.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
 - MVP/compiler spec: `docs/SPEC.md`
@@ -174,6 +176,7 @@ Current bootstrap status:
 - Execution plan: `docs/PLAN.md`
 - Runnable examples: `docs/examples/*.l0`
 - Parser fuzz harness: `tests/parser_fuzz_regress.sh`
+- Verifier matrix harness: `tests/verifier_matrix.sh`
 
 ## Build
 
