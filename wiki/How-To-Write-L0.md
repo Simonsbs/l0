@@ -113,6 +113,6 @@ Before I accept generated L0, I check:
 
 I keep complete details in:
 
-- language reference: [`docs/LANGUAGE.md`](LANGUAGE.md)
-- full compiler/spec contract: [`docs/SPEC.md`](SPEC.md)
-- implementable token-level contract: [`docs/IMPLEMENTABLE_SPEC.md`](IMPLEMENTABLE_SPEC.md)
+- language reference: [`docs/LANGUAGE.md`](Language-Reference)
+- full compiler/spec contract: [`docs/SPEC.md`](CLI-and-Compiler-Spec)
+- implementable token-level contract: [`docs/IMPLEMENTABLE_SPEC.md`](Implementable-Spec)
