@@ -4,16 +4,16 @@
 
 I generated this report with `tests/llm_model_matrix.sh`.
 
-- generated_utc: `2026-03-02T16:17:15Z`
+- generated_utc: `2026-03-02T16:39:50Z`
 - total_models: `2`
-- recommended_model: `qwen2.5:3b`
+- recommended_model: `gpt-4.1-mini`
 
 ## Leaderboard
 
 | Model | Verify % | Semantic % | Avg attempts | Prompt tok | Completion tok | L0/C ratio | Duration sec |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| qwen2.5:3b | 16.666666666666668 | 16.666666666666668 | 1 | 24.333333333333332 | 59.666666666666664 | 3.460516666666667 | 45 |
-| qwen3:8b | 0 | 0 | 1 | 24.333333333333332 | 0 | 0 | 270 |
+| gpt-4.1-mini | 33.333333333333336 | 16.666666666666668 | 1 | 24.333333333333332 | 58.166666666666664 | 3.3592833333333334 | 17 |
+| gpt-4.1 | 33.333333333333336 | 16.666666666666668 | 1 | 24.333333333333332 | 58.166666666666664 | 3.3592833333333334 | 16 |
 
 ## Notes
 

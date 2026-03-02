@@ -1,48 +1,49 @@
 {
-  "generated_utc": "2026-03-02T16:17:15Z",
+  "generated_utc": "2026-03-02T16:39:50Z",
   "total_models": 2,
   "models": [
     {
-      "model": "qwen2.5:3b",
-      "duration_sec": 45,
-      "verify_success_rate_pct": 16.666666666666668,
+      "model": "gpt-4.1-mini",
+      "duration_sec": 17,
+      "verify_success_rate_pct": 33.333333333333336,
       "semantic_success_rate_pct": 16.666666666666668,
       "avg_attempts_used": 1,
       "avg_prompt_tokens": 24.333333333333332,
-      "avg_completion_tokens_total": 59.666666666666664,
-      "avg_l0_vs_c_token_ratio": 3.460516666666667,
+      "avg_completion_tokens_total": 58.166666666666664,
+      "avg_l0_vs_c_token_ratio": 3.3592833333333334,
       "verify_pass_at_k_pct": {
-        "k1": 16.666666666666668
+        "k1": 33.333333333333336
       },
       "semantic_pass_at_k_pct": {
         "k1": 16.666666666666668
       },
       "error_class_counts": {
-        "non_canonical": 5,
-        "none": 1
+        "non_canonical": 4,
+        "none": 2
       },
-      "source_report_json": "tmp/qwen2.5:3b.json"
+      "source_report_json": "tmp/gpt-4.1-mini.json"
     },
     {
-      "model": "qwen3:8b",
-      "duration_sec": 270,
-      "verify_success_rate_pct": 0,
-      "semantic_success_rate_pct": 0,
+      "model": "gpt-4.1",
+      "duration_sec": 16,
+      "verify_success_rate_pct": 33.333333333333336,
+      "semantic_success_rate_pct": 16.666666666666668,
       "avg_attempts_used": 1,
       "avg_prompt_tokens": 24.333333333333332,
-      "avg_completion_tokens_total": 0,
-      "avg_l0_vs_c_token_ratio": 0,
+      "avg_completion_tokens_total": 58.166666666666664,
+      "avg_l0_vs_c_token_ratio": 3.3592833333333334,
       "verify_pass_at_k_pct": {
-        "k1": 0
+        "k1": 33.333333333333336
       },
       "semantic_pass_at_k_pct": {
-        "k1": 0
+        "k1": 16.666666666666668
       },
       "error_class_counts": {
-        "adapter": 6
+        "non_canonical": 4,
+        "none": 2
       },
-      "source_report_json": "tmp/qwen3:8b.json"
+      "source_report_json": "tmp/gpt-4.1.json"
     }
   ],
-  "recommended_model": "qwen2.5:3b"
+  "recommended_model": "gpt-4.1-mini"
 }
