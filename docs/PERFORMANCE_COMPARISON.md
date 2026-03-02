@@ -2,9 +2,9 @@
 
 I generated this snapshot automatically with `tests/benchmark_compare.sh`.
 
-- generated_utc: `2026-03-02T13:29:34Z`
-- host: `SimonsLaptop`
-- kernel: `Linux 6.17.0-14-generic x86_64`
+- generated_utc: `2026-03-02T13:43:07Z`
+- host: `runnervmnay03`
+- kernel: `Linux 6.14.0-1017-azure x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
 
@@ -20,11 +20,10 @@ This is an operational comparison, not a language-runtime microbenchmark.
 
 | Workload | L0 (`l0c`) ops/s | GCC C ops/s |
 |---|---:|---:|
-| Build minimal add artifact | 2564 | 33 |
-| Run minimal add artifact/program | 3947 | 2214 |
+| Build minimal add artifact | 1162 | 23 |
+| Run minimal add artifact/program | 1542 | 1024 |
 
 ## Notes
 
 - I run this on the local host, so values are machine-dependent.
 - CI smoke/full perf gates remain the enforcement source for regressions.
-- I refresh this report automatically in `.github/workflows/performance.yml`; wiki publication follows from the docs-to-wiki sync workflow on `main`.
