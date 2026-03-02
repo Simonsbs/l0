@@ -370,7 +370,29 @@ bash tests/docs_coverage.sh .
 Expected stable output:
 - `ok`
 
-## Workflow 24: Publish Wiki Mirror to GitHub Wiki
+## Workflow 24: Docs Links Gate
+
+I use this when I want to enforce that internal documentation links resolve to real files.
+
+```sh
+bash tests/docs_links.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 25: Docs Heading Uniqueness Gate
+
+I use this when I want to enforce duplicate-heading hygiene across top-level docs pages.
+
+```sh
+bash tests/docs_headings.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 26: Publish Wiki Mirror to GitHub Wiki
 
 I use this when I want to publish my generated `wiki/` mirror to the remote GitHub Wiki repository.
 

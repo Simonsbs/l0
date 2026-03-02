@@ -6,41 +6,96 @@ I use this matrix to ensure every major language ability and CLI command is docu
 
 ## Command Coverage
 
-| Command | Reference | Example | Test/Gate |
+| Command | Reference | Success Example | Failure Example | Test/Gate |
+|---|---|---|---|---|
+| `canon` | `docs/COMMAND_REFERENCE.md` | `tests/valid_min.l0` | `tests/invalid_order.l0` | `tests/run.sh` |
+| `verify` | `docs/COMMAND_REFERENCE.md` | `docs/examples/*.l0` | `tests/invalid_*.l0` | `tests/run.sh` + `tests/verifier_matrix.sh` |
+| `build` | `docs/COMMAND_REFERENCE.md` | `docs/examples/01_arithmetic_add_wrap.l0` | missing input path | `tests/run.sh` |
+| `build-elf` | `docs/COMMAND_REFERENCE.md` | `docs/examples/18_sysv_abi_sum6_kernel.l0` | missing input path | `tests/run.sh` + `tests/compatibility_matrix.sh` |
+| `imgcheck` | `docs/COMMAND_REFERENCE.md` | built images | corrupt image payload | `tests/run.sh` |
+| `imgmeta` | `docs/COMMAND_REFERENCE.md` | built images | corrupt image payload | `tests/run.sh` |
+| `run` | `docs/COMMAND_REFERENCE.md` | multiple examples | bad run arg | `tests/run.sh` + `tests/error_model.sh` |
+| `tracecat` | `docs/COMMAND_REFERENCE.md` | trace workflow | truncated trace payload | `tests/run.sh` + `tests/trace_schema_contracts.sh` |
+| `mapcat` | `docs/COMMAND_REFERENCE.md` | trace workflow | bad debug-map magic | `tests/run.sh` + `tests/debug_map_schema.sh` |
+| `schemacat` | `docs/COMMAND_REFERENCE.md` | trace workflow | bad schema magic | `tests/run.sh` + `tests/trace_schema_contracts.sh` |
+| `tracejoin` | `docs/COMMAND_REFERENCE.md` | trace workflow | unknown trace id / missing files | `tests/run.sh` + `tests/trace_schema_contracts.sh` |
+
+## Opcode Coverage
+
+| Opcode | Reference | Example Fixture | Test/Gate |
 |---|---|---|---|
-| `canon` | `docs/COMMAND_REFERENCE.md` | `tests/valid_min.l0` | `tests/run.sh` canonical checks |
-| `verify` | `docs/COMMAND_REFERENCE.md` | `docs/examples/*.l0` | `tests/run.sh` + `tests/verifier_matrix.sh` |
-| `build` | `docs/COMMAND_REFERENCE.md` | `docs/examples/01_arithmetic_add_wrap.l0` | `tests/run.sh` |
-| `build-elf` | `docs/COMMAND_REFERENCE.md` | `docs/examples/18_sysv_abi_sum6_kernel.l0` | `tests/run.sh` + `tests/compatibility_matrix.sh` |
-| `imgcheck` | `docs/COMMAND_REFERENCE.md` | built images | `tests/run.sh` |
-| `imgmeta` | `docs/COMMAND_REFERENCE.md` | built images | `tests/run.sh` |
-| `run` | `docs/COMMAND_REFERENCE.md` | multiple examples | `tests/run.sh` |
-| `tracecat` | `docs/COMMAND_REFERENCE.md` | trace workflow example | `tests/run.sh` + schema gates |
-| `mapcat` | `docs/COMMAND_REFERENCE.md` | trace workflow example | `tests/run.sh` + schema gates |
-| `schemacat` | `docs/COMMAND_REFERENCE.md` | trace workflow example | `tests/run.sh` + schema gates |
-| `tracejoin` | `docs/COMMAND_REFERENCE.md` | trace workflow example | `tests/run.sh` + schema gates |
+| `arg` | `docs/INSTRUCTION_SET.md` | `tests/valid_min.l0` | `tests/verifier_matrix.sh` |
+| `const` | `docs/INSTRUCTION_SET.md` | `tests/valid_const.l0` | `tests/run.sh` |
+| `add.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_add_v7.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `add.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_add_trap.l0` | `tests/run.sh` |
+| `sub.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_sub.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `sub.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_sub_trap.l0` | `tests/run.sh` |
+| `mul.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_mul.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `mul.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_mul_trap.l0` | `tests/run.sh` |
+| `and` | `docs/INSTRUCTION_SET.md` | `tests/valid_and.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `or` | `docs/INSTRUCTION_SET.md` | `tests/valid_or.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `xor` | `docs/INSTRUCTION_SET.md` | `tests/valid_xor.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `shl` | `docs/INSTRUCTION_SET.md` | `tests/valid_shl.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `shr` | `docs/INSTRUCTION_SET.md` | `tests/valid_shr.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `icmp.eq` | `docs/INSTRUCTION_SET.md` | `tests/valid_icmp_eq.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `call` | `docs/INSTRUCTION_SET.md` | `tests/valid_call_add_lowered.l0` | `tests/run.sh` |
+| `alloca` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `ld` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `gep` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_gep_roundtrip.l0` | `tests/run.sh` |
+| `malloc` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_malloc.l0` | `tests/intrinsic_contracts.sh` |
+| `st` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `free` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_free_noop.l0` | `tests/intrinsic_contracts.sh` |
+| `write` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_write_newline.l0` | `tests/intrinsic_contracts.sh` |
+| `exit` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_exit.l0` | `tests/intrinsic_contracts.sh` |
+| `trace` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_trace_noop.l0` | `tests/intrinsic_contracts.sh` |
+| `br` | `docs/INSTRUCTION_SET.md` | `tests/valid_branch.l0` | `tests/run.sh` |
+| `cbr` | `docs/INSTRUCTION_SET.md` | `tests/valid_cbr_eq_select.l0` | `tests/run.sh` |
+| `ret` | `docs/INSTRUCTION_SET.md` | all valid fixtures | `tests/run.sh` |
 
-## Language Ability Coverage
+## Type Coverage
 
-| Ability | Reference | Example | Test/Gate |
+| Type Family | Reference | Example | Gate |
 |---|---|---|---|
-| canonical module layout | `docs/HOW_TO_WRITE_L0.md` | `tests/valid_min.l0` | parser/verifier checks |
-| type tokens (`i/u/p/struct/array/fn`) | `docs/LANGUAGE.md` + `docs/INSTRUCTION_SET.md` | `docs/examples/12..14` | `tests/verifier_matrix.sh` |
-| arithmetic/bitwise ops | `docs/INSTRUCTION_SET.md` | `docs/examples/01` | `tests/run.sh` + differential |
-| `icmp.eq` and branching | `docs/INSTRUCTION_SET.md` | `docs/examples/02`,`03` | `tests/run.sh` |
-| calls and ABI | `docs/LANGUAGE.md` + `docs/COMMAND_REFERENCE.md` | `docs/examples/06`,`18` | `tests/run.sh` + compatibility |
-| memory ops | `docs/INSTRUCTION_SET.md` | `docs/examples/04`,`05` | `tests/run.sh` |
-| intrinsics (`malloc/free/write/trace/exit`) | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `docs/examples/07..11` | `tests/intrinsic_contracts.sh` |
-| debug-map and trace schemas | `docs/DEBUG_MAP_SCHEMA.md`,`docs/TRACE_SCHEMA.md` | trace workflow | schema gates |
-| deterministic builds | `docs/DETERMINISTIC_BUILDS.md` | deterministic fixtures | `tests/deterministic_builds.sh` |
-| error model | `docs/ERROR_MODEL.md` | failure scenarios | `tests/error_model.sh` |
-| release packaging | `docs/RELEASE_PIPELINE.md` | release script | `tests/release_pipeline.sh` |
-| compatibility policy | `docs/COMPATIBILITY_POLICY.md` | matrix fixtures | `tests/compatibility_matrix.sh` |
-| production readiness | `docs/PRODUCTION_READINESS.md` | final gate | `tests/production_readiness.sh` |
+| integers (`i*`,`u*`) | `docs/LANGUAGE.md` + `docs/GRAMMAR_AND_TYPING.md` | `docs/examples/01_arithmetic_add_wrap.l0` | `tests/verifier_matrix.sh` |
+| pointer (`p0<i8>`) | `docs/LANGUAGE.md` + `docs/GRAMMAR_AND_TYPING.md` | `docs/examples/04_memory_roundtrip.l0` | `tests/verifier_matrix.sh` |
+| struct (`s{...}`) | `docs/LANGUAGE.md` + `docs/GRAMMAR_AND_TYPING.md` | `docs/examples/12_types_struct_sig.l0` | `tests/verifier_matrix.sh` |
+| fixed array (`aN<t>`) | `docs/LANGUAGE.md` + `docs/GRAMMAR_AND_TYPING.md` | `docs/examples/13_types_array_sig.l0` | `tests/verifier_matrix.sh` |
+| function type (`fn(...)->...`) | `docs/LANGUAGE.md` + `docs/GRAMMAR_AND_TYPING.md` | `docs/examples/14_types_fn_sig.l0` | `tests/verifier_matrix.sh` |
 
-## Coverage Gate
+## Error-Class Coverage
 
-I enforce baseline docs coverage with:
+| Error Class | Reference | Representative Trigger | Gate |
+|---|---|---|---|
+| `usage: ...` | `docs/ERROR_MODEL.md` | no args / bad command | `tests/error_model.sh` |
+| `error: cannot open input` | `docs/ERROR_MODEL.md` | missing file | `tests/error_model.sh` |
+| `error: cannot read input` | `docs/ERROR_MODEL.md` | directory input to `verify` | `tests/error_model.sh` |
+| `error: invalid module shape or non-canonical input` | `docs/ERROR_MODEL.md` | invalid parser/verifier/decode payload | `tests/error_model.sh` |
+| `error: cannot write output image` | `docs/ERROR_MODEL.md` | build to denied path | `tests/error_model.sh` |
+| `error: invalid or corrupt L0IMG` | `docs/ERROR_MODEL.md` | corrupt image to `imgcheck`/`run` | `tests/error_model.sh` |
+| `error: invalid run argument (expected unsigned decimal)` | `docs/ERROR_MODEL.md` | non-decimal run argument | `tests/error_model.sh` |
+
+## LLM Prompting Coverage
+
+| Capability | Reference | Gate |
+|---|---|---|
+| deterministic prompt templates for generation/debug/minimization | `docs/LLM_PROMPT_PACK.md` | `tests/docs_coverage.sh` |
+
+## Coverage Gates
+
+I enforce documentation integrity with:
+- `tests/wiki_sync.sh`
 - `tests/docs_coverage.sh`
+- `tests/docs_links.sh`
+- `tests/docs_headings.sh`
 
-That gate checks command and opcode presence in reference docs and verifies example-catalog entries exist.
+## Contract Gate Mapping
+
+- runtime intrinsic contracts: `tests/intrinsic_contracts.sh`
+- deterministic build contracts: `tests/deterministic_builds.sh`
+- error model contracts: `tests/error_model.sh`
+- release pipeline contracts: `tests/release_pipeline.sh`
+- compatibility contracts: `tests/compatibility_matrix.sh`
+- production readiness contracts: `tests/production_readiness.sh`
+- verifier rule matrix: `tests/verifier_matrix.sh`
+
+These are wired into `tests/run.sh` and therefore enforced by `make test`.

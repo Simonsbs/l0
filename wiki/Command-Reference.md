@@ -19,10 +19,16 @@ Forms:
 - `./bin/l0c canon <module.l0>`
 - `./bin/l0c canon <module.l0> -o <out.l0>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c canon tests/valid_min.l0 -o /tmp/min.canon.l0
 ```
+
+Failure example:
+```sh
+./bin/l0c canon tests/invalid_order.l0
+```
+Expected class: `error: invalid module shape or non-canonical input`.
 
 ## `verify`
 
@@ -31,10 +37,16 @@ Parse and verify canonical module validity.
 Form:
 - `./bin/l0c verify <module.l0>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c verify tests/valid_min.l0
 ```
+
+Failure example:
+```sh
+./bin/l0c verify tests/invalid_order.l0
+```
+Expected class: `error: invalid module shape or non-canonical input`.
 
 ## `build`
 
@@ -45,12 +57,18 @@ Forms:
 - `./bin/l0c build <module.l0> -o <out.l0img>`
 - `./bin/l0c build <module.l0> <out.l0img> --debug-map <out.map> --trace-schema <out.schema>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c build tests/valid_trace_noop.l0 /tmp/trace.img \
   --debug-map /tmp/trace.map \
   --trace-schema /tmp/trace.schema
 ```
+
+Failure example:
+```sh
+./bin/l0c build /tmp/no_such_file.l0 /tmp/out.img
+```
+Expected class: `error: cannot open input`.
 
 ## `build-elf`
 
@@ -59,10 +77,16 @@ Build L0 source to ELF64 relocatable object output.
 Form:
 - `./bin/l0c build-elf <module.l0> <out.o>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c build-elf tests/valid_sysv_abi_sum6_lowered.l0 /tmp/sum6.o
 ```
+
+Failure example:
+```sh
+./bin/l0c build-elf /tmp/no_such_file.l0 /tmp/sum6.o
+```
+Expected class: `error: cannot open input`.
 
 ## `imgcheck`
 
@@ -71,10 +95,16 @@ Validate L0 image container integrity and schema constraints.
 Form:
 - `./bin/l0c imgcheck <file.l0img>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c imgcheck /tmp/trace.img
 ```
+
+Failure example:
+```sh
+printf 'BADIMG' >/tmp/bad.img && ./bin/l0c imgcheck /tmp/bad.img
+```
+Expected class: `error: invalid or corrupt L0IMG`.
 
 ## `imgmeta`
 
@@ -83,10 +113,16 @@ Print stable decoded metadata for a valid L0 image.
 Form:
 - `./bin/l0c imgmeta <file.l0img>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c imgmeta /tmp/trace.img
 ```
+
+Failure example:
+```sh
+printf 'BADIMG' >/tmp/bad.img && ./bin/l0c imgmeta /tmp/bad.img
+```
+Expected class: `error: invalid or corrupt L0IMG`.
 
 ## `run`
 
@@ -95,10 +131,16 @@ Execute code payload from L0 image and print returned `u64` value.
 Form:
 - `./bin/l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c run /tmp/trace.img 123
 ```
+
+Failure example:
+```sh
+./bin/l0c run /tmp/trace.img not_a_u64
+```
+Expected class: `error: invalid run argument (expected unsigned decimal)`.
 
 ## `tracecat`
 
@@ -107,10 +149,16 @@ Decode binary trace records into stable text output.
 Form:
 - `./bin/l0c tracecat <trace.bin>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c tracecat /tmp/trace.bin
 ```
+
+Failure example:
+```sh
+printf '\x01' >/tmp/truncated.trace && ./bin/l0c tracecat /tmp/truncated.trace
+```
+Expected class: `error: invalid module shape or non-canonical input`.
 
 ## `mapcat`
 
@@ -119,10 +167,16 @@ Decode debug-map payload into stable text output.
 Form:
 - `./bin/l0c mapcat <debug_map.bin>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c mapcat /tmp/trace.map
 ```
+
+Failure example:
+```sh
+printf 'BAD!' >/tmp/bad.map && ./bin/l0c mapcat /tmp/bad.map
+```
+Expected class: `error: invalid module shape or non-canonical input`.
 
 ## `schemacat`
 
@@ -131,10 +185,16 @@ Decode trace-schema payload into stable text output.
 Form:
 - `./bin/l0c schemacat <trace_schema.bin>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c schemacat /tmp/trace.schema
 ```
+
+Failure example:
+```sh
+printf 'BAD!' >/tmp/bad.schema && ./bin/l0c schemacat /tmp/bad.schema
+```
+Expected class: `error: invalid module shape or non-canonical input`.
 
 ## `tracejoin`
 
@@ -143,10 +203,16 @@ Join trace records against debug-map entries and print correlated output.
 Form:
 - `./bin/l0c tracejoin <trace.bin> <debug_map.bin>`
 
-Example:
+Success example:
 ```sh
 ./bin/l0c tracejoin /tmp/trace.bin /tmp/trace.map
 ```
+
+Failure example:
+```sh
+./bin/l0c tracejoin /tmp/no_trace.bin /tmp/no_map.bin
+```
+Expected class: `error: cannot open input`.
 
 ## Related References
 

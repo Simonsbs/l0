@@ -7,8 +7,10 @@ CMD_DOC="$ROOT/docs/COMMAND_REFERENCE.md"
 OPS_DOC="$ROOT/docs/INSTRUCTION_SET.md"
 EX_DOC="$ROOT/docs/EXAMPLES_CATALOG.md"
 MAT_DOC="$ROOT/docs/COVERAGE_MATRIX.md"
+GRAMMAR_DOC="$ROOT/docs/GRAMMAR_AND_TYPING.md"
+PROMPT_DOC="$ROOT/docs/LLM_PROMPT_PACK.md"
 
-for f in "$CMD_DOC" "$OPS_DOC" "$EX_DOC" "$MAT_DOC"; do
+for f in "$CMD_DOC" "$OPS_DOC" "$EX_DOC" "$MAT_DOC" "$GRAMMAR_DOC" "$PROMPT_DOC"; do
   if [ ! -f "$f" ]; then
     echo "FAIL: docs coverage missing required file $(basename "$f")"
     exit 1
@@ -21,6 +23,10 @@ commands=(
 for cmd in "${commands[@]}"; do
   if ! rg -F -q "## \`$cmd\`" "$CMD_DOC"; then
     echo "FAIL: docs coverage missing command section for $cmd"
+    exit 1
+  fi
+  if ! awk "/## \`$cmd\`/{flag=1;next}/^## /{flag=0}flag" "$CMD_DOC" | rg -F -q "Failure example:"; then
+    echo "FAIL: docs coverage missing failure example for $cmd"
     exit 1
   fi
 done
@@ -59,6 +65,8 @@ fi
 required_refs=(
   docs/COMMAND_REFERENCE.md
   docs/INSTRUCTION_SET.md
+  docs/GRAMMAR_AND_TYPING.md
+  docs/LLM_PROMPT_PACK.md
   docs/INTRINSIC_CONTRACTS.md
   tests/verifier_matrix.sh
   tests/deterministic_builds.sh
@@ -66,6 +74,8 @@ required_refs=(
   tests/release_pipeline.sh
   tests/compatibility_matrix.sh
   tests/production_readiness.sh
+  tests/docs_links.sh
+  tests/docs_headings.sh
 )
 for ref in "${required_refs[@]}"; do
   if ! rg -q "$ref" "$MAT_DOC"; then

@@ -44,3 +44,7 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 ### Planning and Coverage
 - [Documentation-Roadmap](Documentation-Roadmap)
 - [Coverage-Matrix](Coverage-Matrix)
+
+### Other
+- [Grammar-and-Typing](Grammar-and-Typing)
+- [LLM-Prompt-Pack](LLM-Prompt-Pack)

@@ -74,6 +74,11 @@ I will keep documentation quality enforced in automation:
 4. Extend runnable examples and troubleshooting references.
 5. Keep release-candidate docs and wiki mirror synchronized.
 
+## Phase Status
+
+- Phase 1 complete: dual-doc pipeline and sync gating are in place.
+- Phase 2 complete: command failure examples, opcode/type/error coverage matrix, consolidated grammar/typing page, docs lint gates, and LLM prompt pack are now added and test-gated.
+
 ## Done Definition
 
 I consider this complete when:

@@ -351,3 +351,19 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
 2. SSA merge/join lowering for broader branch convergence shapes.
 3. Register allocation generalization and spill stress coverage.
 4. ABI/output-path expansion (including object emission milestones).
+
+## Opcode Semantics and Lowering Matrix (Consolidated)
+
+I use this consolidated matrix when I need a single place that states ability, type contract, and lowering status.
+
+| Family | Ops | Type/Shape Contract | Current Lowering Behavior |
+|---|---|---|---|
+| arithmetic | `add.wrap`, `add.trap`, `sub.wrap`, `sub.trap`, `mul.wrap`, `mul.trap` | binary `vA vB`, explicit result type equals operand types | canonical lowered templates, otherwise fallback |
+| bitwise/shift | `and`, `or`, `xor`, `shl`, `shr` | binary `vA vB`, explicit result type equals operand types | canonical lowered templates, otherwise fallback |
+| compare | `icmp.eq` | binary operands same type, explicit result type `i1` | canonical lowered templates, otherwise fallback |
+| calls | `call fN ...` | callee exists, arity/types match signature, result type matches return type | canonical two-function lowered families, otherwise fallback |
+| memory | `alloca`, `st`, `ld`, `gep` | pointer paths use `p0<i8>` bootstrap contract | canonical memory lowered families, otherwise fallback |
+| intrinsics | `malloc`, `free`, `write`, `exit`, `trace` | intrinsic-specific pointer/non-pointer checks | canonical intrinsic lowered families, otherwise fallback |
+| control flow | `br`, `cbr`, `ret` | target existence + `cbr` condition `i1` + return type compatibility | canonical CFG templates lowered for supported families, otherwise fallback |
+
+I keep unsupported shapes verifier-valid where possible, but codegen may intentionally choose deterministic fallback (`kernel_kind 0`).

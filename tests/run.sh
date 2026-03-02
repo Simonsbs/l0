@@ -24,6 +24,18 @@ if ! grep -q '^ok$' /tmp/l0_docs_coverage.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/docs_links.sh" "$ROOT" >/tmp/l0_docs_links.out
+if ! grep -q '^ok$' /tmp/l0_docs_links.out; then
+  echo "FAIL: docs links gate did not report ok"
+  exit 1
+fi
+
+bash "$ROOT/tests/docs_headings.sh" "$ROOT" >/tmp/l0_docs_headings.out
+if ! grep -q '^ok$' /tmp/l0_docs_headings.out; then
+  echo "FAIL: docs headings gate did not report ok"
+  exit 1
+fi
+
 bash "$ROOT/tests/parser_fuzz_regress.sh" "$BIN" "$ROOT/tests/fuzz/parser_seeds" >/tmp/l0_m52_parser_fuzz.out
 if ! grep -q '^ok$' /tmp/l0_m52_parser_fuzz.out; then
   echo "FAIL: parser fuzz regression did not report ok"

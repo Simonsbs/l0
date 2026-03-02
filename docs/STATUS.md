@@ -1212,4 +1212,9 @@ Last updated: 2026-03-02
 - I keep command/op/example documentation coverage enforced via:
   - `docs/COVERAGE_MATRIX.md`
   - `tests/docs_coverage.sh`
+- I keep docs lint hygiene enforced via:
+  - `tests/docs_links.sh`
+  - `tests/docs_headings.sh`
+- I now treat documentation phase 2 as complete:
+  - command failure examples, grammar/typing consolidation, prompt templates, and row-level coverage traceability are in place
 - I use this file (`docs/STATUS.md`) as the quick project-progress dashboard.
