@@ -3,6 +3,7 @@
 I use this as the first frozen subset for implementation.
 
 For language-level reference, also see `docs/LANGUAGE.md`.
+For runtime-intrinsic compatibility guarantees, I freeze `docs/INTRINSIC_CONTRACTS.md` as `intrinsics.v1`.
 
 ## Module shape (strict)
 

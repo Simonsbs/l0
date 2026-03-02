@@ -922,11 +922,29 @@ Last updated: 2026-03-02
 
 ### M60: Runtime Intrinsic Contract Freeze v1
 
-- Status: planned
-- Planned (measurable):
-  - freeze semantics and contracts for `malloc`, `free`, `write`, `exit`, `trace`
-  - document versioned intrinsic behavior and negative-path guarantees
-  - acceptance: intrinsic contract tests pass and docs/spec are aligned
+- Status: complete
+- Scope completed:
+  - froze versioned runtime intrinsic contract surface as `intrinsics.v1` for:
+    - `malloc`
+    - `free`
+    - `exit`
+    - `write`
+    - `trace`
+  - documented versioned behavior and compatibility guarantees in:
+    - `docs/INTRINSIC_CONTRACTS.md`
+  - documented negative-path guarantees for verifier-enforced intrinsic typing/def-use failures
+  - added dedicated contract harness:
+    - `tests/intrinsic_contracts.sh`
+  - integrated the contract harness into default automation:
+    - `tests/run.sh` now requires `intrinsic_contracts.sh` to report `ok`
+  - aligned top-level project docs/spec references with the frozen contract doc:
+    - `README.md`
+    - `docs/SPEC.md`
+    - `docs/IMPLEMENTABLE_SPEC.md`
+    - `docs/WORKFLOWS.md`
+  - acceptance:
+    - intrinsic contract tests pass in `make test`
+    - docs/spec references are aligned to `intrinsics.v1`
 
 ### M61: Debug-Map Schema Freeze v1
 

@@ -226,3 +226,14 @@ Expected stable outputs:
 - `verify`: `ok`
 - `build-elf`: `ok`
 - linked executable exit status: `21`
+
+## Workflow 11: Runtime Intrinsic Contract Gate
+
+I use this when I want to enforce the frozen intrinsic contract surface (`intrinsics.v1`) in one command.
+
+```sh
+bash tests/intrinsic_contracts.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
