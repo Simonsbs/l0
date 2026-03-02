@@ -10,6 +10,7 @@ I freeze differential semantic runtime-equivalence guarantees in `docs/DIFFERENT
 I freeze fuzz and malformed-input crash-free stress guarantees in `docs/FUZZ_STRESS.md` as `fuzzstress.v1`.
 I freeze performance baseline and throughput-floor guarantees in `docs/PERFORMANCE_BASELINES.md` as `perfbase.v1`.
 I freeze CLI error category/message stability guarantees in `docs/ERROR_MODEL.md` as `errmodel.v1`.
+I freeze release packaging and checksum reproducibility guarantees in `docs/RELEASE_PIPELINE.md` as `relpipe.v1`.
 
 ## 1) Token-Level Grammar (Bootstrap-Implemented)
 

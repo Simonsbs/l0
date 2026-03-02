@@ -1132,11 +1132,30 @@ Last updated: 2026-03-02
 
 ### M68: Packaging and Release Pipeline
 
-- Status: planned
-- Planned (measurable):
-  - add reproducible release build steps and artifact checksums
-  - document release procedure and versioning policy
-  - acceptance: scripted release candidate build succeeds end-to-end
+- Status: complete
+- Scope completed:
+  - added scripted release-candidate pipeline:
+    - `scripts/release_candidate.sh`
+  - release script now performs end-to-end package build with smoke validation:
+    - package `l0c` for Linux x86-64
+    - generate release manifest metadata
+    - run packaged-binary smoke checks before and after unpack
+  - added release artifact checksum generation and verification:
+    - per-artifact `sha256` files
+    - aggregate checksum file
+  - enforced deterministic packaging controls for reproducible bytes:
+    - sorted tar entries
+    - fixed mtime
+    - normalized owner/group
+    - `gzip -n`
+  - documented release procedure and versioning policy in:
+    - `docs/RELEASE_PIPELINE.md` (`relpipe.v1`)
+  - added dedicated release pipeline gate:
+    - `tests/release_pipeline.sh`
+  - integrated release pipeline gate into default automation:
+    - `tests/run.sh` now requires `release_pipeline.sh` to report `ok`
+  - acceptance:
+    - scripted release candidate build succeeds end-to-end with reproducible artifacts
 
 ### M69: Compatibility and Upgrade Policy
 

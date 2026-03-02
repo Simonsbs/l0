@@ -314,3 +314,14 @@ bash tests/error_model.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 19: Release Pipeline Contract Gate
+
+I use this when I want to enforce scripted, reproducible release-candidate packaging with checksum verification (`relpipe.v1`).
+
+```sh
+bash tests/release_pipeline.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

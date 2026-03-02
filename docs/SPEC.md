@@ -11,6 +11,7 @@ For differential semantic runtime-equivalence guarantees, I freeze `docs/DIFFERE
 For fuzz and malformed-input crash-free stress guarantees, I freeze `docs/FUZZ_STRESS.md` as `fuzzstress.v1`.
 For performance baseline and throughput-floor guarantees, I freeze `docs/PERFORMANCE_BASELINES.md` as `perfbase.v1`.
 For CLI error category/message stability guarantees, I freeze `docs/ERROR_MODEL.md` as `errmodel.v1`.
+For release packaging and checksum reproducibility guarantees, I freeze `docs/RELEASE_PIPELINE.md` as `relpipe.v1`.
 
 ## Module shape (strict)
 
