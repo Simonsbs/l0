@@ -28,10 +28,16 @@ Canonical requirements:
   globals { ... }
   fns { ... }
 - function/block/value/type ids are contiguous and canonical
+- ID prefixes are strict: tN, kN, gN, fN, bN, vN (no other prefixes)
 - one instruction per line
 - terminators: br / cbr / ret
 - no comments
 - only valid L0 tokens/opcodes
+- pointer type syntax is `p0<i8>` (never `byte*`)
+- call target syntax is `call fN ...` (never numeric bare target)
+- if a literal constant is needed, use `vN = const <int> : tX`
+- do not invent constant IDs like `c0`
+- for multiple entries in `types { ... }`, use commas between entries
 
 Canonical example:
 ver 1

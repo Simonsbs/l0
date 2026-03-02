@@ -69,6 +69,7 @@ Control flags:
 - `L0_LLM_MAX_ATTEMPTS` (default `3`): max generation attempts per task in `cmd` mode.
 - `L0_LLM_ENABLE_REPAIR_LOOP` (default `1`): enable/disable verify-guided retries.
 - `L0_LLM_AUTO_CANON_FIX` (default `1`): run `l0c canon` on generated output between attempts.
+- `L0_LLM_KEEP_WORK_DIR` (default `0`): keep per-attempt raw/sanitized/fixed and verifier logs under a temp work dir for failure analysis.
 
 When retries are enabled, prompt/output token totals include all attempts.
 
@@ -78,3 +79,21 @@ When retries are enabled, prompt/output token totals include all attempts.
 - `docs/LLM_BENCHMARK_RESULTS.md`
 
 I publish these docs to the wiki through the existing docs->wiki sync pipeline.
+
+## Latest Reliability Snapshot
+
+I currently use this profile for OpenAI reliability runs:
+
+```sh
+OPENAI_API_KEY='<your key>' \
+L0_OPENAI_MODEL='gpt-4.1-mini' \
+L0_LLM_ADAPTER_CMD='tests/llm_bench/adapters/openai_l0.sh' \
+L0_LLM_MAX_ATTEMPTS=3 \
+L0_LLM_ENABLE_REPAIR_LOOP=1 \
+L0_LLM_AUTO_CANON_FIX=1 \
+bash tests/llm_usability_bench.sh ./bin/l0c . cmd \
+  docs/LLM_BENCHMARK_RESULTS.json \
+  docs/LLM_BENCHMARK_RESULTS.md
+```
+
+This currently yields `100%` verify and `100%` semantic on my 6-task benchmark corpus.

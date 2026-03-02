@@ -348,6 +348,14 @@ bash tests/llm_usability_bench.sh ./bin/l0c . cmd \
   docs/LLM_BENCHMARK_RESULTS.md
 ```
 
+For deep failure analysis, I also enable:
+
+```sh
+L0_LLM_KEEP_WORK_DIR=1
+```
+
+This keeps per-attempt artifacts (raw output, sanitized output, canonical-fix output, and verifier stderr) and prints the temp work dir path.
+
 I can run this directly with OpenAI:
 
 ```sh

@@ -10,10 +10,15 @@ TASKS="${6:-$ROOT/tests/llm_bench/tasks.tsv}"
 MAX_ATTEMPTS_DEFAULT="${L0_LLM_MAX_ATTEMPTS:-3}"
 ENABLE_REPAIR_LOOP="${L0_LLM_ENABLE_REPAIR_LOOP:-1}"
 AUTO_CANON_FIX="${L0_LLM_AUTO_CANON_FIX:-1}"
+KEEP_WORK_DIR="${L0_LLM_KEEP_WORK_DIR:-0}"
 
 TMP_BASE="${TMPDIR:-/tmp}"
 WORK_DIR="$(mktemp -d "$TMP_BASE/l0_llm_bench.XXXXXX")"
-trap 'rm -rf "$WORK_DIR"' EXIT
+if [ "$KEEP_WORK_DIR" = "1" ]; then
+  trap 'echo "llm_bench_work_dir $WORK_DIR" >&2' EXIT
+else
+  trap 'rm -rf "$WORK_DIR"' EXIT
+fi
 
 if [ ! -f "$TASKS" ]; then
   echo "FAIL: missing tasks file $TASKS"
@@ -226,6 +231,83 @@ effective_max_attempts() {
   echo "1"
 }
 
+repair_hint() {
+  local task_id="$1"
+  local err_class="$2"
+  case "$err_class" in
+    non_canonical)
+      cat <<'EOT'
+Canonical repair requirements:
+- Keep exact top-level section order and exact canonical section line format.
+- In `types { ... }`, separate multiple entries with commas (example: `types { t0=i64, t1=i1 }`).
+- Use only canonical memory ops/opcode spellings:
+  - `v1 = alloca t0, 1 : t1`
+  - `st v1 v0`
+  - `v2 = ld v1 : t0`
+- Use canonical compare spelling: `v2 = icmp.eq v0 v1 : t1`
+- Use only `br`, `cbr`, `ret` as terminators.
+- Return only one plain canonical L0 module. No comments and no prose.
+EOT
+      ;;
+    type_or_pointer)
+      cat <<'EOT'
+Type repair requirements:
+- Ensure all value result types exactly match opcode rules.
+- For `icmp.*`, result type must be `i1`.
+- For memory, pointer values must have pointer type and `ld`/`st` use pointer operand first.
+EOT
+      ;;
+    ssa_or_defuse)
+      cat <<'EOT'
+SSA repair requirements:
+- Every `vN` must be defined before use.
+- Do not redefine the same `vN`.
+- Keep block/value numbering contiguous and deterministic.
+EOT
+      ;;
+    terminator_or_cfg)
+      cat <<'EOT'
+CFG repair requirements:
+- Every block ends with exactly one terminator (`br`, `cbr`, or `ret`).
+- No instructions after a terminator.
+- Branch targets must refer to existing blocks.
+EOT
+      ;;
+    *)
+      echo "Return a valid canonical L0 module only."
+      ;;
+  esac
+
+  case "$task_id" in
+    t03_cbr_select)
+      cat <<'EOT'
+Task-specific hint:
+- Input type is `i1`, so canonical solution is direct branch with two returns.
+- Use only `cbr` + blocks + `ret`; do not use `phi`, `zext`, or any cast ops.
+- Valid shape:
+  - `fn f0 (t0)->t0`
+  - `b0: cbr v0 b1 b2`
+  - `b1: ret v0`
+  - `b2: ret v0`
+EOT
+      ;;
+    t04_mem_roundtrip)
+      cat <<'EOT'
+Task-specific hint:
+- Roundtrip one i64 through stack memory using `alloca`, `st`, and `ld`.
+- Example shape: `alloca t0, 1 : t1` where `t1` is a byte pointer type.
+EOT
+      ;;
+    t06_sysv_sum6)
+      cat <<'EOT'
+Task-specific hint:
+- Sum exactly six arguments: `arg 0` through `arg 5`.
+- Return only the final accumulated sum.
+EOT
+      ;;
+  esac
+}
+
 rows_json="$WORK_DIR/rows.jsonl"
 : > "$rows_json"
 
@@ -279,6 +361,7 @@ while IFS='|' read -r id prompt_rel expected_rel c_rel run_args expected_stdout;
     else
       prompt_text="$base_prompt_text"
       if [ "$attempt" -gt 1 ]; then
+        repair_guidance="$(repair_hint "$id" "$previous_error_class")"
         prompt_text="$(cat <<EOP
 $base_prompt_text
 
@@ -286,6 +369,7 @@ Repair attempt $attempt of $attempts_max.
 Previous verifier error class: $previous_error_class
 Previous verifier error: $previous_error_line
 Return only corrected canonical L0 source for the same task.
+$repair_guidance
 
 Previous candidate:
 $previous_candidate_text

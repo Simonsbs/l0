@@ -2,7 +2,7 @@
 
 I generated this report with `tests/llm_model_matrix.sh`.
 
-- generated_utc: `2026-03-02T16:39:50Z`
+- generated_utc: `2026-03-02T16:59:12Z`
 - total_models: `2`
 - recommended_model: `gpt-4.1-mini`
 
@@ -10,8 +10,8 @@ I generated this report with `tests/llm_model_matrix.sh`.
 
 | Model | Verify % | Semantic % | Avg attempts | Prompt tok | Completion tok | L0/C ratio | Duration sec |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| gpt-4.1-mini | 33.333333333333336 | 16.666666666666668 | 1 | 24.333333333333332 | 58.166666666666664 | 3.3592833333333334 | 17 |
-| gpt-4.1 | 33.333333333333336 | 16.666666666666668 | 1 | 24.333333333333332 | 58.166666666666664 | 3.3592833333333334 | 16 |
+| gpt-4.1-mini | 100 | 100 | 1.5 | 143.16666666666666 | 90.66666666666667 | 3.538766666666666 | 20 |
+| gpt-4.1 | 100 | 83.33333333333333 | 1.5 | 143.33333333333334 | 89.66666666666667 | 3.449033333333333 | 23 |
 
 ## Notes
 
