@@ -325,3 +325,14 @@ bash tests/release_pipeline.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 20: Compatibility Matrix Contract Gate
+
+I use this when I want to enforce source/image/tool compatibility slices plus upgrade-policy coverage (`compat.v1`) across prior milestone fixtures.
+
+```sh
+bash tests/compatibility_matrix.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

@@ -149,7 +149,8 @@ Current bootstrap status:
 - I now consider my M66 performance baseline and regression gates milestone complete: I froze `perfbase.v1` and enforce pinned throughput floor checks for verify/build/run/build-elf and trace tooling in default `make test`.
 - I now consider my M67 error model stabilization milestone complete: I froze `errmodel.v1` and enforce deterministic exit-code/stderr contracts for representative CLI failure classes in default `make test`.
 - I now consider my M68 packaging and release pipeline milestone complete: I froze `relpipe.v1` and enforce scripted, reproducible release-candidate packaging with checksum verification in default `make test`.
-- I track my next milestone as M69: compatibility and upgrade policy.
+- I now consider my M69 compatibility and upgrade policy milestone complete: I froze `compat.v1` and enforce a compatibility matrix across prior fixtures (source/image/trace/debug/ELF slices) in default `make test`.
+- I track my next milestone as M70: production readiness gate.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -191,6 +192,7 @@ Current bootstrap status:
 - Performance baseline contracts: `docs/PERFORMANCE_BASELINES.md`
 - Error model contracts: `docs/ERROR_MODEL.md`
 - Release pipeline contracts: `docs/RELEASE_PIPELINE.md`
+- Compatibility and upgrade policy: `docs/COMPATIBILITY_POLICY.md`
 - Verifier rule map: `docs/VERIFIER_RULE_MAP.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
@@ -206,6 +208,7 @@ Current bootstrap status:
 - M66 performance gates harness: `tests/performance_gates.sh`
 - M67 error model harness: `tests/error_model.sh`
 - M68 release pipeline harness: `tests/release_pipeline.sh`
+- M69 compatibility matrix harness: `tests/compatibility_matrix.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 
 ## Build

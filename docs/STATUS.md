@@ -1159,11 +1159,22 @@ Last updated: 2026-03-02
 
 ### M69: Compatibility and Upgrade Policy
 
-- Status: planned
-- Planned (measurable):
-  - define source/image/tool compatibility guarantees across versions
-  - add compatibility test slices spanning prior release fixtures
-  - acceptance: compatibility matrix passes and policy docs are published
+- Status: complete
+- Scope completed:
+  - defined compatibility guarantees and upgrade policy in:
+    - `docs/COMPATIBILITY_POLICY.md` (`compat.v1`)
+  - added dedicated compatibility matrix gate:
+    - `tests/compatibility_matrix.sh`
+  - added compatibility matrix fixture list spanning prior milestone slices:
+    - `tests/compat/m69_matrix.tsv`
+  - matrix now enforces representative compatibility surfaces:
+    - source verify/build/imgcheck/run behavior on prior canonical fixtures
+    - trace/debug decode output compatibility
+    - ELF object build/link/run compatibility
+  - integrated compatibility matrix gate into default automation:
+    - `tests/run.sh` now requires `compatibility_matrix.sh` to report `ok`
+  - acceptance:
+    - compatibility matrix passes and policy docs are published in default `make test`
 
 ### M70: Production Readiness Gate
 

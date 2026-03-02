@@ -12,6 +12,7 @@ For fuzz and malformed-input crash-free stress guarantees, I freeze `docs/FUZZ_S
 For performance baseline and throughput-floor guarantees, I freeze `docs/PERFORMANCE_BASELINES.md` as `perfbase.v1`.
 For CLI error category/message stability guarantees, I freeze `docs/ERROR_MODEL.md` as `errmodel.v1`.
 For release packaging and checksum reproducibility guarantees, I freeze `docs/RELEASE_PIPELINE.md` as `relpipe.v1`.
+For compatibility and upgrade-policy guarantees, I freeze `docs/COMPATIBILITY_POLICY.md` as `compat.v1`.
 
 ## Module shape (strict)
 

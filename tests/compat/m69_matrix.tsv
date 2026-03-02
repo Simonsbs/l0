@@ -1,0 +1,9 @@
+# name|fixture|args|expected_stdout
+arith_add|tests/valid_min.l0|5 8|13
+const_return|tests/valid_const_v123_with_dead_const_general_lowered.l0|-|18446744073709551609
+cbr_select_true|tests/valid_cbr_eq_select_with_dead_const_general_lowered.l0|1 1|1
+cbr_select_false|tests/valid_cbr_eq_select_with_dead_const_general_lowered.l0|0 9|9
+cfg_merge_true|tests/valid_merge_mem_select_with_dead_const_general_lowered.l0|1|11
+cfg_merge_false|tests/valid_merge_mem_select_with_dead_const_general_lowered.l0|0|22
+spill_stress|tests/valid_spill_stress_with_dead_const_general_lowered.l0|7 3|23
+sysv_sum6|tests/valid_sysv_abi_sum6_with_dead_const_general_lowered.l0|1 2 3 4 5 6|21
