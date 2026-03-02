@@ -24,6 +24,10 @@ I now also validate a canonical bootstrap `types` table shape:
   - `i1`, `i8`, `i16`, `i32`, `i64`
   - `u8`, `u16`, `u32`, `u64`
   - `p0<i8>`
+  - `s{tA,tB,...}` (one-or-more type-id fields)
+  - `aN<tA>` (`N > 0`)
+  - `fn(tA,...)->tR` (zero-or-more args, `tN` return)
+- for `s{}`, `aN<>`, and `fn()->`, referenced `tN` ids are validated in the bootstrap type parser and forward/self refs are rejected
 
 I also enforce a structural subset inside `fns`:
 - at least one function

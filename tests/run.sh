@@ -157,6 +157,15 @@ if ! cmp -s "$ROOT/tests/valid_min.l0" /tmp/l0_canon_min.l0; then
   echo "FAIL: canon -o output mismatch"
   exit 1
 fi
+"$BIN" canon "$ROOT/tests/valid_types_struct_sig.l0" -o /tmp/l0_canon_types_struct.l0 >/tmp/l0_canon_types_struct_cmd.out
+if ! grep -q '^ok$' /tmp/l0_canon_types_struct_cmd.out; then
+  echo "FAIL: canon -o valid_types_struct_sig"
+  exit 1
+fi
+if ! cmp -s "$ROOT/tests/valid_types_struct_sig.l0" /tmp/l0_canon_types_struct.l0; then
+  echo "FAIL: canon -o output mismatch valid_types_struct_sig"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call.l0" >/tmp/l0_ok_call.out
 if ! grep -q '^ok$' /tmp/l0_ok_call.out; then
   echo "FAIL: verify valid_call"
@@ -395,6 +404,21 @@ fi
 "$BIN" verify "$ROOT/tests/valid_ptr_type.l0" >/tmp/l0_ok_ptr.out
 if ! grep -q '^ok$' /tmp/l0_ok_ptr.out; then
   echo "FAIL: verify valid_ptr_type"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_types_struct_sig.l0" >/tmp/l0_ok_types_struct_sig.out
+if ! grep -q '^ok$' /tmp/l0_ok_types_struct_sig.out; then
+  echo "FAIL: verify valid_types_struct_sig"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_types_array_sig.l0" >/tmp/l0_ok_types_array_sig.out
+if ! grep -q '^ok$' /tmp/l0_ok_types_array_sig.out; then
+  echo "FAIL: verify valid_types_array_sig"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_types_fn_sig.l0" >/tmp/l0_ok_types_fn_sig.out
+if ! grep -q '^ok$' /tmp/l0_ok_types_fn_sig.out; then
+  echo "FAIL: verify valid_types_fn_sig"
   exit 1
 fi
 "$BIN" verify "$ROOT/tests/valid_const.l0" >/tmp/l0_ok_const.out
@@ -4608,6 +4632,42 @@ if "$BIN" verify "$ROOT/tests/invalid_types_bad_token.l0" >/tmp/l0_bad27b.out 2>
 fi
 if "$BIN" verify "$ROOT/tests/invalid_types_bad_pointer_space.l0" >/tmp/l0_bad27c.out 2>/tmp/l0_bad27c.err; then
   echo "FAIL: invalid_types_bad_pointer_space unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_struct_unknown_ref.l0" >/tmp/l0_bad27d.out 2>/tmp/l0_bad27d.err; then
+  echo "FAIL: invalid_types_struct_unknown_ref unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_struct_trailing_comma.l0" >/tmp/l0_bad27e.out 2>/tmp/l0_bad27e.err; then
+  echo "FAIL: invalid_types_struct_trailing_comma unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_struct_empty.l0" >/tmp/l0_bad27f.out 2>/tmp/l0_bad27f.err; then
+  echo "FAIL: invalid_types_struct_empty unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_array_zero_len.l0" >/tmp/l0_bad27g.out 2>/tmp/l0_bad27g.err; then
+  echo "FAIL: invalid_types_array_zero_len unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_array_bad_elem_token.l0" >/tmp/l0_bad27h.out 2>/tmp/l0_bad27h.err; then
+  echo "FAIL: invalid_types_array_bad_elem_token unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_fn_unknown_ref.l0" >/tmp/l0_bad27i.out 2>/tmp/l0_bad27i.err; then
+  echo "FAIL: invalid_types_fn_unknown_ref unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_fn_bad_return_token.l0" >/tmp/l0_bad27j.out 2>/tmp/l0_bad27j.err; then
+  echo "FAIL: invalid_types_fn_bad_return_token unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_fn_trailing_comma.l0" >/tmp/l0_bad27k.out 2>/tmp/l0_bad27k.err; then
+  echo "FAIL: invalid_types_fn_trailing_comma unexpectedly passed"
+  exit 1
+fi
+if "$BIN" verify "$ROOT/tests/invalid_types_fn_missing_arrow.l0" >/tmp/l0_bad27l.out 2>/tmp/l0_bad27l.err; then
+  echo "FAIL: invalid_types_fn_missing_arrow unexpectedly passed"
   exit 1
 fi
 if "$BIN" verify "$ROOT/tests/invalid_fn_type_unknown.l0" >/tmp/l0_bad28.out 2>/tmp/l0_bad28.err; then

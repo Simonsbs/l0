@@ -25,10 +25,14 @@ Section order is fixed and required:
 Bootstrap type-table requirement currently enforced:
 - `types { }` is valid (empty table).
 - non-empty `types` entries must use contiguous canonical ids: `t0`, `t1`, `t2`, ...
-- bootstrap type RHS token set is currently restricted to:
+- bootstrap type RHS token set currently supports:
   - `i1`, `i8`, `i16`, `i32`, `i64`
   - `u8`, `u16`, `u32`, `u64`
   - `p0<i8>`
+  - `s{tA,tB,...}` (struct with one-or-more `tN` fields)
+  - `aN<tA>` (fixed array with `N > 0`)
+  - `fn(tA,...)->tR` (function type with zero-or-more args and a `tN` return)
+- for `s{}`, `aN<>`, and `fn()->`, referenced `tN` ids are validated and forward/self references are rejected in the bootstrap type-table parser.
 
 Example skeleton:
 
@@ -335,19 +339,9 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
 - trace schema version
 - trace record size
 
-## Planned language expansion (next milestones)
+## Next focus areas
 
-1. Opcode-specific verification rules:
-- `arg` operand shape
-- binary op operand shapes
-- call operand/type arity checks
-
-2. SSA/dataflow checks:
-- def-before-use
-- single-definition checks
-
-3. Type system expansion in verifier:
-- operation signatures
-- pointer/memory op rules
-
-4. Full token-level parser replacing line-shape validation.
+1. General CFG lowering beyond current template/kernel selectors.
+2. SSA merge/join lowering for broader branch convergence shapes.
+3. Register allocation generalization and spill stress coverage.
+4. ABI/output-path expansion (including object emission milestones).

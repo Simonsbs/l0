@@ -36,6 +36,16 @@ I write one instruction per line.
 
 I avoid expression nesting, implicit casts, and non-canonical spacing.
 
+## How I write types
+
+I use contiguous `tN` ids and I keep RHS tokens canonical.
+
+- primitive integers: `i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`
+- pointer: `p0<i8>`
+- struct: `s{tA,tB,...}`
+- fixed array: `aN<tA>` where `N > 0`
+- function type: `fn(tA,...)->tR`
+
 ## How I keep verifier-safe dataflow
 
 I keep every block terminated exactly once. I define values before I use them. I keep `arg` indices within function arity. I ensure every branch target block exists in the same function.
@@ -50,6 +60,7 @@ I keep runnable examples in [`docs/examples/`](examples):
 - memory: `04_memory_roundtrip.l0`, `05_memory_gep_roundtrip.l0`
 - calls: `06_call_add_two_function.l0`
 - intrinsics: `07_intrinsic_malloc.l0`, `08_intrinsic_free.l0`, `09_intrinsic_write.l0`, `10_intrinsic_trace.l0`, `11_intrinsic_exit.l0`
+- type forms: `12_types_struct_sig.l0`, `13_types_array_sig.l0`, `14_types_fn_sig.l0`
 
 I verify them with:
 

@@ -27,3 +27,6 @@ V026|const operands must be immediate integer literals|valid_const.l0|invalid_co
 V027|icmp.eq result must use i1 type|valid_icmp_eq.l0|invalid_icmp_result_not_i1.l0
 V028|pointer-typed operands are required for ld/st/gep/alloca families|valid_memory_ops.l0|invalid_ld_ptr_not_pointer.l0
 V029|intrinsic operand typing is enforced for write|valid_write_newline.l0|invalid_write_len_pointer.l0
+V030|struct type token syntax and type-id refs are validated|valid_types_struct_sig.l0|invalid_types_struct_unknown_ref.l0
+V031|array type token syntax and element count are validated|valid_types_array_sig.l0|invalid_types_array_zero_len.l0
+V032|function type token syntax and type-id refs are validated|valid_types_fn_sig.l0|invalid_types_fn_unknown_ref.l0

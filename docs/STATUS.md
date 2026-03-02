@@ -745,11 +745,42 @@ Last updated: 2026-03-02
 
 ### M54: Type-System Expansion and Closure
 
-- Status: planned
-- Planned (measurable):
-  - complete robust verifier handling for current type forms including struct/array/function type edge cases
-  - add deterministic canonical examples for each supported type form
-  - acceptance: all type-form examples verify/canon deterministically under `make test`
+- Status: complete
+- Scope completed:
+  - extended bootstrap type-token verifier support to include canonical forms:
+    - struct: `s{tA,tB,...}`
+    - fixed array: `aN<tA>` with `N > 0`
+    - function type: `fn(tA,...)->tR`
+  - added strict type-token edge validation:
+    - canonical delimiter handling for nested type tokens in the `types` section
+    - `tN` reference validation in struct/array/function type tokens
+    - rejection of malformed/trailing-comma/missing-arrow/unknown-ref type-token shapes
+  - added deterministic positive type-form fixtures:
+    - `valid_types_struct_sig.l0`
+    - `valid_types_array_sig.l0`
+    - `valid_types_fn_sig.l0`
+  - added deterministic negative edge-case fixtures:
+    - `invalid_types_struct_unknown_ref.l0`
+    - `invalid_types_struct_trailing_comma.l0`
+    - `invalid_types_struct_empty.l0`
+    - `invalid_types_array_zero_len.l0`
+    - `invalid_types_array_bad_elem_token.l0`
+    - `invalid_types_fn_unknown_ref.l0`
+    - `invalid_types_fn_bad_return_token.l0`
+    - `invalid_types_fn_trailing_comma.l0`
+    - `invalid_types_fn_missing_arrow.l0`
+  - added deterministic canonical docs examples for each new supported type form:
+    - `docs/examples/12_types_struct_sig.l0`
+    - `docs/examples/13_types_array_sig.l0`
+    - `docs/examples/14_types_fn_sig.l0`
+  - integrated all new fixtures into default automation:
+    - verify/canon assertions in `tests/run.sh`
+    - verifier matrix coverage in `tests/verifier_matrix.tsv`
+  - updated type-system documentation in:
+    - `docs/LANGUAGE.md`
+    - `docs/HOW_TO_WRITE_L0.md`
+    - `docs/VERIFIER_RULE_MAP.md`
+  - validated with full-suite pass
 
 ### M55: General CFG Lowering v1
 

@@ -17,7 +17,18 @@ type_entry  = type_id "=" type_tok ;
 
 type_tok    = "i1" | "i8" | "i16" | "i32" | "i64"
             | "u8" | "u16" | "u32" | "u64"
-            | "p0<i8>" ;
+            | "p0<i8>"
+            | struct_tok
+            | array_tok
+            | fn_type_tok ;
+
+struct_tok  = "s{" type_id ("," type_id)* "}" ;
+array_tok   = "a" pos_int "<" type_id ">" ;
+fn_type_tok = "fn(" fn_type_args ")->" type_id ;
+fn_type_args = /* empty */ | type_id ("," type_id)* ;
+pos_int     = nonzero_digit digit* ;
+digit       = "0" | nonzero_digit ;
+nonzero_digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 consts_sec  = "consts" SP "{" sec_payload "}" NL ;
 extern_sec  = "extern" SP "{" sec_payload "}" NL ;
@@ -98,6 +109,13 @@ digit       = "0".."9" ;
 ## 3) Type Rules (Bootstrap-Implemented)
 
 - Every referenced `tN` must exist in parsed `types`.
+- Supported `types` RHS token forms:
+  - primitive integers (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`)
+  - pointer (`p0<i8>`)
+  - struct (`s{tA,tB,...}` with one-or-more fields)
+  - fixed array (`aN<tA>` with `N > 0`)
+  - function type (`fn(tA,...)->tR`)
+- In `types` RHS struct/array/function tokens, referenced `tN` ids are validated and forward/self refs are rejected in bootstrap parser mode.
 - `arg N`:
   - `N < fn_arg_count`
   - result type suffix must equal declared argument `N` type

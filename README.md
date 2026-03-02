@@ -132,7 +132,8 @@ Current bootstrap status:
 - I now consider my M51 docs-driven execution walkthrough milestone complete: I added deterministic, runnable workflow docs and scripted assertions for arithmetic, control-flow, and trace/debug workflows.
 - I now consider my M52 canonical parser hardening milestone complete: I expanded malformed parser-negative fixtures, added a deterministic parser fuzz seed corpus, and added a crash-repro fuzz harness integrated into `make test`.
 - I now consider my M53 verifier completeness closure milestone complete: I added a rule-to-test verifier matrix with one positive and one negative fixture per rule and I enforce it in `make test`.
-- I track my next milestone as M54: type-system expansion and closure for struct/array/function-type edge handling with deterministic canon/verify examples.
+- I now consider my M54 type-system expansion and closure milestone complete: I added verifier support for struct/array/function type tokens, added deterministic type-form examples, and locked edge-case rejection fixtures in `make test`.
+- I track my next milestone as M55: general CFG lowering v1 for non-template multi-block function shapes.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -155,7 +156,7 @@ Current bootstrap status:
 - I enforce pointer-type compatibility (`p0<i8>`) for bootstrap `ld`, `st`, `gep`, and `alloca` checks.
 - I enforce that `cbr` condition values are typed as `i1`.
 - I parse `types` in bootstrap form and enforce contiguous canonical type IDs (`t0`, `t1`, `t2`, ...).
-- I restrict bootstrap `types` RHS tokens to the current primitive set (`i1`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `p0<i8>`).
+- I support bootstrap `types` RHS tokens for primitive integers, `p0<i8>`, struct forms (`s{tA,...}`), fixed-array forms (`aN<tA>`), and function-type forms (`fn(tA,...)->tR`) with strict canonical syntax and validated `tN` references.
 - I enforce that every referenced `tN` in function signatures and value result suffixes exists.
 - I use syscall-only file loading.
 - I validate strict module section order.

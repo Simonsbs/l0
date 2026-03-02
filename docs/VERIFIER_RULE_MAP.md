@@ -41,6 +41,9 @@ bash tests/verifier_matrix.sh ./bin/l0c tests/verifier_matrix.tsv
 | `V027` | `icmp.eq` result type must be `i1` | `valid_icmp_eq.l0` | `invalid_icmp_result_not_i1.l0` |
 | `V028` | Pointer-typed operands are required for memory ops | `valid_memory_ops.l0` | `invalid_ld_ptr_not_pointer.l0` |
 | `V029` | Intrinsic operand typing is enforced for `write` | `valid_write_newline.l0` | `invalid_write_len_pointer.l0` |
+| `V030` | Struct type token syntax and type-id refs are validated | `valid_types_struct_sig.l0` | `invalid_types_struct_unknown_ref.l0` |
+| `V031` | Array type token syntax and element count are validated | `valid_types_array_sig.l0` | `invalid_types_array_zero_len.l0` |
+| `V032` | Function type token syntax and type-id refs are validated | `valid_types_fn_sig.l0` | `invalid_types_fn_unknown_ref.l0` |
 
 ## Notes
 

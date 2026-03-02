@@ -2404,6 +2404,7 @@ skip_until_close_brace_newline:
 # accepted canonical forms:
 # - empty: " }\n"
 # - non-empty: " t0=<tok>, t1=<tok>, ... }\n" (contiguous ids from 0)
+# - token forms: primitive ints, p0<i8>, s{tA,...}, aN<tA>, fn(tA,...)->tR
 validate_types_section:
     push rbx
     push r14
@@ -2500,19 +2501,84 @@ validate_types_section:
     cmp rcx, r14
     jae .vts_bad
 
-    # parse minimal type token payload until delimiter ',' or ' '
+    # parse type token payload until top-level delimiter ',' or ' '
     mov r8, rcx
+    xor r10, r10                  # brace depth {}
+    xor r11, r11                  # angle depth <>
+    xor r15, r15                  # paren depth ()
 .vts_tok_loop:
     cmp rcx, r14
     jae .vts_bad
     mov al, byte ptr [r12+rcx]
-    cmp al, ','
-    je .vts_tok_done
-    cmp al, ' '
-    je .vts_tok_done
+    cmp al, '{'
+    jne .vts_tok_chk_rbrace
+    inc r10
     inc rcx
     jmp .vts_tok_loop
+.vts_tok_chk_rbrace:
+    cmp al, '}'
+    jne .vts_tok_chk_langle
+    cmp r10, 0
+    je .vts_bad
+    dec r10
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_chk_langle:
+    cmp al, '<'
+    jne .vts_tok_chk_rangle
+    inc r11
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_chk_rangle:
+    cmp al, '>'
+    jne .vts_tok_chk_lparen
+    cmp rcx, 0
+    je .vts_bad
+    mov dl, byte ptr [r12+rcx-1]
+    cmp dl, '-'
+    je .vts_tok_keep_char
+    cmp r11, 0
+    je .vts_bad
+    dec r11
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_chk_lparen:
+    cmp al, '('
+    jne .vts_tok_chk_rparen
+    inc r15
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_chk_rparen:
+    cmp al, ')'
+    jne .vts_tok_chk_delim
+    cmp r15, 0
+    je .vts_bad
+    dec r15
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_chk_delim:
+    cmp al, ','
+    je .vts_tok_delim_maybe
+    cmp al, ' '
+    je .vts_tok_delim_maybe
+.vts_tok_keep_char:
+    inc rcx
+    jmp .vts_tok_loop
+.vts_tok_delim_maybe:
+    cmp r10, 0
+    jne .vts_tok_keep_char
+    cmp r11, 0
+    jne .vts_tok_keep_char
+    cmp r15, 0
+    jne .vts_tok_keep_char
+    jmp .vts_tok_done
 .vts_tok_done:
+    cmp r10, 0
+    jne .vts_bad
+    cmp r11, 0
+    jne .vts_bad
+    cmp r15, 0
+    jne .vts_bad
     cmp rcx, r8
     je .vts_bad
     # validate token against bootstrap allowed type set
@@ -2525,6 +2591,7 @@ validate_types_section:
     add rdi, r10
     mov rsi, r11
     sub rsi, r10
+    mov rdx, qword ptr [rsp]      # current type id (disallow forward/self refs)
     call type_token_is_allowed
     cmp rax, 1
     jne .vts_tok_badpop
@@ -6892,11 +6959,13 @@ type_token_is_p0_i8:
     ret
 
 # type_token_is_allowed
-# rdi=token_ptr, rsi=token_len
+# rdi=token_ptr, rsi=token_len, rdx=max_type_id_exclusive for tN refs
 # out: rax=1 if token is in bootstrap allowed set, else 0
 type_token_is_allowed:
     push r12
+    push rbx
     mov r12, rdi
+    mov rbx, rdx
 
     # i1
     mov rdi, r12
@@ -6969,11 +7038,314 @@ type_token_is_allowed:
     cmp rax, 1
     je .ttia_yes
 
+    # s{tA,tB,...}
+    mov rdi, r12
+    mov rdx, rbx
+    call type_token_is_struct
+    cmp rax, 1
+    je .ttia_yes
+
+    # aN<tA>
+    mov rdi, r12
+    mov rdx, rbx
+    call type_token_is_array
+    cmp rax, 1
+    je .ttia_yes
+
+    # fn(tA,...)->tR
+    mov rdi, r12
+    mov rdx, rbx
+    call type_token_is_fn
+    cmp rax, 1
+    je .ttia_yes
+
     xor rax, rax
     jmp .ttia_done
 .ttia_yes:
     mov rax, 1
 .ttia_done:
+    pop rbx
+    pop r12
+    ret
+
+# type_ref_token_is_valid
+# rdi=token_ptr, rsi=token_len, rdx=max_type_id_exclusive
+# out: rax=1 if token is exactly tN and N < max_type_id_exclusive else 0
+type_ref_token_is_valid:
+    cmp rsi, 2
+    jb .trtv_no
+    mov al, byte ptr [rdi]
+    cmp al, 't'
+    jne .trtv_no
+    mov rcx, 1
+    call parse_digits
+    cmp rax, 1
+    jne .trtv_no
+    cmp rcx, rsi
+    jne .trtv_no
+    xor r8, r8
+    mov r9, 1
+.trtv_conv:
+    cmp r9, rsi
+    jae .trtv_chk
+    movzx r10, byte ptr [rdi+r9]
+    sub r10, '0'
+    imul r8, r8, 10
+    add r8, r10
+    inc r9
+    jmp .trtv_conv
+.trtv_chk:
+    cmp r8, rdx
+    jb .trtv_yes
+.trtv_no:
+    xor rax, rax
+    ret
+.trtv_yes:
+    mov rax, 1
+    ret
+
+# type_token_is_struct
+# rdi=token_ptr, rsi=token_len, rdx=max_type_id_exclusive
+# out: rax=1 if token is s{tA,tB,...} with valid refs else 0
+type_token_is_struct:
+    push r12
+    push r13
+    push r14
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    cmp r13, 5
+    jb .ttis_no
+    mov al, byte ptr [r12]
+    cmp al, 's'
+    jne .ttis_no
+    mov al, byte ptr [r12+1]
+    cmp al, '{'
+    jne .ttis_no
+    mov al, byte ptr [r12+r13-1]
+    cmp al, '}'
+    jne .ttis_no
+    mov rcx, 2
+    mov r8, r13
+    dec r8                        # end idx (points at '}')
+.ttis_field:
+    cmp rcx, r8
+    jae .ttis_no
+    mov r9, rcx
+.ttis_field_find_end:
+    cmp rcx, r8
+    jae .ttis_field_end
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    je .ttis_field_end
+    inc rcx
+    jmp .ttis_field_find_end
+.ttis_field_end:
+    mov r10, rcx                  # delimiter index (comma or end)
+    sub r10, r9                   # token len
+    cmp r10, 0
+    je .ttis_no
+    push r8
+    push rcx
+    mov rdi, r12
+    add rdi, r9
+    mov rsi, r10
+    mov rdx, r14
+    call type_ref_token_is_valid
+    pop rcx
+    pop r8
+    cmp rax, 1
+    jne .ttis_no
+    cmp rcx, r8
+    je .ttis_yes
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    jne .ttis_no
+    inc rcx
+    cmp rcx, r8                   # no trailing comma
+    jae .ttis_no
+    jmp .ttis_field
+.ttis_yes:
+    mov rax, 1
+    jmp .ttis_done
+.ttis_no:
+    xor rax, rax
+.ttis_done:
+    pop r14
+    pop r13
+    pop r12
+    ret
+
+# type_token_is_array
+# rdi=token_ptr, rsi=token_len, rdx=max_type_id_exclusive
+# out: rax=1 if token is aN<tA> (N>0) with valid ref else 0
+type_token_is_array:
+    push r12
+    push r13
+    push r14
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    cmp r13, 6
+    jb .ttia2_no
+    mov al, byte ptr [r12]
+    cmp al, 'a'
+    jne .ttia2_no
+    mov rcx, 1
+    call parse_digits
+    cmp rax, 1
+    jne .ttia2_no
+    xor r8, r8
+    mov r9, 1
+.ttia2_n_conv:
+    cmp r9, rcx
+    jae .ttia2_n_done
+    movzx r10, byte ptr [r12+r9]
+    sub r10, '0'
+    imul r8, r8, 10
+    add r8, r10
+    inc r9
+    jmp .ttia2_n_conv
+.ttia2_n_done:
+    cmp r8, 0
+    je .ttia2_no
+    cmp rcx, r13
+    jae .ttia2_no
+    mov al, byte ptr [r12+rcx]
+    cmp al, '<'
+    jne .ttia2_no
+    mov al, byte ptr [r12+r13-1]
+    cmp al, '>'
+    jne .ttia2_no
+    mov r9, rcx
+    inc r9                        # sub token start
+    mov r10, r13
+    sub r10, r9
+    dec r10                       # strip trailing '>'
+    cmp r10, 0
+    je .ttia2_no
+    mov rdi, r12
+    add rdi, r9
+    mov rsi, r10
+    mov rdx, r14
+    call type_ref_token_is_valid
+    cmp rax, 1
+    jne .ttia2_no
+    mov rax, 1
+    jmp .ttia2_done
+.ttia2_no:
+    xor rax, rax
+.ttia2_done:
+    pop r14
+    pop r13
+    pop r12
+    ret
+
+# type_token_is_fn
+# rdi=token_ptr, rsi=token_len, rdx=max_type_id_exclusive
+# out: rax=1 if token is fn(tA,...)->tR with valid refs else 0
+type_token_is_fn:
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    cmp r13, 8
+    jb .ttif_no
+    mov al, byte ptr [r12]
+    cmp al, 'f'
+    jne .ttif_no
+    mov al, byte ptr [r12+1]
+    cmp al, 'n'
+    jne .ttif_no
+    mov al, byte ptr [r12+2]
+    cmp al, '('
+    jne .ttif_no
+    mov rcx, 3
+    mov r15, -1
+.ttif_find_close:
+    cmp rcx, r13
+    jae .ttif_no
+    mov al, byte ptr [r12+rcx]
+    cmp al, ')'
+    je .ttif_have_close
+    inc rcx
+    jmp .ttif_find_close
+.ttif_have_close:
+    mov r15, rcx                  # close-paren index
+    mov rcx, 3                    # args scan index
+    cmp rcx, r15
+    je .ttif_args_done            # empty args
+.ttif_arg_loop:
+    cmp rcx, r15
+    jae .ttif_no
+    mov r8, rcx                   # arg start
+.ttif_arg_find_end:
+    cmp rcx, r15
+    jae .ttif_arg_end
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    je .ttif_arg_end
+    inc rcx
+    jmp .ttif_arg_find_end
+.ttif_arg_end:
+    mov r9, rcx
+    sub r9, r8                    # arg token len
+    cmp r9, 0
+    je .ttif_no
+    push rcx
+    mov rdi, r12
+    add rdi, r8
+    mov rsi, r9
+    mov rdx, r14
+    call type_ref_token_is_valid
+    pop rcx
+    cmp rax, 1
+    jne .ttif_no
+    cmp rcx, r15
+    je .ttif_args_done
+    mov al, byte ptr [r12+rcx]
+    cmp al, ','
+    jne .ttif_no
+    inc rcx
+    cmp rcx, r15                  # no trailing comma
+    jae .ttif_no
+    jmp .ttif_arg_loop
+
+.ttif_args_done:
+    mov rcx, r15
+    add rcx, 2
+    cmp rcx, r13
+    jae .ttif_no
+    mov al, byte ptr [r12+r15+1]
+    cmp al, '-'
+    jne .ttif_no
+    mov al, byte ptr [r12+r15+2]
+    cmp al, '>'
+    jne .ttif_no
+    mov r8, r15
+    add r8, 3                     # return type start
+    cmp r8, r13
+    jae .ttif_no
+    mov r9, r13
+    sub r9, r8                    # return token len
+    mov rdi, r12
+    add rdi, r8
+    mov rsi, r9
+    mov rdx, r14
+    call type_ref_token_is_valid
+    cmp rax, 1
+    jne .ttif_no
+    mov rax, 1
+    jmp .ttif_done
+.ttif_no:
+    xor rax, rax
+.ttif_done:
+    pop r15
+    pop r14
+    pop r13
     pop r12
     ret
 
