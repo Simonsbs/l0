@@ -6,6 +6,7 @@ I freeze runtime intrinsic compatibility in `docs/INTRINSIC_CONTRACTS.md` as `in
 I freeze debug-map compatibility in `docs/DEBUG_MAP_SCHEMA.md` as `debugmap.v1`.
 I freeze trace-schema compatibility in `docs/TRACE_SCHEMA.md` as `traceschema.v1`.
 I freeze deterministic build guarantees in `docs/DETERMINISTIC_BUILDS.md` as `detbuild.v1`.
+I freeze differential semantic runtime-equivalence guarantees in `docs/DIFFERENTIAL_TESTING.md` as `diffsem.v1`.
 
 ## 1) Token-Level Grammar (Bootstrap-Implemented)
 

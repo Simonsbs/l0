@@ -1,0 +1,42 @@
+# Differential Semantic Testing (v1)
+
+I use this document as the frozen semantic differential contract for the current bootstrap toolchain.
+
+Contract version: `diffsem.v1`
+
+## What I Freeze in v1
+
+For each differential pair in the M64 corpus, I freeze runtime-result equivalence:
+- build left fixture to image
+- build right fixture to image
+- run both images over the same deterministic argument vectors
+- require byte-identical `run` stdout for every test vector
+
+This contract checks semantic equivalence across canonical fixture variants, including:
+- id-renumbering variants
+- arg-definition-order variants
+- call-lowered vs direct arithmetic/bitwise kernels
+- dead-const-generalized variants for compare/control-flow/memory/ABI kernels
+
+## Enforcement
+
+I enforce this contract in:
+- `tests/differential_semantics.sh`
+
+That harness is integrated into default automation through `tests/run.sh` and therefore enforced by `make test`.
+
+## Differential Corpus in v1
+
+- `add.wrap` equivalence (`valid_add_v7` vs id/argdef variants)
+- direct-vs-call equivalence for `mul.wrap`, `sub.wrap`, `and`, `or`, `xor`, `shl`, `shr`
+- `icmp.eq` dead-const generalized equivalence
+- `icmp.eq + cbr` select dead-const generalized equivalence
+- `alloca/st/ld` and `alloca/st/gep/ld` dead-const generalized equivalence
+- SysV 6-arg sum dead-const generalized equivalence
+- const-return id/dead-const generalized equivalence
+
+## Out of Scope in v1
+
+- Differential checks for intentionally unsupported guardrail-fallback shapes.
+- Exhaustive symbolic equivalence; v1 is deterministic corpus-based runtime differential testing.
+- Cross-machine runtime-equivalence guarantees outside the pinned Linux x86-64 bootstrap environment.

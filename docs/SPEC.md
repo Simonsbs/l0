@@ -7,6 +7,7 @@ For runtime-intrinsic compatibility guarantees, I freeze `docs/INTRINSIC_CONTRAC
 For debug-map compatibility guarantees, I freeze `docs/DEBUG_MAP_SCHEMA.md` as `debugmap.v1`.
 For trace-schema compatibility guarantees, I freeze `docs/TRACE_SCHEMA.md` as `traceschema.v1`.
 For deterministic build guarantees, I freeze `docs/DETERMINISTIC_BUILDS.md` as `detbuild.v1`.
+For differential semantic runtime-equivalence guarantees, I freeze `docs/DIFFERENTIAL_TESTING.md` as `diffsem.v1`.
 
 ## Module shape (strict)
 

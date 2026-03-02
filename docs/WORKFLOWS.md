@@ -270,3 +270,14 @@ bash tests/deterministic_builds.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 15: Differential Semantic Contract Gate
+
+I use this when I want to enforce deterministic runtime-equivalence checks (`diffsem.v1`) across paired equivalent fixtures.
+
+```sh
+bash tests/differential_semantics.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

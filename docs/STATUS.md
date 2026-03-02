@@ -1034,11 +1034,27 @@ Last updated: 2026-03-02
 
 ### M64: Differential Semantic Testing
 
-- Status: planned
-- Planned (measurable):
-  - add semantic differential harness for supported op families
-  - run generated fixture comparisons for runtime result equivalence
-  - acceptance: differential corpus passes with no semantic mismatches
+- Status: complete
+- Scope completed:
+  - added deterministic semantic differential harness:
+    - `tests/differential_semantics.sh`
+  - harness performs runtime differential checks over paired equivalent fixtures:
+    - builds left/right images for each pair
+    - runs both images on deterministic argument vectors
+    - requires byte-identical runtime outputs for every case
+  - differential corpus covers supported families:
+    - `add.wrap` id/argdef variants
+    - direct-vs-call arithmetic/bitwise variants (`mul.wrap`, `sub.wrap`, `and`, `or`, `xor`, `shl`, `shr`)
+    - `icmp.eq` and `icmp.eq + cbr` dead-const generalized variants
+    - memory roundtrip and memory-gep roundtrip dead-const generalized variants
+    - SysV 6-arg sum dead-const generalized variant
+    - const-return id/dead-const generalized variant
+  - documented frozen differential semantic contract surface as `diffsem.v1`:
+    - `docs/DIFFERENTIAL_TESTING.md`
+  - integrated differential harness into default automation:
+    - `tests/run.sh` now requires `differential_semantics.sh` to report `ok`
+  - acceptance:
+    - differential corpus passes with no semantic mismatches in default `make test`
 
 ### M65: Fuzzing and Malformed-Input Stress
 

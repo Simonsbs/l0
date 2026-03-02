@@ -144,7 +144,8 @@ Current bootstrap status:
 - I now consider my M61 debug-map schema freeze v1 milestone complete: I froze the debug-map compatibility surface as `debugmap.v1` and enforce it with a dedicated schema harness in default `make test`.
 - I now consider my M62 trace schema freeze v1 milestone complete: I froze the trace schema and trace decode compatibility surface as `traceschema.v1` and enforce it with a dedicated contract harness in default `make test`.
 - I now consider my M63 deterministic build guarantees milestone complete: I froze `detbuild.v1` and enforce byte-for-byte reproducibility gates for image/object and side-artifact outputs in default `make test`.
-- I track my next milestone as M64: differential semantic testing.
+- I now consider my M64 differential semantic testing milestone complete: I froze `diffsem.v1` and enforce deterministic runtime equivalence checks across paired fixture variants in default `make test`.
+- I track my next milestone as M65: fuzzing and malformed-input stress.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
