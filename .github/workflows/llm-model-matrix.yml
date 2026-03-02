@@ -1,0 +1,67 @@
+name: LLM Model Matrix
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  llm-model-matrix:
+    runs-on: ubuntu-latest
+    env:
+      L0_LLM_ADAPTER_CMD: ${{ secrets.L0_LLM_ADAPTER_CMD }}
+      L0_LLM_MODELS: ${{ vars.L0_LLM_MODELS }}
+      L0_OLLAMA_HOST: ${{ vars.L0_OLLAMA_HOST }}
+      L0_LLM_MAX_ATTEMPTS: ${{ vars.L0_LLM_MAX_ATTEMPTS }}
+      L0_LLM_ENABLE_REPAIR_LOOP: ${{ vars.L0_LLM_ENABLE_REPAIR_LOOP }}
+      L0_LLM_AUTO_CANON_FIX: ${{ vars.L0_LLM_AUTO_CANON_FIX }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq ripgrep
+
+      - name: Build
+        run: make
+
+      - name: Run model matrix benchmark
+        if: ${{ env.L0_LLM_ADAPTER_CMD != '' && env.L0_LLM_MODELS != '' }}
+        run: |
+          bash tests/llm_model_matrix.sh ./bin/l0c . \
+            docs/LLM_MODEL_LEADERBOARD.json \
+            docs/LLM_MODEL_LEADERBOARD.md
+          cat docs/LLM_MODEL_LEADERBOARD.md
+
+      - name: Skip reason
+        if: ${{ env.L0_LLM_ADAPTER_CMD == '' || env.L0_LLM_MODELS == '' }}
+        run: |
+          echo "Skipping LLM model matrix: set secret L0_LLM_ADAPTER_CMD and variable L0_LLM_MODELS."
+
+      - name: Commit updated leaderboard
+        if: ${{ env.L0_LLM_ADAPTER_CMD != '' && env.L0_LLM_MODELS != '' }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md; then
+            echo "No leaderboard report change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md
+          git commit -m "LLM matrix: refresh model leaderboard"
+          git push
+
+      - name: Upload leaderboard artifacts
+        if: ${{ env.L0_LLM_ADAPTER_CMD != '' && env.L0_LLM_MODELS != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-model-leaderboard
+          path: |
+            docs/LLM_MODEL_LEADERBOARD.json
+            docs/LLM_MODEL_LEADERBOARD.md

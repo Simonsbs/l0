@@ -59,6 +59,8 @@ I use this as the top-level documentation entry point for both people and LLMs.
 - `docs/LLM_USABILITY_BENCHMARK.md`
 - `docs/LLM_BENCHMARK_RESULTS.md`
 - `docs/LLM_BENCHMARK_RESULTS.json`
+- `docs/LLM_MODEL_LEADERBOARD.md`
+- `docs/LLM_MODEL_LEADERBOARD.json`
 
 ## Frozen v1 Contract Set
 

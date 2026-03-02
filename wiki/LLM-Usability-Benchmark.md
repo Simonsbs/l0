@@ -9,9 +9,11 @@ I use this benchmark to measure L0 usability for LLM workflows and track token-e
 - verify success rate (`l0c verify` pass rate)
 - semantic success rate (build+run output matches expected)
 - average turns to pass
+- pass@k for verify and semantic success
 - prompt/output token proxies
 - L0 vs C token ratio
 - tokens per verified/semantic program
+- verifier error-class distribution
 
 ## Deterministic Corpus
 
@@ -37,6 +39,25 @@ bash tests/llm_usability_bench.sh ./bin/l0c . cmd
 ```
 
 The adapter command must read prompt text from stdin and output L0 source on stdout.
+
+## Repair Loop and Canonicalization Controls
+
+In `cmd` mode, I support a verify-guided repair loop:
+
+```sh
+L0_LLM_ADAPTER_CMD='<your command>' \
+L0_LLM_MAX_ATTEMPTS=3 \
+L0_LLM_ENABLE_REPAIR_LOOP=1 \
+L0_LLM_AUTO_CANON_FIX=1 \
+bash tests/llm_usability_bench.sh ./bin/l0c . cmd
+```
+
+Control flags:
+- `L0_LLM_MAX_ATTEMPTS` (default `3`): max generation attempts per task in `cmd` mode.
+- `L0_LLM_ENABLE_REPAIR_LOOP` (default `1`): enable/disable verify-guided retries.
+- `L0_LLM_AUTO_CANON_FIX` (default `1`): run `l0c canon` on generated output between attempts.
+
+When retries are enabled, prompt/output token totals include all attempts.
 
 ## Output Artifacts
 

@@ -1,0 +1,9 @@
+{
+  "generated_utc": null,
+  "total_models": 0,
+  "models": [],
+  "recommended_model": null,
+  "notes": [
+    "Run tests/llm_model_matrix.sh with L0_LLM_ADAPTER_CMD and L0_LLM_MODELS to populate this report."
+  ]
+}

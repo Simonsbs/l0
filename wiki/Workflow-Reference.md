@@ -327,6 +327,41 @@ Expected stable output:
 - refreshed `docs/LLM_BENCHMARK_RESULTS.json`
 - refreshed `docs/LLM_BENCHMARK_RESULTS.md`
 
+I also use cmd-mode with verify-guided repair:
+
+```sh
+make
+L0_LLM_ADAPTER_CMD='<your command>' \
+L0_LLM_MAX_ATTEMPTS=3 \
+L0_LLM_ENABLE_REPAIR_LOOP=1 \
+L0_LLM_AUTO_CANON_FIX=1 \
+bash tests/llm_usability_bench.sh ./bin/l0c . cmd \
+  docs/LLM_BENCHMARK_RESULTS.json \
+  docs/LLM_BENCHMARK_RESULTS.md
+```
+
+Expected stable output:
+- `ok`
+- report includes `pass@k`, `avg_attempts_used`, and `error_class_counts`
+
+## Workflow 19: LLM Model Leaderboard Matrix
+
+I use this when I want apples-to-apples LLM usability comparisons across multiple models.
+
+```sh
+make
+L0_LLM_ADAPTER_CMD='<your command>' \
+L0_LLM_MODELS='model-a,model-b,model-c' \
+bash tests/llm_model_matrix.sh ./bin/l0c . \
+  docs/LLM_MODEL_LEADERBOARD.json \
+  docs/LLM_MODEL_LEADERBOARD.md
+```
+
+Expected stable output:
+- `ok`
+- refreshed `docs/LLM_MODEL_LEADERBOARD.json`
+- refreshed `docs/LLM_MODEL_LEADERBOARD.md`
+
 ## Workflow 14: Deterministic Build Contract Gate
 
 I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.
