@@ -1,0 +1,72 @@
+# L0 LLM Prompt Pack
+
+I use these templates when I want other LLMs to produce deterministic, verifiable L0 outputs.
+
+## Template 1: Generate Canonical Function
+
+```text
+You are generating L0 source.
+Requirements:
+- strict section order: ver/types/consts/extern/globals/fns
+- canonical ids and formatting
+- one instruction per line
+- no implicit casts or nested expressions
+Task:
+- generate a module with fn f0 (t0,t0)->t0 that returns add.wrap(arg0,arg1)
+Output only L0 code.
+```
+
+## Template 2: Add Debuggable Trace Path
+
+```text
+Given this valid L0 module, add a trace path:
+- keep canonical formatting
+- in f0/b0 insert `trace 1 v0` after first arg load
+- preserve verifier correctness and return type
+Return full updated module only.
+```
+
+## Template 3: Minimize Failing Case
+
+```text
+I have verifier failure: "error: invalid module shape or non-canonical input".
+Given this L0 module, minimize to the smallest reproducer while preserving the same failure class.
+Rules:
+- keep strict canonical layout
+- keep deterministic ids
+Return minimized module only.
+```
+
+## Template 4: Explain Runtime Behavior
+
+```text
+Explain this L0 module with references to:
+- function signature
+- blocks and terminators
+- value dataflow
+- expected ./bin/l0c run output for args: <...>
+Do not invent unsupported semantics.
+```
+
+## Template 5: Produce Dual Artifacts
+
+```text
+From this algorithm description, produce:
+1) canonical L0 module
+2) expected command sequence:
+   - verify
+   - build + imgcheck
+   - run with sample args
+   - expected stdout
+Use only currently supported ops.
+```
+
+## Safety Checklist for Prompting
+
+Before I trust generated output, I always ask the model to self-check:
+- section order and completeness
+- contiguous ids for functions/blocks
+- def-before-use for all value operands
+- branch/call targets exist
+- explicit type suffix on value lines
+- verify command expected to return `ok`

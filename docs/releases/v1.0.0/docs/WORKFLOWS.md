@@ -1,0 +1,418 @@
+# Workflows
+
+I use this document as my deterministic, runnable workflow reference for L0.
+
+## Workflow 1: Arithmetic End-to-End
+
+I use this when I want a minimal verify/build/run loop.
+
+```sh
+./bin/l0c verify docs/examples/01_arithmetic_add_wrap.l0
+./bin/l0c build docs/examples/01_arithmetic_add_wrap.l0 /tmp/l0_wf_add.img
+./bin/l0c imgcheck /tmp/l0_wf_add.img
+./bin/l0c imgmeta /tmp/l0_wf_add.img
+./bin/l0c run /tmp/l0_wf_add.img 5 8
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 1`, `code_size 7`
+- `run` prints: `13`
+
+## Workflow 2: Control-Flow End-to-End
+
+I use this when I want to confirm conditional branch behavior and emitted branch kernel metadata.
+
+```sh
+./bin/l0c verify docs/examples/03_control_cbr_select.l0
+./bin/l0c build docs/examples/03_control_cbr_select.l0 /tmp/l0_wf_cbr.img
+./bin/l0c imgcheck /tmp/l0_wf_cbr.img
+./bin/l0c imgmeta /tmp/l0_wf_cbr.img
+./bin/l0c run /tmp/l0_wf_cbr.img 1
+./bin/l0c run /tmp/l0_wf_cbr.img 0
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 25`, `code_size 4`
+- `run ... 1` prints: `1`
+- `run ... 0` prints: `0`
+
+## Workflow 3: Debug Map and Trace Join End-to-End
+
+I use this when I need to debug instruction ids and correlate trace records to code ranges.
+
+```sh
+./bin/l0c verify docs/examples/10_intrinsic_trace.l0
+./bin/l0c build docs/examples/10_intrinsic_trace.l0 /tmp/l0_wf_trace.img \
+  --debug-map /tmp/l0_wf_trace.map \
+  --trace-schema /tmp/l0_wf_trace.schema
+./bin/l0c imgcheck /tmp/l0_wf_trace.img
+./bin/l0c imgmeta /tmp/l0_wf_trace.img
+./bin/l0c schemacat /tmp/l0_wf_trace.schema
+./bin/l0c mapcat /tmp/l0_wf_trace.map
+./bin/l0c run /tmp/l0_wf_trace.img 123 >/tmp/l0_wf_trace.out 2>/tmp/l0_wf_trace.bin
+./bin/l0c tracecat /tmp/l0_wf_trace.bin
+./bin/l0c tracejoin /tmp/l0_wf_trace.bin /tmp/l0_wf_trace.map
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 24`
+- `schemacat` output:
+  - `version 1`
+  - `record_size 16`
+  - `fields 2`
+- `mapcat` output:
+  - `entries 2`
+  - `code_size 51`
+  - `inst_id 1 start 0 end 17`
+  - `inst_id 2 start 17 end 51`
+- `run` stdout prints: `0`
+- `tracecat` prints:
+  - `id 1`
+  - `val 123`
+- `tracejoin` prints:
+  - `id 1`
+  - `val 123`
+  - `start 0`
+  - `end 17`
+
+## How I keep this reliable
+
+I keep the scripted equivalents of these workflows in `tests/run.sh` so `make test` enforces them every run.
+
+## Workflow 4: Parser Fuzz Regression and Crash Repro
+
+I use this when I want to stress parser robustness against malformed and byte-mutated inputs.
+
+```sh
+bash tests/parser_fuzz_regress.sh ./bin/l0c tests/fuzz/parser_seeds
+```
+
+Expected stable output:
+- `ok`
+
+When I need to reproduce one specific crashing or suspicious case, I run:
+
+```sh
+bash tests/parser_fuzz_regress.sh --repro /tmp/suspect_input.l0 ./bin/l0c
+```
+
+Expected stable output:
+- `ok` when the parser handles that input without crashing
+
+## Workflow 5: Verifier Rule Matrix
+
+I use this when I need to prove that every documented verifier rule has both a passing fixture and a failing fixture.
+
+```sh
+bash tests/verifier_matrix.sh ./bin/l0c tests/verifier_matrix.tsv
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 6: Multi-Block Branch-Const CFG
+
+I use this when I want to validate generalized multi-block CFG lowering for branch-local constant returns.
+
+```sh
+./bin/l0c verify docs/examples/15_cfg_branch_const_select.l0
+./bin/l0c build docs/examples/15_cfg_branch_const_select.l0 /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c imgcheck /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c imgmeta /tmp/l0_wf_cfg_branch_const.img
+./bin/l0c run /tmp/l0_wf_cfg_branch_const.img 1
+./bin/l0c run /tmp/l0_wf_cfg_branch_const.img 0
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 26`, `code_size 27`
+- `run ... 1` prints: `11`
+- `run ... 0` prints: `22`
+
+## Workflow 7: Merge-Block Memory Join CFG
+
+I use this when I want to validate merge-point value selection lowered from a multi-block branch/store/join shape.
+
+```sh
+./bin/l0c verify docs/examples/16_cfg_merge_mem_select.l0
+./bin/l0c build docs/examples/16_cfg_merge_mem_select.l0 /tmp/l0_wf_cfg_merge.img
+./bin/l0c imgcheck /tmp/l0_wf_cfg_merge.img
+./bin/l0c imgmeta /tmp/l0_wf_cfg_merge.img
+./bin/l0c run /tmp/l0_wf_cfg_merge.img 1
+./bin/l0c run /tmp/l0_wf_cfg_merge.img 0
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 27`, `code_size 27`
+- `run ... 1` prints: `11`
+- `run ... 0` prints: `22`
+
+## Workflow 8: Spill/Reload Stress Kernel
+
+I use this when I want deterministic spill/reload-path coverage in generalized lowering.
+
+```sh
+./bin/l0c verify docs/examples/17_spill_stress_kernel.l0
+./bin/l0c build docs/examples/17_spill_stress_kernel.l0 /tmp/l0_wf_spill.img
+./bin/l0c imgcheck /tmp/l0_wf_spill.img
+./bin/l0c imgmeta /tmp/l0_wf_spill.img
+./bin/l0c run /tmp/l0_wf_spill.img 7 3
+./bin/l0c run /tmp/l0_wf_spill.img 5 2
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 28`, `code_size 35`
+- `run ... 7 3` prints: `23`
+- `run ... 5 2` prints: `9`
+
+## Workflow 9: SysV ABI 6-Arg Entry Coverage
+
+I use this when I want to validate SysV integer-argument register mapping across all six entry arguments.
+
+```sh
+./bin/l0c verify docs/examples/18_sysv_abi_sum6_kernel.l0
+./bin/l0c build docs/examples/18_sysv_abi_sum6_kernel.l0 /tmp/l0_wf_sysv6.img
+./bin/l0c imgcheck /tmp/l0_wf_sysv6.img
+./bin/l0c imgmeta /tmp/l0_wf_sysv6.img
+./bin/l0c run /tmp/l0_wf_sysv6.img 1 2 3 4 5 6
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 32`, `code_size 19`
+- `run ... 1 2 3 4 5 6` prints: `21`
+
+## Workflow 10: ELF Object Path End-to-End
+
+I use this when I want to emit a relocatable ELF object and link it with a minimal native harness.
+
+```sh
+./bin/l0c verify docs/examples/18_sysv_abi_sum6_kernel.l0
+./bin/l0c build-elf docs/examples/18_sysv_abi_sum6_kernel.l0 /tmp/l0_wf_sum6.o
+cat >/tmp/l0_wf_sum6_harness.s <<'EOF'
+.intel_syntax noprefix
+.global _start
+.extern f0
+_start:
+  mov rdi, 1
+  mov rsi, 2
+  mov rdx, 3
+  mov rcx, 4
+  mov r8, 5
+  mov r9, 6
+  call f0
+  mov rdi, rax
+  mov rax, 60
+  syscall
+EOF
+as --64 -o /tmp/l0_wf_sum6_harness.o /tmp/l0_wf_sum6_harness.s
+ld -o /tmp/l0_wf_sum6_exec /tmp/l0_wf_sum6_harness.o /tmp/l0_wf_sum6.o
+/tmp/l0_wf_sum6_exec ; echo $?
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `build-elf`: `ok`
+- linked executable exit status: `21`
+
+## Workflow 11: Runtime Intrinsic Contract Gate
+
+I use this when I want to enforce the frozen intrinsic contract surface (`intrinsics.v1`) in one command.
+
+```sh
+bash tests/intrinsic_contracts.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 12: Debug-Map Schema Contract Gate
+
+I use this when I want to enforce the frozen debug-map schema contract surface (`debugmap.v1`) in one command.
+
+```sh
+bash tests/debug_map_schema.sh ./bin/l0c
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 13: Trace Schema Contract Gate
+
+I use this when I want to enforce the frozen trace schema contract surface (`traceschema.v1`) in one command.
+
+```sh
+bash tests/trace_schema_contracts.sh ./bin/l0c
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 14: Deterministic Build Contract Gate
+
+I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.
+
+```sh
+bash tests/deterministic_builds.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 15: Differential Semantic Contract Gate
+
+I use this when I want to enforce deterministic runtime-equivalence checks (`diffsem.v1`) across paired equivalent fixtures.
+
+```sh
+bash tests/differential_semantics.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 16: Fuzz and Malformed-Input Stress Gate
+
+I use this when I want to enforce deterministic crash-free malformed-input stress checks (`fuzzstress.v1`) across parser, verifier, image, and trace tooling surfaces.
+
+```sh
+bash tests/m65_fuzz_stress.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 17: Performance Baseline and Regression Gate
+
+I use this when I want to enforce pinned throughput floor checks (`perfbase.v1`) for representative verify/build/run/build-elf and trace tooling operations.
+
+```sh
+bash tests/performance_gates.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 18: Error Model Contract Gate
+
+I use this when I want to enforce deterministic CLI exit-code and stderr behavior (`errmodel.v1`) across representative failure classes.
+
+```sh
+bash tests/error_model.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 19: Release Pipeline Contract Gate
+
+I use this when I want to enforce scripted, reproducible release-candidate packaging with checksum verification (`relpipe.v1`).
+
+```sh
+bash tests/release_pipeline.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 20: Compatibility Matrix Contract Gate
+
+I use this when I want to enforce source/image/tool compatibility slices plus upgrade-policy coverage (`compat.v1`) across prior milestone fixtures.
+
+```sh
+bash tests/compatibility_matrix.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 21: Production Readiness Gate
+
+I use this when I want to enforce final production-readiness closure (`prodready.v1`) across milestone-gate health, frozen contract docs, and release-candidate artifact validation.
+
+```sh
+bash tests/production_readiness.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 22: Docs and Wiki Sync Gate
+
+I use this when I want to enforce that my generated `wiki/` mirror is fully synchronized with canonical `docs/` content.
+
+```sh
+bash tests/wiki_sync.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 23: Docs Coverage Gate
+
+I use this when I want to enforce that command/op/example documentation coverage stays complete and deterministic.
+
+```sh
+bash tests/docs_coverage.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 24: Docs Links Gate
+
+I use this when I want to enforce that internal documentation links resolve to real files.
+
+```sh
+bash tests/docs_links.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 25: Docs Heading Uniqueness Gate
+
+I use this when I want to enforce duplicate-heading hygiene across top-level docs pages.
+
+```sh
+bash tests/docs_headings.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 26: Docs Contract-Reference Gate
+
+I use this when I want to enforce that every frozen contract doc is referenced by index/spec docs and mirrored into wiki mapping.
+
+```sh
+bash tests/docs_contract_refs.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 27: Publish Wiki Mirror to GitHub Wiki
+
+I use this when I want to publish my generated `wiki/` mirror to the remote GitHub Wiki repository.
+
+```sh
+bash scripts/publish_wiki_remote.sh
+```
+
+Expected stable output:
+- `ok`
+
+Note:
+- this requires GitHub Wiki to be enabled in repository settings so `<repo>.wiki.git` exists.

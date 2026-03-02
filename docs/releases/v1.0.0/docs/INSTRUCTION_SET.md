@@ -1,0 +1,69 @@
+# L0 Instruction Set (Bootstrap)
+
+I use this document as my operator-level reference for the current L0 bootstrap language slice.
+
+This is intentionally strict and canonical. I only describe forms that are valid in my current verifier/build pipeline.
+
+## Instruction Line Forms
+
+I only use three line shapes inside a block:
+
+1. value-producing: `vN = OP ... : tM`
+2. non-value: `OP ...`
+3. terminator: `br bK` | `cbr vC bT bF` | `ret` | `ret vN`
+
+I keep one instruction per line.
+
+## Value-Producing Ops
+
+| Op | Canonical Form | Core Type Rules | Lowering Status |
+|---|---|---|---|
+| `arg` | `vN = arg I : tM` | `I` in range, result type must match fn arg `I` | verifier only, used by all lowered kernels |
+| `const` | `vN = const K : tM` | `K` signed decimal, result `tM` must exist | const-return lowered in canonical template |
+| `add.wrap` | `vN = add.wrap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 1`) |
+| `add.trap` | `vN = add.trap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered trap (`kernel_kind 2`) |
+| `sub.wrap` | `vN = sub.wrap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 3`) |
+| `sub.trap` | `vN = sub.trap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered trap (`kernel_kind 4`) |
+| `mul.wrap` | `vN = mul.wrap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 5`) |
+| `mul.trap` | `vN = mul.trap vA vB : tM` | `type(vA)=type(vB)=tM` | lowered trap (`kernel_kind 15`) |
+| `and` | `vN = and vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 6`) |
+| `or` | `vN = or vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 7`) |
+| `xor` | `vN = xor vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 8`) |
+| `shl` | `vN = shl vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 9`) |
+| `shr` | `vN = shr vA vB : tM` | `type(vA)=type(vB)=tM` | lowered (`kernel_kind 10`) |
+| `icmp.eq` | `vN = icmp.eq vA vB : tM` | `type(vA)=type(vB)`, `tM` must be `i1` | lowered (`kernel_kind 11`) |
+| `call` | `vN = call fK vA ... : tM` | target exists, arity and types match callee sig, `tM` matches callee return | lowered for canonical two-function families |
+| `ld` | `vN = ld vPtr : tM` | `type(vPtr)=p0<i8>` | lowered in memory templates |
+| `gep` | `vN = gep vPtr OFF : tM` | `vPtr` and result typed `p0<i8>`, `OFF` signed decimal | lowered in memory-gep templates |
+| `alloca` | `vN = alloca tElem, C : tM` | `tElem` exists, `C` unsigned decimal, `tM=p0<i8>` | lowered in memory templates |
+| `malloc` | `vN = malloc vSize : tM` | `vSize` non-pointer, `tM=p0<i8>` | lowered intrinsic template |
+
+## Non-Value Ops
+
+| Op | Canonical Form | Core Type Rules | Lowering Status |
+|---|---|---|---|
+| `st` | `st vPtr vVal` | `vPtr` typed `p0<i8>` | lowered in memory templates |
+| `free` | `free vPtr` | `vPtr` typed `p0<i8>` | lowered intrinsic template |
+| `write` | `write vPtr vLen` | `vPtr` typed `p0<i8>`, `vLen` non-pointer | lowered intrinsic template (canonical shapes) |
+| `exit` | `exit vCode` | `vCode` non-pointer | lowered intrinsic template |
+| `trace` | `trace ID vA...` | `ID` decimal, one-or-more defined values | lowered intrinsic template (canonical shapes) |
+
+## Terminators
+
+| Op | Canonical Form | Core Rules |
+|---|---|---|
+| `ret` | `ret` | valid for void-style paths in accepted shapes |
+| `ret vN` | `ret vN` | `vN` defined; type matches fn return |
+| `br` | `br bK` | `bK` exists in same function |
+| `cbr` | `cbr vC bT bF` | `vC` defined and typed `i1`; targets exist |
+
+## Fallback Rule
+
+If a verified module does not match any current lowering template, build falls back to deterministic one-byte `ret` stub (`kernel_kind=0`, `code_size=1`).
+
+## Error Behavior Summary
+
+I reject invalid instruction usage with deterministic verifier failure class:
+- `error: invalid module shape or non-canonical input`
+
+Detailed error class contract is frozen in `docs/ERROR_MODEL.md`.

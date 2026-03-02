@@ -22,6 +22,12 @@ if ! git clone "$REMOTE_WIKI_URL" "$TMP_DIR/wiki_repo" >/tmp/l0_publish_wiki_clo
 fi
 
 cd "$TMP_DIR/wiki_repo"
+if [ -z "$(git config user.email || true)" ]; then
+  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+fi
+if [ -z "$(git config user.name || true)" ]; then
+  git config user.name "github-actions[bot]"
+fi
 find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
 cp -a "$ROOT/wiki/." .
 

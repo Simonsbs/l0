@@ -23,6 +23,8 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [Command-Reference](Command-Reference)
 - [Examples-Catalog](Examples-Catalog)
 - [LLM-Quick-Reference](LLM-Quick-Reference)
+- [Opcode-Examples](Opcode-Examples)
+- [LLM-Doc-Index](LLM-Doc-Index)
 
 ### Tooling and Operations
 - [Workflow-Reference](Workflow-Reference)

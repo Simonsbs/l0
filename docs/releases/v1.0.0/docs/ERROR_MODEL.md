@@ -1,0 +1,46 @@
+# Error Model Stabilization (v1)
+
+I use this document as the frozen CLI error-behavior contract for the current bootstrap toolchain.
+
+Contract version: `errmodel.v1`
+
+## What I Freeze in v1
+
+I freeze deterministic exit-code and stderr behavior for representative CLI failure classes.
+
+I keep stderr formatting normalized as:
+- usage failures: one canonical `usage: ...` line
+- non-usage failures: one canonical `error: ...` line
+
+## Exit-Code Categories in v1
+
+- `2`: usage/argument-shape error (`usage: ...`)
+- `3`: cannot open input (`error: cannot open input`)
+- `4`: cannot read input (`error: cannot read input`)
+- `5`: invalid/non-canonical input payload (`error: invalid module shape or non-canonical input`)
+- `6`: cannot write output image (`error: cannot write output image`)
+- `7`: invalid/corrupt image container (`error: invalid or corrupt L0IMG`)
+- `9`: invalid run argument (`error: invalid run argument (expected unsigned decimal)`)
+
+## Enforcement
+
+I enforce this contract in:
+- `tests/error_model.sh`
+
+That harness is integrated into `tests/run.sh` and therefore enforced by `make test`.
+
+## Representative Failure Coverage in v1
+
+I assert deterministic error behavior across representative commands and failures, including:
+- usage failures (`l0c`, unknown command, missing subcommand argument)
+- open/read failures (`verify` on missing file and directory path)
+- parse/decode failures (`verify`, `tracecat`, `mapcat`, `schemacat` malformed payloads)
+- build output write failure (`build` to denied path)
+- corrupt image failures (`imgcheck`, `imgmeta`, `run` on invalid image)
+- run-argument parse failure (`run` with non-decimal argument)
+
+## Out of Scope in v1
+
+- Localization or multi-line structured diagnostics.
+- Fine-grained per-opcode parse diagnostics (v1 freezes current compact error surface).
+- Platform-specific errno projection in stderr output.

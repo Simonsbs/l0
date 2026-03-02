@@ -22,33 +22,33 @@ I use this matrix to ensure every major language ability and CLI command is docu
 
 | Opcode | Reference | Example Fixture | Test/Gate |
 |---|---|---|---|
-| `arg` | `docs/INSTRUCTION_SET.md` | `tests/valid_min.l0` | `tests/verifier_matrix.sh` |
-| `const` | `docs/INSTRUCTION_SET.md` | `tests/valid_const.l0` | `tests/run.sh` |
-| `add.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_add_v7.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `add.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_add_trap.l0` | `tests/run.sh` |
-| `sub.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_sub.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `sub.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_sub_trap.l0` | `tests/run.sh` |
-| `mul.wrap` | `docs/INSTRUCTION_SET.md` | `tests/valid_mul.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `mul.trap` | `docs/INSTRUCTION_SET.md` | `tests/valid_mul_trap.l0` | `tests/run.sh` |
-| `and` | `docs/INSTRUCTION_SET.md` | `tests/valid_and.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `or` | `docs/INSTRUCTION_SET.md` | `tests/valid_or.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `xor` | `docs/INSTRUCTION_SET.md` | `tests/valid_xor.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `shl` | `docs/INSTRUCTION_SET.md` | `tests/valid_shl.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `shr` | `docs/INSTRUCTION_SET.md` | `tests/valid_shr.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `icmp.eq` | `docs/INSTRUCTION_SET.md` | `tests/valid_icmp_eq.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
-| `call` | `docs/INSTRUCTION_SET.md` | `tests/valid_call_add_lowered.l0` | `tests/run.sh` |
-| `alloca` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
-| `ld` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
-| `gep` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_gep_roundtrip.l0` | `tests/run.sh` |
-| `malloc` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_malloc.l0` | `tests/intrinsic_contracts.sh` |
-| `st` | `docs/INSTRUCTION_SET.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
-| `free` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_free_noop.l0` | `tests/intrinsic_contracts.sh` |
-| `write` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_write_newline.l0` | `tests/intrinsic_contracts.sh` |
-| `exit` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_exit.l0` | `tests/intrinsic_contracts.sh` |
-| `trace` | `docs/INSTRUCTION_SET.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_trace_noop.l0` | `tests/intrinsic_contracts.sh` |
-| `br` | `docs/INSTRUCTION_SET.md` | `tests/valid_branch.l0` | `tests/run.sh` |
-| `cbr` | `docs/INSTRUCTION_SET.md` | `tests/valid_cbr_eq_select.l0` | `tests/run.sh` |
-| `ret` | `docs/INSTRUCTION_SET.md` | all valid fixtures | `tests/run.sh` |
+| `arg` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_min.l0` | `tests/verifier_matrix.sh` |
+| `const` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_const.l0` | `tests/run.sh` |
+| `add.wrap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_add_v7.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `add.trap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_add_trap.l0` | `tests/run.sh` |
+| `sub.wrap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_sub.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `sub.trap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_sub_trap.l0` | `tests/run.sh` |
+| `mul.wrap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mul.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `mul.trap` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mul_trap.l0` | `tests/run.sh` |
+| `and` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_and.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `or` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_or.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `xor` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_xor.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `shl` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_shl.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `shr` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_shr.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `icmp.eq` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_icmp_eq.l0` | `tests/run.sh` + `tests/differential_semantics.sh` |
+| `call` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_call_add_lowered.l0` | `tests/run.sh` |
+| `alloca` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `ld` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `gep` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mem_gep_roundtrip.l0` | `tests/run.sh` |
+| `malloc` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_malloc.l0` | `tests/intrinsic_contracts.sh` |
+| `st` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_mem_roundtrip.l0` | `tests/run.sh` |
+| `free` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_free_noop.l0` | `tests/intrinsic_contracts.sh` |
+| `write` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_write_newline.l0` | `tests/intrinsic_contracts.sh` |
+| `exit` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_exit.l0` | `tests/intrinsic_contracts.sh` |
+| `trace` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` + `docs/INTRINSIC_CONTRACTS.md` | `tests/valid_trace_noop.l0` | `tests/intrinsic_contracts.sh` |
+| `br` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_branch.l0` | `tests/run.sh` |
+| `cbr` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | `tests/valid_cbr_eq_select.l0` | `tests/run.sh` |
+| `ret` | `docs/INSTRUCTION_SET.md` + `docs/OPCODE_EXAMPLES.md` | all valid fixtures | `tests/run.sh` |
 
 ## Type Coverage
 
@@ -77,6 +77,7 @@ I use this matrix to ensure every major language ability and CLI command is docu
 | Capability | Reference | Gate |
 |---|---|---|
 | deterministic prompt templates for generation/debug/minimization | `docs/LLM_PROMPT_PACK.md` | `tests/docs_coverage.sh` |
+| deterministic machine-readable doc index for tool consumption | `docs/LLM_DOC_INDEX.json` + `docs/LLM_DOC_INDEX.md` | `tests/docs_index.sh` |
 
 ## Coverage Gates
 
@@ -85,6 +86,8 @@ I enforce documentation integrity with:
 - `tests/docs_coverage.sh`
 - `tests/docs_links.sh`
 - `tests/docs_headings.sh`
+- `tests/docs_index.sh`
+- `tests/docs_snapshot.sh`
 
 ## Contract Gate Mapping
 

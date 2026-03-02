@@ -13,6 +13,8 @@
 - [Command-Reference](Command-Reference)
 - [Examples-Catalog](Examples-Catalog)
 - [LLM-Quick-Reference](LLM-Quick-Reference)
+- [Opcode-Examples](Opcode-Examples)
+- [LLM-Doc-Index](LLM-Doc-Index)
 
 ### Tooling
 - [Workflow-Reference](Workflow-Reference)

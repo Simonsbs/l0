@@ -150,10 +150,11 @@ Current bootstrap status:
 - I now consider my M67 error model stabilization milestone complete: I froze `errmodel.v1` and enforce deterministic exit-code/stderr contracts for representative CLI failure classes in default `make test`.
 - I now consider my M68 packaging and release pipeline milestone complete: I froze `relpipe.v1` and enforce scripted, reproducible release-candidate packaging with checksum verification in default `make test`.
 - I now consider my M69 compatibility and upgrade policy milestone complete: I froze `compat.v1` and enforce a compatibility matrix across prior fixtures (source/image/trace/debug/ELF slices) in default `make test`.
-- I now consider my M70 production readiness gate milestone complete: I froze `prodready.v1`, enforce a final readiness meta-gate across M52-M69 plus release-candidate verification in default `make test`, and cut the production-candidate tag `v1.0.0-rc1`.
+- I now consider my M70 production readiness gate milestone complete: I froze `prodready.v1`, enforce a final readiness meta-gate across M52-M69 plus release-candidate verification in default `make test`, and cut `v1.0.0-rc1` as the production-candidate tag.
 - I now consider the M1-M70 roadmap complete.
 - I now started my post-M70 documentation program with a dual-doc pipeline: canonical `docs/` plus generated `wiki/` mirror enforced by test-gated sync checks.
 - I now consider Documentation Phase 2 complete: per-command failure examples, consolidated grammar/typing rules, expanded coverage matrix traceability, docs lint gates, and an LLM prompt pack are all implemented and enforced in `make test`.
+- I now consider Documentation Phase 4 complete: I froze `docs/releases/v1.0.0/` with a manifest, added opcode-by-opcode valid/failure references, added `docs/LLM_DOC_INDEX.json`, and enforced new docs index/snapshot gates in `make test`.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -196,6 +197,9 @@ Current bootstrap status:
 - LLM quick reference: `docs/LLM_QUICK_REFERENCE.md`
 - Grammar and typing reference: `docs/GRAMMAR_AND_TYPING.md`
 - LLM prompt pack: `docs/LLM_PROMPT_PACK.md`
+- Opcode and terminator examples: `docs/OPCODE_EXAMPLES.md`
+- LLM docs index reference: `docs/LLM_DOC_INDEX.md`
+- LLM machine-readable docs index: `docs/LLM_DOC_INDEX.json`
 - Versioned docs policy: `docs/VERSIONED_DOCS.md`
 - Learning path (30 min): `docs/LEARNING_PATH_30_MIN.md`
 - Runtime intrinsic contracts: `docs/INTRINSIC_CONTRACTS.md`
@@ -233,6 +237,8 @@ Current bootstrap status:
 - Docs links harness: `tests/docs_links.sh`
 - Docs headings harness: `tests/docs_headings.sh`
 - Docs contract refs harness: `tests/docs_contract_refs.sh`
+- Docs index drift harness: `tests/docs_index.sh`
+- Docs snapshot integrity harness: `tests/docs_snapshot.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 - Wiki sync script: `scripts/sync_wiki.sh`
 - Wiki remote publish script: `scripts/publish_wiki_remote.sh` (requires GitHub Wiki enabled)

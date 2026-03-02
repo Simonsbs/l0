@@ -105,7 +105,7 @@ while IFS='|' read -r wiki_page docs_src; do
   page_label="${wiki_page%.md}"
   page_link="${wiki_page%.md}"
   case "$wiki_page" in
-    Language-Reference.md|Instruction-Set.md|How-To-Write-L0.md|Implementable-Spec.md|CLI-and-Compiler-Spec.md|LLM-Quick-Reference.md|Command-Reference.md|Examples-Catalog.md)
+    Language-Reference.md|Instruction-Set.md|How-To-Write-L0.md|Implementable-Spec.md|CLI-and-Compiler-Spec.md|LLM-Quick-Reference.md|Command-Reference.md|Examples-Catalog.md|Opcode-Examples.md|LLM-Doc-Index.md)
       echo "- [$page_label]($page_link)" >> "$lang_list"
       ;;
     Workflow-Reference.md|Project-Status.md)

@@ -1,0 +1,18 @@
+# LLM Documentation Index
+
+I publish a machine-readable documentation index at:
+
+- `docs/LLM_DOC_INDEX.json`
+
+I generate it with:
+
+```sh
+bash scripts/generate_docs_index.sh
+```
+
+I use this index to give other LLMs a deterministic entry point for:
+- command surface
+- opcode surface
+- type surface
+- error-class buckets
+- canonical source document paths

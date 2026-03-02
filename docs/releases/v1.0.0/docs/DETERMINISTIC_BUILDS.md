@@ -1,0 +1,37 @@
+# Deterministic Build Guarantees (v1)
+
+I use this document as the frozen deterministic build contract for the current bootstrap toolchain.
+
+Contract version: `detbuild.v1`
+
+## What I Freeze in v1
+
+For a fixed input module and fixed CLI flags, I freeze byte-for-byte determinism for these emitted artifacts:
+- `.l0img` image outputs from `build`
+- debug-map side artifacts from `build --debug-map`
+- trace-schema side artifacts from `build --trace-schema`
+- ELF object outputs from `build-elf`
+
+I also freeze deterministic decode behavior for stable artifacts:
+- `imgmeta` output
+- `mapcat` output
+- `schemacat` output
+
+## Enforcement
+
+I enforce this contract in:
+- `tests/deterministic_builds.sh`
+
+That harness runs repeated builds and requires identical bytes across paired outputs for a fixed fixture corpus.
+
+## Fixture Corpus in v1
+
+- `tests/valid_min.l0` (baseline image determinism)
+- `tests/valid_trace_noop.l0` (image + debug-map + trace-schema determinism)
+- `tests/valid_spill_stress_lowered.l0` (generalized lowering image determinism)
+- `tests/valid_sysv_abi_sum6_lowered.l0` (ELF object determinism)
+
+## Out of Scope in v1
+
+- Cross-machine bit-for-bit guarantees outside the pinned Linux x86-64 bootstrap environment.
+- Performance-based determinism constraints.

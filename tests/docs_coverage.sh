@@ -9,8 +9,10 @@ EX_DOC="$ROOT/docs/EXAMPLES_CATALOG.md"
 MAT_DOC="$ROOT/docs/COVERAGE_MATRIX.md"
 GRAMMAR_DOC="$ROOT/docs/GRAMMAR_AND_TYPING.md"
 PROMPT_DOC="$ROOT/docs/LLM_PROMPT_PACK.md"
+OP_EX_DOC="$ROOT/docs/OPCODE_EXAMPLES.md"
+DOC_INDEX_JSON="$ROOT/docs/LLM_DOC_INDEX.json"
 
-for f in "$CMD_DOC" "$OPS_DOC" "$EX_DOC" "$MAT_DOC" "$GRAMMAR_DOC" "$PROMPT_DOC"; do
+for f in "$CMD_DOC" "$OPS_DOC" "$EX_DOC" "$MAT_DOC" "$GRAMMAR_DOC" "$PROMPT_DOC" "$OP_EX_DOC" "$DOC_INDEX_JSON"; do
   if [ ! -f "$f" ]; then
     echo "FAIL: docs coverage missing required file $(basename "$f")"
     exit 1
@@ -40,6 +42,25 @@ for op in "${ops[@]}"; do
     echo "FAIL: docs coverage missing op mention for $op"
     exit 1
   fi
+  if ! rg -F -q "## \`$op\`" "$OP_EX_DOC"; then
+    echo "FAIL: opcode examples missing section for $op"
+    exit 1
+  fi
+  if ! awk "/## \`$op\`/{flag=1;next}/^## /{flag=0}flag" "$OP_EX_DOC" | rg -F -q "Valid example:"; then
+    echo "FAIL: opcode examples missing valid example for $op"
+    exit 1
+  fi
+  if ! awk "/## \`$op\`/{flag=1;next}/^## /{flag=0}flag" "$OP_EX_DOC" | rg -F -q "Failure example:"; then
+    echo "FAIL: opcode examples missing failure example for $op"
+    exit 1
+  fi
+done
+
+for term in br cbr ret; do
+  if ! rg -F -q "## \`$term\`" "$OP_EX_DOC"; then
+    echo "FAIL: opcode examples missing terminator section for $term"
+    exit 1
+  fi
 done
 
 example_count=0
@@ -67,6 +88,8 @@ required_refs=(
   docs/INSTRUCTION_SET.md
   docs/GRAMMAR_AND_TYPING.md
   docs/LLM_PROMPT_PACK.md
+  docs/OPCODE_EXAMPLES.md
+  docs/LLM_DOC_INDEX.json
   docs/INTRINSIC_CONTRACTS.md
   tests/verifier_matrix.sh
   tests/deterministic_builds.sh
@@ -76,6 +99,8 @@ required_refs=(
   tests/production_readiness.sh
   tests/docs_links.sh
   tests/docs_headings.sh
+  tests/docs_index.sh
+  tests/docs_snapshot.sh
 )
 for ref in "${required_refs[@]}"; do
   if ! rg -q "$ref" "$MAT_DOC"; then
