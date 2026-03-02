@@ -648,15 +648,30 @@ Last updated: 2026-03-01
 
 ### M49: Call/Compare Debug-Trace Coverage Expansion
 
+- Status: complete
+- Scope completed:
+  - extended debug-map layout lock assertions to dead-pure call and compare/select fixture families
+  - added map-layout assertions for:
+    - call dead-icmp fixture (`valid_call_add_dead_icmp_f0_lowered.l0`)
+    - compare dead-const fixture (`valid_icmp_eq_with_dead_const_general_lowered.l0`)
+    - compare/select dead-line fixture (`valid_cbr_eq_select_dead_line_b0_general_lowered.l0`)
+  - added tracejoin decode assertions using those emitted map artifacts and deterministic synthetic trace records
+  - added tamper-rejection checks on those family artifacts:
+    - call-map bad entry-count mutation rejected (`mapcat`)
+    - compare-map truncated payload rejected (`tracejoin`)
+    - compare/select-map non-monotonic range mutation rejected (`tracejoin`)
+    - compare/select unknown trace-id payload rejected (`tracejoin`)
+  - validated with full-suite pass
+
+### M50: Documentation Consolidation
+
 - Status: planned
 - Planned (measurable):
-  - extend debug-map layout lock assertions to dead-pure call and compare/select fixture families
-  - add at least 3 new map-layout assertions:
-    - call dead-pure fixture map layout
-    - compare dead-pure fixture map layout
-    - compare/select dead-pure fixture map layout
-  - add at least 3 new tracejoin/tamper checks using emitted artifacts from those families
-  - acceptance: full suite pass with deterministic mapcat/tracejoin outputs and deterministic failure checks for malformed artifacts
+  - consolidate language docs into a single canonical “how to write L0” reference that links out to spec details
+  - include at least 10 runnable L0 examples covering arithmetic, control flow, memory, call kernels, and intrinsics
+  - include a dedicated debug/tracing workflow section (`build --debug-map`, `build --trace-schema`, `tracecat`, `tracejoin`, `mapcat`)
+  - add a short “LLM output checklist” section for canonical formatting and verifier expectations
+  - acceptance: docs build/read pass by full-suite `make test`, and all listed example files verify successfully in scripted checks
 
 ## Documentation status
 

@@ -1202,6 +1202,16 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_add_dead_icmp_f0_lowered.out)" != "42" ]; 
   echo "FAIL: run call->add dead-icmp f0 lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_add_dead_icmp_f0_lowered.l0" /tmp/l0_test_call_add_dead_icmp_f0_map.img --debug-map /tmp/l0_call_add_dead_icmp_f0_debug_map.bin >/tmp/l0_build_call_add_dead_icmp_f0_map.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_dead_icmp_f0_map.out; then
+  echo "FAIL: build valid_call_add_dead_icmp_f0_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_call_add_dead_icmp_f0_debug_map.bin >/tmp/l0_call_add_dead_icmp_f0_mapcat.out
+if [ "$(cat /tmp/l0_call_add_dead_icmp_f0_mapcat.out)" != $'entries 3\ncode_size 7\ninst_id 1\nstart 0\nend 3\ninst_id 2\nstart 3\nend 6\ninst_id 3\nstart 6\nend 7' ]; then
+  echo "FAIL: call dead-icmp debug-map layout"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_add_dead_icmp_f1_lowered.l0" /tmp/l0_test_call_add_dead_icmp_f1_lowered.img >/tmp/l0_build_call_add_dead_icmp_f1_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_add_dead_icmp_f1_lowered.out; then
   echo "FAIL: build valid_call_add_dead_icmp_f1_lowered"
@@ -2471,6 +2481,16 @@ if [ "$(tr -d '\n' < /tmp/l0_run_icmp_eq_with_dead_const_general_f.out)" != "0" 
   echo "FAIL: run icmp.eq with dead const false result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_icmp_eq_with_dead_const_general_lowered.l0" /tmp/l0_test_icmp_eq_with_dead_const_general_map.img --debug-map /tmp/l0_icmp_eq_with_dead_const_debug_map.bin >/tmp/l0_build_icmp_eq_with_dead_const_general_map.out
+if ! grep -q '^ok$' /tmp/l0_build_icmp_eq_with_dead_const_general_map.out; then
+  echo "FAIL: build valid_icmp_eq_with_dead_const_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_icmp_eq_with_dead_const_debug_map.bin >/tmp/l0_icmp_eq_with_dead_const_mapcat.out
+if [ "$(cat /tmp/l0_icmp_eq_with_dead_const_mapcat.out)" != $'entries 4\ncode_size 9\ninst_id 1\nstart 0\nend 2\ninst_id 2\nstart 2\nend 5\ninst_id 3\nstart 5\nend 8\ninst_id 4\nstart 8\nend 9' ]; then
+  echo "FAIL: icmp dead-const debug-map layout"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select.l0" /tmp/l0_test_cbr_eq_select.img >/tmp/l0_build_cbr_eq_select.out
 if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select.out; then
   echo "FAIL: build valid_cbr_eq_select"
@@ -2636,6 +2656,58 @@ fi
 "$BIN" run /tmp/l0_test_cbr_eq_select_dead_line_b0_general_lowered.img 9 8 >/tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_f.out
 if [ "$(tr -d '\n' < /tmp/l0_run_cbr_eq_select_dead_line_b0_general_lowered_f.out)" != "8" ]; then
   echo "FAIL: run cbr eq-select dead-line b0 false result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_cbr_eq_select_dead_line_b0_general_lowered.l0" /tmp/l0_test_cbr_eq_select_dead_line_b0_general_map.img --debug-map /tmp/l0_cbr_eq_select_dead_line_b0_debug_map.bin >/tmp/l0_build_cbr_eq_select_dead_line_b0_general_map.out
+if ! grep -q '^ok$' /tmp/l0_build_cbr_eq_select_dead_line_b0_general_map.out; then
+  echo "FAIL: build valid_cbr_eq_select_dead_line_b0_general_lowered with --debug-map"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_cbr_eq_select_dead_line_b0_debug_map.bin >/tmp/l0_cbr_eq_select_dead_line_b0_mapcat.out
+if [ "$(cat /tmp/l0_cbr_eq_select_dead_line_b0_mapcat.out)" != $'entries 4\ncode_size 11\ninst_id 1\nstart 0\nend 3\ninst_id 2\nstart 3\nend 6\ninst_id 3\nstart 6\nend 10\ninst_id 4\nstart 10\nend 11' ]; then
+  echo "FAIL: cbr dead-line b0 debug-map layout"
+  exit 1
+fi
+printf '\x01\x00\x00\x00\x00\x00\x00\x00\x2a\x00\x00\x00\x00\x00\x00\x00' >/tmp/l0_m49_trace_call.bin
+printf '\x03\x00\x00\x00\x00\x00\x00\x00\x2b\x00\x00\x00\x00\x00\x00\x00' >/tmp/l0_m49_trace_icmp.bin
+printf '\x04\x00\x00\x00\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x00\x00\x00' >/tmp/l0_m49_trace_cbr.bin
+"$BIN" tracejoin /tmp/l0_m49_trace_call.bin /tmp/l0_call_add_dead_icmp_f0_debug_map.bin >/tmp/l0_m49_tracejoin_call.out
+if [ "$(cat /tmp/l0_m49_tracejoin_call.out)" != $'id 1\nval 42\nstart 0\nend 3' ]; then
+  echo "FAIL: tracejoin call dead-icmp map output"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_m49_trace_icmp.bin /tmp/l0_icmp_eq_with_dead_const_debug_map.bin >/tmp/l0_m49_tracejoin_icmp.out
+if [ "$(cat /tmp/l0_m49_tracejoin_icmp.out)" != $'id 3\nval 43\nstart 5\nend 8' ]; then
+  echo "FAIL: tracejoin icmp dead-const map output"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_m49_trace_cbr.bin /tmp/l0_cbr_eq_select_dead_line_b0_debug_map.bin >/tmp/l0_m49_tracejoin_cbr.out
+if [ "$(cat /tmp/l0_m49_tracejoin_cbr.out)" != $'id 4\nval 44\nstart 10\nend 11' ]; then
+  echo "FAIL: tracejoin cbr dead-line map output"
+  exit 1
+fi
+cp /tmp/l0_call_add_dead_icmp_f0_debug_map.bin /tmp/l0_m49_bad_call_map_count.bin
+printf '\x04\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_m49_bad_call_map_count.bin bs=1 seek=16 conv=notrunc status=none
+if "$BIN" mapcat /tmp/l0_m49_bad_call_map_count.bin >/tmp/l0_m49_bad_call_map_count.out 2>/tmp/l0_m49_bad_call_map_count.err; then
+  echo "FAIL: mapcat accepted call dead-icmp bad entry-count map"
+  exit 1
+fi
+cp /tmp/l0_icmp_eq_with_dead_const_debug_map.bin /tmp/l0_m49_bad_icmp_map_truncated.bin
+printf '\x00' >> /tmp/l0_m49_bad_icmp_map_truncated.bin
+if "$BIN" tracejoin /tmp/l0_m49_trace_icmp.bin /tmp/l0_m49_bad_icmp_map_truncated.bin >/tmp/l0_m49_bad_icmp_map_truncated.out 2>/tmp/l0_m49_bad_icmp_map_truncated.err; then
+  echo "FAIL: tracejoin accepted icmp dead-const truncated map"
+  exit 1
+fi
+cp /tmp/l0_cbr_eq_select_dead_line_b0_debug_map.bin /tmp/l0_m49_bad_cbr_map_nonmonotonic.bin
+printf '\x01\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_m49_bad_cbr_map_nonmonotonic.bin bs=1 seek=64 conv=notrunc status=none
+if "$BIN" tracejoin /tmp/l0_m49_trace_cbr.bin /tmp/l0_m49_bad_cbr_map_nonmonotonic.bin >/tmp/l0_m49_bad_cbr_map_nonmonotonic.out 2>/tmp/l0_m49_bad_cbr_map_nonmonotonic.err; then
+  echo "FAIL: tracejoin accepted cbr dead-line non-monotonic map"
+  exit 1
+fi
+cp /tmp/l0_m49_trace_cbr.bin /tmp/l0_m49_bad_cbr_trace_unknown_id.bin
+printf '\x09\x00\x00\x00\x00\x00\x00\x00' | dd of=/tmp/l0_m49_bad_cbr_trace_unknown_id.bin bs=1 seek=0 conv=notrunc status=none
+if "$BIN" tracejoin /tmp/l0_m49_bad_cbr_trace_unknown_id.bin /tmp/l0_cbr_eq_select_dead_line_b0_debug_map.bin >/tmp/l0_m49_bad_cbr_trace_unknown_id.out 2>/tmp/l0_m49_bad_cbr_trace_unknown_id.err; then
+  echo "FAIL: tracejoin accepted cbr dead-line unknown trace id"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_cbr_eq_select_dead_lines_b1_b2_general_lowered.l0" /tmp/l0_test_cbr_eq_select_dead_lines_b1_b2_general_lowered.img >/tmp/l0_build_cbr_eq_select_dead_lines_b1_b2_general_lowered.out
