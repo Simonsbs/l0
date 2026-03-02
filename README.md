@@ -129,7 +129,8 @@ Current bootstrap status:
 - I now consider my M48 intrinsic debug/trace stress-coverage milestone complete: I lock debug-map layouts for multi-dead-pure intrinsic fixtures, assert cross-function tracejoin decode behavior, and enforce artifact-tamper rejection on those emitted maps and traces.
 - I now consider my M49 call/compare debug-trace coverage milestone complete: I lock dead-pure call/compare map layouts and enforce tracejoin decode/tamper rejection checks using artifacts from those families.
 - I now consider my M50 documentation consolidation milestone complete: I added a canonical “how I write L0” guide, added runnable docs examples, and wired docs example verification into `make test`.
-- I track my next milestone as M51: docs-driven execution walkthrough coverage that demonstrates build/run/debug-map/trace-schema/tracejoin workflows end-to-end from `docs/examples`.
+- I now consider my M51 docs-driven execution walkthrough milestone complete: I added deterministic, runnable workflow docs and scripted assertions for arithmetic, control-flow, and trace/debug workflows.
+- I track my next milestone as M52: parser hardening and malformed-token edge-case closure with expanded fuzz-seed negative coverage.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -161,6 +162,7 @@ Current bootstrap status:
 ## Documentation
 
 - Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
+- Workflow reference: `docs/WORKFLOWS.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
 - MVP/compiler spec: `docs/SPEC.md`

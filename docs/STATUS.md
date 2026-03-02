@@ -688,14 +688,172 @@ Last updated: 2026-03-02
 
 ### M51: Docs-Driven Execution Walkthroughs
 
+- Status: complete
+- Scope completed:
+  - added a dedicated workflows reference: `docs/WORKFLOWS.md`
+  - documented 3 deterministic end-to-end workflows from `docs/examples`:
+    - arithmetic: `verify -> build -> imgcheck/imgmeta -> run`
+    - control-flow: `verify -> build -> imgcheck/imgmeta -> run` with both branch inputs
+    - debug/trace: `build --debug-map --trace-schema -> schemacat/mapcat -> run -> tracecat/tracejoin`
+  - added scripted assertions in `tests/run.sh` for those 3 workflows:
+    - deterministic `imgmeta` kernel-kind/code-size checks
+    - deterministic runtime return value checks
+    - deterministic `schemacat`, `mapcat`, `tracecat`, and `tracejoin` output checks
+  - validated with full-suite pass
+
+## Production Roadmap (Planned)
+
+### M52: Canonical Parser Hardening
+
 - Status: planned
 - Planned (measurable):
-  - add a docs section that demonstrates complete end-to-end workflows from `docs/examples`:
-    - verify -> build -> imgcheck/imgmeta -> run
-    - build with `--debug-map` and `--trace-schema`
-    - decode and join traces with `tracecat`/`tracejoin`
-  - add scripted assertions in `tests/run.sh` for at least 3 docs-driven walkthroughs that check deterministic tool output patterns
-  - acceptance: full-suite `make test` passes with the new walkthrough checks enabled by default
+  - expand malformed-token and malformed-line negative corpus coverage
+  - add parser-focused fuzz seed corpus and crash-repro harness
+  - acceptance: full-suite `make test` passes and parser fuzz regression set is crash-free
+
+### M53: Verifier Completeness Closure
+
+- Status: planned
+- Planned (measurable):
+  - close verifier rule gaps against documented language constraints
+  - add rule-to-test mapping in docs for verifier behavior
+  - acceptance: every documented verifier rule has at least one positive and one negative test
+
+### M54: Type-System Expansion and Closure
+
+- Status: planned
+- Planned (measurable):
+  - complete robust verifier handling for current type forms including struct/array/function type edge cases
+  - add deterministic canonical examples for each supported type form
+  - acceptance: all type-form examples verify/canon deterministically under `make test`
+
+### M55: General CFG Lowering v1
+
+- Status: planned
+- Planned (measurable):
+  - implement lowering path for non-template multi-block function shapes
+  - preserve deterministic fallback behavior for unsupported patterns
+  - acceptance: new non-template CFG fixtures lower and run correctly with deterministic metadata
+
+### M56: SSA Join and Merge Lowering
+
+- Status: planned
+- Planned (measurable):
+  - add deterministic lowering support for merge-point value selection in multi-branch control-flow
+  - add regression fixtures for branch merge/join value correctness
+  - acceptance: merge fixtures pass runtime correctness checks and remain deterministic in emitted artifacts
+
+### M57: Register Allocation Generalization
+
+- Status: planned
+- Planned (measurable):
+  - extend allocator behavior for broader live-range/spill patterns in generalized lowering
+  - add spill/reload stress fixtures with deterministic runtime checks
+  - acceptance: stress fixtures pass and preserve deterministic image/debug metadata stability
+
+### M58: SysV AMD64 ABI Completeness
+
+- Status: planned
+- Planned (measurable):
+  - complete SysV ABI lowering/validation coverage for supported L0 call shapes
+  - add ABI-focused fixture matrix and runtime checks
+  - acceptance: ABI matrix passes under `make test` on Linux x86-64
+
+### M59: Object Output Path (ELF) v1
+
+- Status: planned
+- Planned (measurable):
+  - add ELF object emission path alongside current image output path
+  - add deterministic object metadata checks
+  - acceptance: ELF fixtures link and run in scripted checks with deterministic outputs
+
+### M60: Runtime Intrinsic Contract Freeze v1
+
+- Status: planned
+- Planned (measurable):
+  - freeze semantics and contracts for `malloc`, `free`, `write`, `exit`, `trace`
+  - document versioned intrinsic behavior and negative-path guarantees
+  - acceptance: intrinsic contract tests pass and docs/spec are aligned
+
+### M61: Debug-Map Schema Freeze v1
+
+- Status: planned
+- Planned (measurable):
+  - freeze debug-map format and compatibility constraints
+  - add compatibility fixtures for schema-stability checks
+  - acceptance: schema fixtures decode identically and tamper checks remain strict
+
+### M62: Trace Schema Freeze v1
+
+- Status: planned
+- Planned (measurable):
+  - freeze trace record schema and decode rules
+  - add compatibility fixture corpus for trace tooling
+  - acceptance: `schemacat`, `tracecat`, `tracejoin` pass compatibility and tamper suites
+
+### M63: Deterministic Build Guarantees
+
+- Status: planned
+- Planned (measurable):
+  - add repeat-build determinism checks for emitted images and side artifacts
+  - lock byte-for-byte reproducibility for selected fixture corpus
+  - acceptance: deterministic build checks pass in default `make test`
+
+### M64: Differential Semantic Testing
+
+- Status: planned
+- Planned (measurable):
+  - add semantic differential harness for supported op families
+  - run generated fixture comparisons for runtime result equivalence
+  - acceptance: differential corpus passes with no semantic mismatches
+
+### M65: Fuzzing and Malformed-Input Stress
+
+- Status: planned
+- Planned (measurable):
+  - expand parser/verifier/image/trace fuzz harness and corpus
+  - convert discovered failures into locked regression fixtures
+  - acceptance: fuzz regression suite is stable and crash-free across fixed budget runs
+
+### M66: Performance Baseline and Regression Gates
+
+- Status: planned
+- Planned (measurable):
+  - establish baseline metrics for build throughput and runtime micro-kernels
+  - add regression thresholds and checks in automated suite
+  - acceptance: performance checks pass within pinned thresholds
+
+### M67: Error Model Stabilization
+
+- Status: planned
+- Planned (measurable):
+  - normalize deterministic error categories/messages across CLI commands
+  - add assertion coverage for representative failure classes
+  - acceptance: error-behavior fixtures pass with stable output contracts
+
+### M68: Packaging and Release Pipeline
+
+- Status: planned
+- Planned (measurable):
+  - add reproducible release build steps and artifact checksums
+  - document release procedure and versioning policy
+  - acceptance: scripted release candidate build succeeds end-to-end
+
+### M69: Compatibility and Upgrade Policy
+
+- Status: planned
+- Planned (measurable):
+  - define source/image/tool compatibility guarantees across versions
+  - add compatibility test slices spanning prior release fixtures
+  - acceptance: compatibility matrix passes and policy docs are published
+
+### M70: Production Readiness Gate
+
+- Status: planned
+- Planned (measurable):
+  - run final quality gate across correctness, determinism, tooling, docs, and release process
+  - freeze v1 schemas/contracts and cut production candidate tag
+  - acceptance: all milestone gates M52-M69 are complete and release candidate passes full suite
 
 ## Documentation status
 

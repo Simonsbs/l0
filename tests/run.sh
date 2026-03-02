@@ -12,6 +12,120 @@ for f in "$ROOT"/docs/examples/*.l0; do
   fi
 done
 
+# M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
+"$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
+if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then
+  echo "FAIL: M51 workflow add verify"
+  exit 1
+fi
+"$BIN" build "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" /tmp/l0_m51_add.img >/tmp/l0_m51_add_build.out
+if ! grep -q '^ok$' /tmp/l0_m51_add_build.out; then
+  echo "FAIL: M51 workflow add build"
+  exit 1
+fi
+"$BIN" imgcheck /tmp/l0_m51_add.img >/tmp/l0_m51_add_imgcheck.out
+if ! grep -q '^ok$' /tmp/l0_m51_add_imgcheck.out; then
+  echo "FAIL: M51 workflow add imgcheck"
+  exit 1
+fi
+"$BIN" imgmeta /tmp/l0_m51_add.img >/tmp/l0_m51_add_imgmeta.out
+if ! grep -q '^kernel_kind 1$' /tmp/l0_m51_add_imgmeta.out; then
+  echo "FAIL: M51 workflow add imgmeta kernel_kind"
+  exit 1
+fi
+if ! grep -q '^code_size 7$' /tmp/l0_m51_add_imgmeta.out; then
+  echo "FAIL: M51 workflow add imgmeta code_size"
+  exit 1
+fi
+"$BIN" run /tmp/l0_m51_add.img 5 8 >/tmp/l0_m51_add_run.out
+if [ "$(cat /tmp/l0_m51_add_run.out)" != "13" ]; then
+  echo "FAIL: M51 workflow add run output"
+  exit 1
+fi
+
+# M51 workflow 2: control-flow end-to-end (verify -> build -> imgcheck/imgmeta -> run)
+"$BIN" verify "$ROOT/docs/examples/03_control_cbr_select.l0" >/tmp/l0_m51_cbr_verify.out
+if ! grep -q '^ok$' /tmp/l0_m51_cbr_verify.out; then
+  echo "FAIL: M51 workflow cbr verify"
+  exit 1
+fi
+"$BIN" build "$ROOT/docs/examples/03_control_cbr_select.l0" /tmp/l0_m51_cbr.img >/tmp/l0_m51_cbr_build.out
+if ! grep -q '^ok$' /tmp/l0_m51_cbr_build.out; then
+  echo "FAIL: M51 workflow cbr build"
+  exit 1
+fi
+"$BIN" imgcheck /tmp/l0_m51_cbr.img >/tmp/l0_m51_cbr_imgcheck.out
+if ! grep -q '^ok$' /tmp/l0_m51_cbr_imgcheck.out; then
+  echo "FAIL: M51 workflow cbr imgcheck"
+  exit 1
+fi
+"$BIN" imgmeta /tmp/l0_m51_cbr.img >/tmp/l0_m51_cbr_imgmeta.out
+if ! grep -q '^kernel_kind 25$' /tmp/l0_m51_cbr_imgmeta.out; then
+  echo "FAIL: M51 workflow cbr imgmeta kernel_kind"
+  exit 1
+fi
+if ! grep -q '^code_size 4$' /tmp/l0_m51_cbr_imgmeta.out; then
+  echo "FAIL: M51 workflow cbr imgmeta code_size"
+  exit 1
+fi
+"$BIN" run /tmp/l0_m51_cbr.img 1 >/tmp/l0_m51_cbr_run_true.out
+if [ "$(cat /tmp/l0_m51_cbr_run_true.out)" != "1" ]; then
+  echo "FAIL: M51 workflow cbr run true output"
+  exit 1
+fi
+"$BIN" run /tmp/l0_m51_cbr.img 0 >/tmp/l0_m51_cbr_run_false.out
+if [ "$(cat /tmp/l0_m51_cbr_run_false.out)" != "0" ]; then
+  echo "FAIL: M51 workflow cbr run false output"
+  exit 1
+fi
+
+# M51 workflow 3: trace/debug end-to-end (build --debug-map/--trace-schema -> tracecat/tracejoin)
+"$BIN" verify "$ROOT/docs/examples/10_intrinsic_trace.l0" >/tmp/l0_m51_trace_verify.out
+if ! grep -q '^ok$' /tmp/l0_m51_trace_verify.out; then
+  echo "FAIL: M51 workflow trace verify"
+  exit 1
+fi
+"$BIN" build "$ROOT/docs/examples/10_intrinsic_trace.l0" /tmp/l0_m51_trace.img --debug-map /tmp/l0_m51_trace.map --trace-schema /tmp/l0_m51_trace.schema >/tmp/l0_m51_trace_build.out
+if ! grep -q '^ok$' /tmp/l0_m51_trace_build.out; then
+  echo "FAIL: M51 workflow trace build"
+  exit 1
+fi
+"$BIN" imgcheck /tmp/l0_m51_trace.img >/tmp/l0_m51_trace_imgcheck.out
+if ! grep -q '^ok$' /tmp/l0_m51_trace_imgcheck.out; then
+  echo "FAIL: M51 workflow trace imgcheck"
+  exit 1
+fi
+"$BIN" imgmeta /tmp/l0_m51_trace.img >/tmp/l0_m51_trace_imgmeta.out
+if ! grep -q '^kernel_kind 24$' /tmp/l0_m51_trace_imgmeta.out; then
+  echo "FAIL: M51 workflow trace imgmeta kernel_kind"
+  exit 1
+fi
+"$BIN" schemacat /tmp/l0_m51_trace.schema >/tmp/l0_m51_schemacat.out
+if [ "$(cat /tmp/l0_m51_schemacat.out)" != $'version 1\nrecord_size 16\nfields 2' ]; then
+  echo "FAIL: M51 workflow trace schemacat output"
+  exit 1
+fi
+"$BIN" mapcat /tmp/l0_m51_trace.map >/tmp/l0_m51_mapcat.out
+if [ "$(cat /tmp/l0_m51_mapcat.out)" != $'entries 2\ncode_size 51\ninst_id 1\nstart 0\nend 17\ninst_id 2\nstart 17\nend 51' ]; then
+  echo "FAIL: M51 workflow trace mapcat output"
+  exit 1
+fi
+"$BIN" run /tmp/l0_m51_trace.img 123 >/tmp/l0_m51_trace_run.out 2>/tmp/l0_m51_trace.bin
+if [ "$(cat /tmp/l0_m51_trace_run.out)" != "0" ]; then
+  echo "FAIL: M51 workflow trace run output"
+  exit 1
+fi
+"$BIN" tracecat /tmp/l0_m51_trace.bin >/tmp/l0_m51_tracecat.out
+if [ "$(cat /tmp/l0_m51_tracecat.out)" != $'id 1\nval 123' ]; then
+  echo "FAIL: M51 workflow tracecat output"
+  exit 1
+fi
+"$BIN" tracejoin /tmp/l0_m51_trace.bin /tmp/l0_m51_trace.map >/tmp/l0_m51_tracejoin.out
+if [ "$(cat /tmp/l0_m51_tracejoin.out)" != $'id 1\nval 123\nstart 0\nend 17' ]; then
+  echo "FAIL: M51 workflow tracejoin output"
+  exit 1
+fi
+
 "$BIN" verify "$ROOT/tests/valid_min.l0" >/tmp/l0_ok.out
 if ! grep -q '^ok$' /tmp/l0_ok.out; then
   echo "FAIL: verify valid_min"
