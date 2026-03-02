@@ -84,3 +84,23 @@ Expected stable outputs:
 ## How I keep this reliable
 
 I keep the scripted equivalents of these workflows in `tests/run.sh` so `make test` enforces them every run.
+
+## Workflow 4: Parser Fuzz Regression and Crash Repro
+
+I use this when I want to stress parser robustness against malformed and byte-mutated inputs.
+
+```sh
+bash tests/parser_fuzz_regress.sh ./bin/l0c tests/fuzz/parser_seeds
+```
+
+Expected stable output:
+- `ok`
+
+When I need to reproduce one specific crashing or suspicious case, I run:
+
+```sh
+bash tests/parser_fuzz_regress.sh --repro /tmp/suspect_input.l0 ./bin/l0c
+```
+
+Expected stable output:
+- `ok` when the parser handles that input without crashing

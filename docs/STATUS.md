@@ -705,11 +705,28 @@ Last updated: 2026-03-02
 
 ### M52: Canonical Parser Hardening
 
-- Status: planned
-- Planned (measurable):
-  - expand malformed-token and malformed-line negative corpus coverage
-  - add parser-focused fuzz seed corpus and crash-repro harness
-  - acceptance: full-suite `make test` passes and parser fuzz regression set is crash-free
+- Status: complete
+- Scope completed:
+  - expanded malformed-token and malformed-line negative corpus with dedicated parser fixtures:
+    - `invalid_parser_bad_ver_token.l0`
+    - `invalid_parser_types_missing_close_brace.l0`
+    - `invalid_parser_fn_missing_lbrace.l0`
+    - `invalid_parser_block_label_space.l0`
+    - `invalid_parser_value_missing_equals.l0`
+    - `invalid_parser_ret_extra_operand.l0`
+    - `invalid_parser_bad_id_prefix.l0`
+    - `invalid_parser_cbr_missing_false_target.l0`
+    - `invalid_parser_garbage_tail.l0`
+    - `invalid_parser_section_keyword_case.l0`
+    - `invalid_parser_fn_trailing_comma_arg.l0`
+    - `invalid_parser_value_missing_colon_type.l0`
+  - added parser-focused fuzz seed corpus in `tests/fuzz/parser_seeds` with both valid and invalid seed shapes
+  - added deterministic parser fuzz regression and crash-repro harness:
+    - `tests/parser_fuzz_regress.sh`
+    - supports corpus run mode and `--repro <input.l0>` single-case repro mode
+  - wired parser fuzz regression into `tests/run.sh` so `make test` enforces crash-free parser regression by default
+  - added parser-invalid fixture sweep in `tests/run.sh` for all `invalid_parser_*.l0` fixtures
+  - validated with full-suite pass
 
 ### M53: Verifier Completeness Closure
 

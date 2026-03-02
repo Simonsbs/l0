@@ -12,6 +12,12 @@ for f in "$ROOT"/docs/examples/*.l0; do
   fi
 done
 
+bash "$ROOT/tests/parser_fuzz_regress.sh" "$BIN" "$ROOT/tests/fuzz/parser_seeds" >/tmp/l0_m52_parser_fuzz.out
+if ! grep -q '^ok$' /tmp/l0_m52_parser_fuzz.out; then
+  echo "FAIL: parser fuzz regression did not report ok"
+  exit 1
+fi
+
 # M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
 "$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
 if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then
@@ -4714,5 +4720,12 @@ if "$BIN" verify "$ROOT/tests/invalid_st_ptr_not_pointer.l0" >/tmp/l0_bad44.out 
   echo "FAIL: invalid_st_ptr_not_pointer unexpectedly passed"
   exit 1
 fi
+
+for f in "$ROOT"/tests/invalid_parser_*.l0; do
+  if "$BIN" verify "$f" >/tmp/l0_bad_parser.out 2>/tmp/l0_bad_parser.err; then
+    echo "FAIL: $(basename "$f") unexpectedly passed"
+    exit 1
+  fi
+done
 
 echo "PASS"
