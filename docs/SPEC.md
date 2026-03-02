@@ -160,12 +160,12 @@ I also enforce a structural subset inside `fns`:
     - I also accept canonical nonzero call-result ids in `f0` when `ret` references the same value id (`vN = call ...`, `ret vN`)
   - I lower canonical intrinsic kernel shapes:
     - `malloc` kernel (`v1 = malloc v0 : t1`, `ret v1`) via syscall-backed allocation stub
-    - before `malloc` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering in this const-independent shape
+    - before `malloc` kernel selection, I normalize by stripping canonical dead pure value lines (`const`, `icmp.eq`) so interleaved dead defs do not block lowering in this const-independent shape
     - for `malloc`, I also accept canonical nonzero arg/result ids when dataflow matches (`vN = arg 0`, `vM = malloc vN`, `ret vM`)
     - `free` kernel (`free v0` + `const 0` + `ret`) via defined no-op free stub
     - for `free`, I also accept canonical nonzero arg/const-ret ids when dataflow matches (`vN = arg 0`, `free vN`, `vM = const 0`, `ret vM`)
     - `exit` kernel (`exit v0`) via syscall `exit` stub
-    - before `exit` kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering in this const-independent shape
+    - before `exit` kernel selection, I normalize by stripping canonical dead pure value lines (`const`, `icmp.eq`) so interleaved dead defs do not block lowering in this const-independent shape
     - for `exit`, I also accept canonical nonzero arg/return ids when dataflow matches (`vN = arg 0`, `exit vN`, `ret vN`)
     - for `exit`, I also lower canonical non-returning shapes when `exit vN` matches the arg id even if trailing return-path lines are unreachable
     - `write` kernel (`write vPtr vLen`) via syscall `write` stub (current canonical test writes newline and returns `0`)
@@ -173,7 +173,7 @@ I also enforce a structural subset inside `fns`:
     - for bootstrap newline `write`, I also accept canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - `trace` kernel (`trace 1 v0`) via fixed 16-byte binary record emission to stderr in current bootstrap slice
     - for `trace`, I also accept canonical nonzero traced-arg id and nonzero const/return id when dataflow matches (`vN = arg 0`, `trace 1 vN`, `vM = const 0`, `ret vM`)
-    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I now run the same dead-const normalization path before selector matching and lower valid dead-const-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
+    - for const-dependent intrinsic shapes (`free`, `write`, `trace`), I now run generalized dead pure-line normalization before selector matching and lower valid dead-const/dead-icmp-injected canonical variants (including nonzero-id, multi-dead-const, and cross-function value-id-reuse cases), while preserving intentional write guardrail fallback for `alloca ... , 0` shapes
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
   - I now lower canonical branch-identity multi-block shape:

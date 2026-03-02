@@ -581,18 +581,39 @@ Last updated: 2026-03-01
 
 ### M46: Intrinsic Path Tolerant Normalization
 
+- Status: complete
+- Scope completed:
+  - validated intrinsic-path dead pure-line tolerance using dead `icmp.eq` injections across:
+    - `malloc`
+    - `free`
+    - `write`
+    - `trace`
+    - `exit`
+  - preserved intrinsic kernel-kind stability for lowered cases (`20`, `21`, `22`, `23`, `24`)
+  - preserved strict write guardrail fallback for `alloca 0` with dead `icmp.eq` injection
+  - added regression fixtures and assertions:
+    - `valid_malloc_with_dead_icmp_general_lowered.l0`
+    - `valid_free_noop_with_dead_icmp_general_lowered.l0`
+    - `valid_write_newline_with_dead_icmp_general_lowered.l0`
+    - `valid_trace_noop_with_dead_icmp_general_lowered.l0`
+    - `valid_exit_with_dead_icmp_general_lowered.l0`
+    - `valid_write_newline_alloca0_with_dead_icmp_guardrail_fallback.l0`
+  - asserted deterministic lowered behavior (kernel kind plus runtime behavior) for the 5 lowered fixtures
+  - asserted deterministic fallback behavior (`kernel_kind 0`, `code_size 1`) for the guardrail fixture
+  - validated with full-suite pass
+
+### M47: Intrinsic Dead-Pure Stress Matrix Expansion
+
 - Status: planned
 - Planned (measurable):
-  - expand intrinsic normalization (`malloc`, `free`, `write`, `trace`, `exit`) to ignore extra dead pure value lines (`const` or `icmp.eq`) that do not affect intrinsic operands
-  - preserve guardrail fallbacks for `write` alloca-zero cases and unrelated mismatch families
-  - add at least 6 new regression fixtures:
-    - lowered `malloc` dead-pure fixture
-    - lowered `free` dead-pure fixture
-    - lowered `write` dead-pure fixture
-    - lowered `trace` dead-pure fixture
-    - lowered `exit` dead-pure fixture
-    - one unsupported intrinsic guardrail fixture that must remain fallback
-  - acceptance: full suite pass, stable kernel kinds for lowered cases, and explicit fallback assertions for guardrail cases
+  - extend intrinsic dead-pure coverage beyond single injected lines to multi-dead-pure variants (`const` + `icmp.eq`) for `malloc`, `free`, `write`, `trace`, and `exit`
+  - add cross-function value-id-reuse variants for dead-icmp intrinsic shapes to ensure function-local dead-line detection remains stable
+  - preserve write `alloca 0` fallback guardrails under multi-dead-pure and cross-function variants
+  - add at least 8 fixtures:
+    - 5 lowered multi-dead-pure intrinsic fixtures (one per intrinsic family)
+    - 2 lowered cross-function dead-icmp fixtures (free/trace)
+    - 1 fallback cross-function write-guardrail fixture
+  - acceptance: full suite pass with explicit kernel-kind/runtime checks for lowered cases and explicit fallback assertions for guardrail cases
 
 ## Documentation status
 
