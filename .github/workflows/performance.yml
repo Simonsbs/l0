@@ -27,7 +27,13 @@ jobs:
       - name: Comparison report
         run: |
           bash tests/benchmark_compare.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON.md
-          L0_A2A_PIN_CPU=0 bash tests/benchmark_apples_to_apples.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json
+          L0_A2A_PIN_CPU=0 \
+          L0_A2A_BUILD_SAMPLES=3 \
+          L0_A2A_RUNTIME_SAMPLES=5 \
+          L0_A2A_WARMUP_RUNS=1 \
+          L0_A2A_TRIM_COUNT=1 \
+          L0_A2A_RUNTIME_CI95_PCT_WARN=20 \
+          bash tests/benchmark_apples_to_apples.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.json
           cat docs/PERFORMANCE_COMPARISON.md
           cat docs/PERFORMANCE_COMPARISON_APPLES_TO_APPLES.md
 

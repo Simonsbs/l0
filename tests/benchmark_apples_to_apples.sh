@@ -12,6 +12,8 @@ RUNTIME_ITERS="${L0_A2A_RUNTIME_ITERS:-5000000}"
 RUNTIME_SAMPLES="${L0_A2A_RUNTIME_SAMPLES:-5}"
 WARMUP_RUNS="${L0_A2A_WARMUP_RUNS:-1}"
 PIN_CPU="${L0_A2A_PIN_CPU:-}"
+TRIM_COUNT="${L0_A2A_TRIM_COUNT:-1}"
+RUNTIME_CI95_PCT_WARN="${L0_A2A_RUNTIME_CI95_PCT_WARN:-15}"
 
 TMP_BASE="${TMPDIR:-/tmp}"
 WORK_DIR="$(mktemp -d "$TMP_BASE/l0_a2a.XXXXXX")"
@@ -66,22 +68,34 @@ mops_or_na() {
 }
 
 stats_from_file() {
-  # Prints: mean|median|stddev|ci95|n
+  # Prints: mean|median|stddev|ci95|n_raw|n_effective
   local file="$1"
   local n
   n="$(wc -l < "$file" | tr -d ' ')"
   if [ -z "$n" ] || [ "$n" -eq 0 ]; then
-    echo "n/a|n/a|n/a|n/a|0"
+    echo "n/a|n/a|n/a|n/a|0|0"
     return 0
   fi
 
-  local mean stddev ci95 median
+  local median
   read -r mean stddev ci95 <<EOF_STATS
 $(awk '{x[NR]=$1; s+=$1} END {n=NR; if(n==0){print "n/a n/a n/a"; exit} mean=s/n; v=0; for(i=1;i<=n;i++){d=x[i]-mean; v+=d*d} if(n>1){std=sqrt(v/(n-1))} else {std=0} ci=(n>0)?(1.96*std/sqrt(n)):0; printf "%.4f %.4f %.4f", mean, std, ci }' "$file")
 EOF_STATS
   median="$(sort -n "$file" | awk ' {a[NR]=$1} END {n=NR; if(n==0){print "n/a"} else if(n%2==1){printf "%.4f", a[(n+1)/2]} else {printf "%.4f", (a[n/2]+a[n/2+1])/2} }')"
+  local n_effective="$n"
 
-  echo "$mean|$median|$stddev|$ci95|$n"
+  # Outlier policy: if enough samples exist, trim extremes for CI computation.
+  if [ "$TRIM_COUNT" -gt 0 ] && [ "$n" -gt $((TRIM_COUNT * 2 + 2)) ]; then
+    local trimmed="$WORK_DIR/stats.trimmed.$$.$RANDOM"
+    sort -n "$file" | awk -v t="$TRIM_COUNT" 'NR>t {a[++m]=$1} END { for(i=1;i<=m-t;i++) print a[i] }' >"$trimmed"
+    n_effective="$(wc -l < "$trimmed" | tr -d ' ')"
+    read -r mean stddev ci95 <<EOF_STATS_TRIM
+$(awk '{x[NR]=$1; s+=$1} END {n=NR; if(n==0){print "n/a n/a n/a"; exit} mean=s/n; v=0; for(i=1;i<=n;i++){d=x[i]-mean; v+=d*d} if(n>1){std=sqrt(v/(n-1))} else {std=0} ci=(n>0)?(1.96*std/sqrt(n)):0; printf "%.4f %.4f %.4f", mean, std, ci }' "$trimmed")
+EOF_STATS_TRIM
+    rm -f "$trimmed"
+  fi
+
+  echo "$mean|$median|$stddev|$ci95|$n|$n_effective"
 }
 
 ratio_or_na() {
@@ -260,10 +274,10 @@ EOF_C
     gcc_runtime_stats="$(stats_from_file "$gcc_runtime_samples")"
   fi
 
-  IFS='|' read -r _l0b_mean l0b_median _l0b_std _l0b_ci _l0b_n <<< "$l0_build_stats"
-  IFS='|' read -r _l0r_mean l0r_median _l0r_std l0r_ci _l0r_n <<< "$l0_runtime_stats"
-  IFS='|' read -r _gcb_mean gcb_median _gcb_std _gcb_ci _gcb_n <<< "$gcc_build_stats"
-  IFS='|' read -r _gcr_mean gcr_median _gcr_std gcr_ci _gcr_n <<< "$gcc_runtime_stats"
+  IFS='|' read -r _l0b_mean l0b_median _l0b_std _l0b_ci _l0b_n_raw _l0b_n_eff <<< "$l0_build_stats"
+  IFS='|' read -r _l0r_mean l0r_median _l0r_std l0r_ci _l0r_n_raw _l0r_n_eff <<< "$l0_runtime_stats"
+  IFS='|' read -r _gcb_mean gcb_median _gcb_std _gcb_ci _gcb_n_raw _gcb_n_eff <<< "$gcc_build_stats"
+  IFS='|' read -r _gcr_mean gcr_median _gcr_std gcr_ci _gcr_n_raw _gcr_n_eff <<< "$gcc_runtime_stats"
 
   build_ratio="n/a"
   runtime_ratio="n/a"
@@ -274,13 +288,29 @@ EOF_C
     runtime_ratio="$(ratio_or_na "$l0r_median" "$gcr_median")"
   fi
 
-  printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n' \
-    "$kid" "$label" "$l0_rel" "$l0b_median" "$gcb_median" "$build_ratio" "$l0r_median" "$l0r_ci" "$gcr_median" "$gcr_ci" "$runtime_ratio" \
+  l0_ci_pct="n/a"
+  gcc_ci_pct="n/a"
+  if [ "$l0r_median" != "n/a" ]; then
+    l0_ci_pct="$(ratio_or_na "$l0r_ci" "$l0r_median")"
+  fi
+  if [ "$gcr_median" != "n/a" ]; then
+    gcc_ci_pct="$(ratio_or_na "$gcr_ci" "$gcr_median")"
+  fi
+  stability="ok"
+  if [ "$l0_ci_pct" != "n/a" ]; then
+    if awk -v p="$l0_ci_pct" -v warn="$RUNTIME_CI95_PCT_WARN" 'BEGIN { exit !(p*100.0 > warn) }'; then
+      stability="warn"
+    fi
+  fi
+
+  printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n' \
+    "$kid" "$label" "$l0_rel" "$l0b_median" "$gcb_median" "$build_ratio" "$l0r_median" "$l0r_ci" "$gcr_median" "$gcr_ci" "$runtime_ratio" "$l0_ci_pct" "$gcc_ci_pct" "$stability" "$_l0r_n_raw" "$_l0r_n_eff" \
     >> "$rows_tsv"
 done < "$WORK_DIR/kernels.tsv"
 
 build_geo="$(awk -F'|' '{ if ($6 != "n/a") print $6 }' "$rows_tsv" | geo_mean_or_na)"
 runtime_geo="$(awk -F'|' '{ if ($11 != "n/a") print $11 }' "$rows_tsv" | geo_mean_or_na)"
+warn_kernels="$(awk -F'|' '$14=="warn"{c++} END{print c+0}' "$rows_tsv")"
 
 jq -Rn \
   --arg generated_utc "$date_utc" \
@@ -296,6 +326,9 @@ jq -Rn \
   --argjson runtime_iters "$RUNTIME_ITERS" \
   --argjson runtime_samples "$RUNTIME_SAMPLES" \
   --argjson warmup_runs "$WARMUP_RUNS" \
+  --argjson trim_count "$TRIM_COUNT" \
+  --argjson runtime_ci95_pct_warn "$RUNTIME_CI95_PCT_WARN" \
+  --argjson warn_kernels "$warn_kernels" \
   --arg build_geo "$build_geo" \
   --arg runtime_geo "$runtime_geo" \
   --rawfile rows "$rows_tsv" '
@@ -313,6 +346,9 @@ jq -Rn \
     runtime_iters: $runtime_iters,
     runtime_samples: $runtime_samples,
     warmup_runs: $warmup_runs,
+    trim_count: $trim_count,
+    runtime_ci95_pct_warn: $runtime_ci95_pct_warn,
+    warn_kernels: $warn_kernels,
     build_ratio_geomean_l0_over_gcc: (if $build_geo=="n/a" then null else ($build_geo|tonumber) end),
     runtime_ratio_geomean_l0_over_gcc: (if $runtime_geo=="n/a" then null else ($runtime_geo|tonumber) end),
     kernels: (
@@ -329,7 +365,12 @@ jq -Rn \
           runtime_mops_l0_ci95: (if .[7]=="n/a" then null else (.[7]|tonumber) end),
           runtime_mops_gcc_median: (if .[8]=="n/a" then null else (.[8]|tonumber) end),
           runtime_mops_gcc_ci95: (if .[9]=="n/a" then null else (.[9]|tonumber) end),
-          runtime_ratio_l0_over_gcc: (if .[10]=="n/a" then null else (.[10]|tonumber) end)
+          runtime_ratio_l0_over_gcc: (if .[10]=="n/a" then null else (.[10]|tonumber) end),
+          runtime_ci95_pct_l0: (if .[11]=="n/a" then null else ((.[11]|tonumber) * 100.0) end),
+          runtime_ci95_pct_gcc: (if .[12]=="n/a" then null else ((.[12]|tonumber) * 100.0) end),
+          stability: .[13],
+          runtime_samples_raw: (if .[14]=="n/a" then null else (.[14]|tonumber) end),
+          runtime_samples_effective: (if .[15]=="n/a" then null else (.[15]|tonumber) end)
       })
     )
   }
@@ -357,6 +398,8 @@ jq -Rn \
   echo "- runtime iterations per sample: \`$RUNTIME_ITERS\`"
   echo "- runtime samples per kernel: \`$RUNTIME_SAMPLES\`"
   echo "- warmup runs per kernel: \`$WARMUP_RUNS\`"
+  echo "- outlier_trim_count_per_side: \`$TRIM_COUNT\`"
+  echo "- runtime_ci95_warn_threshold_pct: \`$RUNTIME_CI95_PCT_WARN\`"
   echo
   echo "## Method"
   echo
@@ -370,9 +413,9 @@ jq -Rn \
   echo
   echo "## Per-Kernel Results"
   echo
-  echo '| Kernel | L0 fixture | Build ops/s L0 (median) | Build ops/s GCC (median) | Build ratio L0/GCC | Runtime Mops/s L0 (median ± CI95) | Runtime Mops/s GCC (median ± CI95) | Runtime ratio L0/GCC |'
-  echo '|---|---|---:|---:|---:|---:|---:|---:|'
-  awk -F'|' '{ printf("| %s | `%s` | %s | %s | %s | %s ± %s | %s ± %s | %s |\n", $2, $3, $4, $5, $6, $7, $8, $9, $10, $11); }' "$rows_tsv"
+  echo '| Kernel | L0 fixture | Build ops/s L0 (median) | Build ops/s GCC (median) | Build ratio L0/GCC | Runtime Mops/s L0 (median ± CI95) | Runtime Mops/s GCC (median ± CI95) | Runtime ratio L0/GCC | CI95% L0 | Stability |'
+  echo '|---|---|---:|---:|---:|---:|---:|---:|---:|---|'
+  awk -F'|' '{ l0p=($12=="n/a"?"n/a":sprintf("%.2f%%", $12*100)); printf("| %s | `%s` | %s | %s | %s | %s ± %s | %s ± %s | %s | %s | %s |\n", $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, l0p, $14); }' "$rows_tsv"
   echo
   echo "## Aggregate"
   echo
@@ -380,12 +423,14 @@ jq -Rn \
   echo '|---|---:|'
   echo "| Geometric mean build ratio (L0/GCC) | $build_geo |"
   echo "| Geometric mean runtime ratio (L0/GCC) | $runtime_geo |"
+  echo "| Kernels above runtime CI95 warning threshold | $warn_kernels |"
   echo
   echo "## Interpretation"
   echo
   echo "- This matrix is tighter than process-I/O comparisons because both variants use the same loop harness per kernel."
   echo "- Runtime ratio near 1.0 means parity; >1.0 favors L0; <1.0 favors GCC."
-  echo "- CI95 is reported to make run-to-run variability explicit."
+  echo "- CI95 is computed from trimmed samples when enough samples are available."
+  echo "- Stability marks \`warn\` if L0 runtime CI95% exceeds the configured threshold."
   echo "- Build ratio reflects compiler throughput, not generated-code quality."
 } > "$OUT_MD"
 

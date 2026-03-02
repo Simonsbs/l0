@@ -74,3 +74,5 @@ The report includes:
 - sample counts and warmup configuration
 - median throughput values
 - CI95 on runtime sample means
+- outlier policy controls (`L0_A2A_TRIM_COUNT`) used for CI computation when enough samples are present
+- stability warning threshold control (`L0_A2A_RUNTIME_CI95_PCT_WARN`)
