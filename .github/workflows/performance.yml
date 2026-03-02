@@ -8,6 +8,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   perf-smoke:
     runs-on: ubuntu-latest
@@ -25,6 +28,19 @@ jobs:
         run: |
           bash tests/benchmark_compare.sh ./bin/l0c . docs/PERFORMANCE_COMPARISON.md
           cat docs/PERFORMANCE_COMPARISON.md
+
+      - name: Commit updated comparison report
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/PERFORMANCE_COMPARISON.md; then
+            echo "No comparison report change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/PERFORMANCE_COMPARISON.md
+          git commit -m "Perf: refresh comparison report"
+          git push
 
       - name: Upload performance artifacts
         uses: actions/upload-artifact@v4

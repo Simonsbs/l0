@@ -29,3 +29,4 @@ This is an operational comparison, not a language-runtime microbenchmark.
 
 - I run this on the local host, so values are machine-dependent.
 - CI smoke/full perf gates remain the enforcement source for regressions.
+- I refresh this report automatically in `.github/workflows/performance.yml`; wiki publication follows from the docs-to-wiki sync workflow on `main`.
