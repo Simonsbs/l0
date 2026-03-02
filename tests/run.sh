@@ -42,6 +42,12 @@ if ! grep -q '^ok$' /tmp/l0_m62_trace_schema_contracts.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/deterministic_builds.sh" "$BIN" "$ROOT" >/tmp/l0_m63_deterministic_builds.out
+if ! grep -q '^ok$' /tmp/l0_m63_deterministic_builds.out; then
+  echo "FAIL: deterministic build contracts did not report ok"
+  exit 1
+fi
+
 # M51 workflow 1: arithmetic end-to-end (verify -> build -> imgcheck/imgmeta -> run)
 "$BIN" verify "$ROOT/docs/examples/01_arithmetic_add_wrap.l0" >/tmp/l0_m51_add_verify.out
 if ! grep -q '^ok$' /tmp/l0_m51_add_verify.out; then

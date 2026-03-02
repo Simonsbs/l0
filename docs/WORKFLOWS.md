@@ -259,3 +259,14 @@ bash tests/trace_schema_contracts.sh ./bin/l0c
 
 Expected stable output:
 - `ok`
+
+## Workflow 14: Deterministic Build Contract Gate
+
+I use this when I want to enforce byte-for-byte reproducibility guarantees (`detbuild.v1`) in one command.
+
+```sh
+bash tests/deterministic_builds.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

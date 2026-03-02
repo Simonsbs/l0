@@ -1006,11 +1006,31 @@ Last updated: 2026-03-02
 
 ### M63: Deterministic Build Guarantees
 
-- Status: planned
-- Planned (measurable):
-  - add repeat-build determinism checks for emitted images and side artifacts
-  - lock byte-for-byte reproducibility for selected fixture corpus
-  - acceptance: deterministic build checks pass in default `make test`
+- Status: complete
+- Scope completed:
+  - froze versioned deterministic build contract surface as `detbuild.v1`
+  - documented deterministic build guarantees and fixture corpus in:
+    - `docs/DETERMINISTIC_BUILDS.md`
+  - added dedicated deterministic build harness:
+    - `tests/deterministic_builds.sh`
+  - harness enforces repeat-build byte-for-byte reproducibility for selected corpus:
+    - image output (`build`)
+    - debug-map side artifact (`build --debug-map`)
+    - trace-schema side artifact (`build --trace-schema`)
+    - ELF object output (`build-elf`)
+  - harness also enforces deterministic decode output stability for:
+    - `imgmeta`
+    - `mapcat`
+    - `schemacat`
+  - integrated deterministic build harness into default automation:
+    - `tests/run.sh` now requires `deterministic_builds.sh` to report `ok`
+  - aligned top-level docs/spec references with the deterministic contract doc:
+    - `README.md`
+    - `docs/SPEC.md`
+    - `docs/IMPLEMENTABLE_SPEC.md`
+    - `docs/WORKFLOWS.md`
+  - acceptance:
+    - deterministic build checks pass in default `make test`
 
 ### M64: Differential Semantic Testing
 
