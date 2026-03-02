@@ -1083,11 +1083,29 @@ Last updated: 2026-03-02
 
 ### M66: Performance Baseline and Regression Gates
 
-- Status: planned
-- Planned (measurable):
-  - establish baseline metrics for build throughput and runtime micro-kernels
-  - add regression thresholds and checks in automated suite
-  - acceptance: performance checks pass within pinned thresholds
+- Status: complete
+- Scope completed:
+  - added dedicated deterministic performance gate harness:
+    - `tests/performance_gates.sh`
+  - established baseline throughput checks for representative operations:
+    - `verify`, `build`, `run` (2-arg and 6-arg kernels), `build-elf`
+    - `mapcat`, `schemacat`, `tracecat`, `tracejoin`
+  - pinned throughput floor thresholds (ops/sec) in the M66 contract and harness:
+    - `verify.valid_min >= 1800`
+    - `build.valid_min >= 1300`
+    - `run.add >= 2400`
+    - `run.sum6 >= 2200`
+    - `build-elf.sum6 >= 1100`
+    - `mapcat.trace_map >= 2500`
+    - `schemacat.trace_schema >= 2500`
+    - `tracecat.trace_bin >= 2500`
+    - `tracejoin.trace_bin+map >= 2300`
+  - documented frozen performance baseline surface as `perfbase.v1`:
+    - `docs/PERFORMANCE_BASELINES.md`
+  - integrated performance gates into default automation:
+    - `tests/run.sh` now requires `performance_gates.sh` to report `ok`
+  - acceptance:
+    - performance checks pass within pinned thresholds in default `make test`
 
 ### M67: Error Model Stabilization
 

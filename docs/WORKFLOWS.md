@@ -292,3 +292,14 @@ bash tests/m65_fuzz_stress.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 17: Performance Baseline and Regression Gate
+
+I use this when I want to enforce pinned throughput floor checks (`perfbase.v1`) for representative verify/build/run/build-elf and trace tooling operations.
+
+```sh
+bash tests/performance_gates.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`
