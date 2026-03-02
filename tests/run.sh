@@ -5273,4 +5273,10 @@ for f in "$ROOT"/tests/invalid_parser_*.l0; do
   fi
 done
 
+bash "$ROOT/tests/production_readiness.sh" "$BIN" "$ROOT" >/tmp/l0_m70_production_readiness.out
+if ! grep -q '^ok$' /tmp/l0_m70_production_readiness.out; then
+  echo "FAIL: M70 production readiness did not report ok"
+  exit 1
+fi
+
 echo "PASS"

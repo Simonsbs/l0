@@ -1178,11 +1178,23 @@ Last updated: 2026-03-02
 
 ### M70: Production Readiness Gate
 
-- Status: planned
-- Planned (measurable):
-  - run final quality gate across correctness, determinism, tooling, docs, and release process
-  - freeze v1 schemas/contracts and cut production candidate tag
-  - acceptance: all milestone gates M52-M69 are complete and release candidate passes full suite
+- Status: complete
+- Scope completed:
+  - added final production-readiness gate harness:
+    - `tests/production_readiness.sh`
+  - integrated production-readiness gate into default automation:
+    - `tests/run.sh` now requires `production_readiness.sh` to report `ok`
+  - production gate verifies end-to-end readiness dimensions:
+    - milestone gates M52-M69 succeeded in the active run
+    - representative M54-M59 checkpoint slices are present and green
+    - all frozen v1 contract docs are present
+    - release-candidate pipeline for `1.0.0-rc1` succeeds with checksum verification
+  - documented frozen production-readiness contract surface:
+    - `docs/PRODUCTION_READINESS.md` (`prodready.v1`)
+  - production-candidate tag cut for v1 contract set:
+    - `v1.0.0-rc1`
+  - acceptance:
+    - all milestone gates M52-M69 are complete and release candidate passes full suite
 
 ## Documentation status
 

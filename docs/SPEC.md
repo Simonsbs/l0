@@ -13,6 +13,7 @@ For performance baseline and throughput-floor guarantees, I freeze `docs/PERFORM
 For CLI error category/message stability guarantees, I freeze `docs/ERROR_MODEL.md` as `errmodel.v1`.
 For release packaging and checksum reproducibility guarantees, I freeze `docs/RELEASE_PIPELINE.md` as `relpipe.v1`.
 For compatibility and upgrade-policy guarantees, I freeze `docs/COMPATIBILITY_POLICY.md` as `compat.v1`.
+For final production-readiness closure guarantees, I freeze `docs/PRODUCTION_READINESS.md` as `prodready.v1`.
 
 ## Module shape (strict)
 

@@ -336,3 +336,14 @@ bash tests/compatibility_matrix.sh ./bin/l0c .
 
 Expected stable output:
 - `ok`
+
+## Workflow 21: Production Readiness Gate
+
+I use this when I want to enforce final production-readiness closure (`prodready.v1`) across milestone-gate health, frozen contract docs, and release-candidate artifact validation.
+
+```sh
+bash tests/production_readiness.sh ./bin/l0c .
+```
+
+Expected stable output:
+- `ok`

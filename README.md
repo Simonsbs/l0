@@ -150,7 +150,8 @@ Current bootstrap status:
 - I now consider my M67 error model stabilization milestone complete: I froze `errmodel.v1` and enforce deterministic exit-code/stderr contracts for representative CLI failure classes in default `make test`.
 - I now consider my M68 packaging and release pipeline milestone complete: I froze `relpipe.v1` and enforce scripted, reproducible release-candidate packaging with checksum verification in default `make test`.
 - I now consider my M69 compatibility and upgrade policy milestone complete: I froze `compat.v1` and enforce a compatibility matrix across prior fixtures (source/image/trace/debug/ELF slices) in default `make test`.
-- I track my next milestone as M70: production readiness gate.
+- I now consider my M70 production readiness gate milestone complete: I froze `prodready.v1`, enforce a final readiness meta-gate across M52-M69 plus release-candidate verification in default `make test`, and cut the production-candidate tag `v1.0.0-rc1`.
+- I now consider the M1-M70 roadmap complete.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b] [u64_c] [u64_d] [u64_e] [u64_f]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).
@@ -193,6 +194,7 @@ Current bootstrap status:
 - Error model contracts: `docs/ERROR_MODEL.md`
 - Release pipeline contracts: `docs/RELEASE_PIPELINE.md`
 - Compatibility and upgrade policy: `docs/COMPATIBILITY_POLICY.md`
+- Production readiness contract: `docs/PRODUCTION_READINESS.md`
 - Verifier rule map: `docs/VERIFIER_RULE_MAP.md`
 - Language reference: `docs/LANGUAGE.md`
 - Instruction-set quick reference: `docs/INSTRUCTION_SET.md`
@@ -209,6 +211,7 @@ Current bootstrap status:
 - M67 error model harness: `tests/error_model.sh`
 - M68 release pipeline harness: `tests/release_pipeline.sh`
 - M69 compatibility matrix harness: `tests/compatibility_matrix.sh`
+- M70 production readiness harness: `tests/production_readiness.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 
 ## Build

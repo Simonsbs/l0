@@ -12,6 +12,7 @@ I freeze performance baseline and throughput-floor guarantees in `docs/PERFORMAN
 I freeze CLI error category/message stability guarantees in `docs/ERROR_MODEL.md` as `errmodel.v1`.
 I freeze release packaging and checksum reproducibility guarantees in `docs/RELEASE_PIPELINE.md` as `relpipe.v1`.
 I freeze compatibility and upgrade-policy guarantees in `docs/COMPATIBILITY_POLICY.md` as `compat.v1`.
+I freeze final production-readiness closure guarantees in `docs/PRODUCTION_READINESS.md` as `prodready.v1`.
 
 ## 1) Token-Level Grammar (Bootstrap-Implemented)
 
