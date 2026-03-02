@@ -56,6 +56,7 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 - [LLM-Usability-Benchmark](LLM-Usability-Benchmark)
 - [LLM-Benchmark-Results](LLM-Benchmark-Results)
 - [LLM-Model-Leaderboard](LLM-Model-Leaderboard)
+- [LLM-Model-Leaderboard-Trends](LLM-Model-Leaderboard-Trends)
 - [Grammar-and-Typing](Grammar-and-Typing)
 - [LLM-Prompt-Pack](LLM-Prompt-Pack)
 - [Index](Index)

@@ -354,13 +354,17 @@ L0_LLM_ADAPTER_CMD='<your command>' \
 L0_LLM_MODELS='model-a,model-b,model-c' \
 bash tests/llm_model_matrix.sh ./bin/l0c . \
   docs/LLM_MODEL_LEADERBOARD.json \
-  docs/LLM_MODEL_LEADERBOARD.md
+  docs/LLM_MODEL_LEADERBOARD.md \
+  docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl \
+  docs/LLM_MODEL_LEADERBOARD_TRENDS.md
 ```
 
 Expected stable output:
 - `ok`
 - refreshed `docs/LLM_MODEL_LEADERBOARD.json`
 - refreshed `docs/LLM_MODEL_LEADERBOARD.md`
+- refreshed `docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl`
+- refreshed `docs/LLM_MODEL_LEADERBOARD_TRENDS.md`
 
 ## Workflow 14: Deterministic Build Contract Gate
 

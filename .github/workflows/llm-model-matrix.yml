@@ -35,8 +35,11 @@ jobs:
         run: |
           bash tests/llm_model_matrix.sh ./bin/l0c . \
             docs/LLM_MODEL_LEADERBOARD.json \
-            docs/LLM_MODEL_LEADERBOARD.md
+            docs/LLM_MODEL_LEADERBOARD.md \
+            docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl \
+            docs/LLM_MODEL_LEADERBOARD_TRENDS.md
           cat docs/LLM_MODEL_LEADERBOARD.md
+          cat docs/LLM_MODEL_LEADERBOARD_TRENDS.md
 
       - name: Skip reason
         if: ${{ env.L0_LLM_ADAPTER_CMD == '' || env.L0_LLM_MODELS == '' }}
@@ -47,13 +50,13 @@ jobs:
         if: ${{ env.L0_LLM_ADAPTER_CMD != '' && env.L0_LLM_MODELS != '' }}
         run: |
           set -euo pipefail
-          if git diff --quiet -- docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md; then
+          if git diff --quiet -- docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl docs/LLM_MODEL_LEADERBOARD_TRENDS.md; then
             echo "No leaderboard report change."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md
+          git add docs/LLM_MODEL_LEADERBOARD.json docs/LLM_MODEL_LEADERBOARD.md docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl docs/LLM_MODEL_LEADERBOARD_TRENDS.md
           git commit -m "LLM matrix: refresh model leaderboard"
           git push
 
@@ -65,3 +68,5 @@ jobs:
           path: |
             docs/LLM_MODEL_LEADERBOARD.json
             docs/LLM_MODEL_LEADERBOARD.md
+            docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl
+            docs/LLM_MODEL_LEADERBOARD_TRENDS.md

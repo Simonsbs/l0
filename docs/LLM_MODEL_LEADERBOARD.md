@@ -1,23 +1,19 @@
 # LLM Model Leaderboard
 
-I use this report to compare multiple models on the same L0 usability benchmark corpus.
+I generated this report with `tests/llm_model_matrix.sh`.
 
-I generate it with:
+- generated_utc: `2026-03-02T15:20:28Z`
+- total_models: `2`
+- recommended_model: `qwen2.5:1.5b`
 
-```sh
-L0_LLM_ADAPTER_CMD='<your command>' \
-L0_LLM_MODELS='model-a,model-b,model-c' \
-bash tests/llm_model_matrix.sh ./bin/l0c .
-```
+## Leaderboard
 
-The script writes:
-- `docs/LLM_MODEL_LEADERBOARD.json`
-- `docs/LLM_MODEL_LEADERBOARD.md`
+| Model | Verify % | Semantic % | Avg attempts | Prompt tok | Completion tok | L0/C ratio | Duration sec |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| qwen2.5:1.5b | 0 | 0 | 3 | 242 | 242 | 8.70685 | 1 |
+| qwen2.5:3b | 0 | 0 | 3 | 242 | 242 | 8.70685 | 0 |
 
-I rank models by:
-1. verify success rate
-2. semantic success rate
-3. lower average attempts used
-4. lower total prompt+completion token proxy usage
+## Notes
 
-I wire automated refresh to `.github/workflows/llm-model-matrix.yml`.
+- I rank models by verify success, then semantic success, then lower attempts/tokens.
+- This is adapter-driven and depends on the configured backend and prompt profile.

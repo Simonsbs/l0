@@ -1,9 +1,55 @@
 {
-  "generated_utc": null,
-  "total_models": 0,
-  "models": [],
-  "recommended_model": null,
-  "notes": [
-    "Run tests/llm_model_matrix.sh with L0_LLM_ADAPTER_CMD and L0_LLM_MODELS to populate this report."
-  ]
+  "generated_utc": "2026-03-02T15:20:28Z",
+  "total_models": 2,
+  "models": [
+    {
+      "model": "qwen2.5:1.5b",
+      "duration_sec": 1,
+      "verify_success_rate_pct": 0,
+      "semantic_success_rate_pct": 0,
+      "avg_attempts_used": 3,
+      "avg_prompt_tokens": 242,
+      "avg_completion_tokens_total": 242,
+      "avg_l0_vs_c_token_ratio": 8.70685,
+      "verify_pass_at_k_pct": {
+        "k1": 0,
+        "k2": 0,
+        "k3": 0
+      },
+      "semantic_pass_at_k_pct": {
+        "k1": 0,
+        "k2": 0,
+        "k3": 0
+      },
+      "error_class_counts": {
+        "non_canonical": 6
+      },
+      "source_report_json": "tmp/qwen2.5:1.5b.json"
+    },
+    {
+      "model": "qwen2.5:3b",
+      "duration_sec": 0,
+      "verify_success_rate_pct": 0,
+      "semantic_success_rate_pct": 0,
+      "avg_attempts_used": 3,
+      "avg_prompt_tokens": 242,
+      "avg_completion_tokens_total": 242,
+      "avg_l0_vs_c_token_ratio": 8.70685,
+      "verify_pass_at_k_pct": {
+        "k1": 0,
+        "k2": 0,
+        "k3": 0
+      },
+      "semantic_pass_at_k_pct": {
+        "k1": 0,
+        "k2": 0,
+        "k3": 0
+      },
+      "error_class_counts": {
+        "non_canonical": 6
+      },
+      "source_report_json": "tmp/qwen2.5:3b.json"
+    }
+  ],
+  "recommended_model": "qwen2.5:1.5b"
 }

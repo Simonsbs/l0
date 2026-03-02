@@ -5,7 +5,10 @@ BIN="${1:-./bin/l0c}"
 ROOT="${2:-$(cd "$(dirname "$0")/.." && pwd)}"
 OUT_JSON="${3:-$ROOT/docs/LLM_MODEL_LEADERBOARD.json}"
 OUT_MD="${4:-$ROOT/docs/LLM_MODEL_LEADERBOARD.md}"
+HISTORY_JSONL="${5:-$ROOT/docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl}"
+OUT_TRENDS_MD="${6:-$ROOT/docs/LLM_MODEL_LEADERBOARD_TRENDS.md}"
 MODELS_CSV="${L0_LLM_MODELS:-}"
+HISTORY_LIMIT="${L0_LLM_HISTORY_LIMIT:-120}"
 
 TMP_BASE="${TMPDIR:-/tmp}"
 WORK_DIR="$(mktemp -d "$TMP_BASE/l0_llm_model_matrix.XXXXXX")"
@@ -79,6 +82,20 @@ jq -s '
     }
 ' "$rows" > "$OUT_JSON"
 
+snapshot_json="$WORK_DIR/snapshot.json"
+jq -cn --slurpfile r "$OUT_JSON" '{
+  generated_utc: $r[0].generated_utc,
+  recommended_model: $r[0].recommended_model,
+  total_models: $r[0].total_models,
+  models: $r[0].models
+}' > "$snapshot_json"
+
+mkdir -p "$(dirname "$HISTORY_JSONL")"
+touch "$HISTORY_JSONL"
+# Keep only valid JSON lines and cap history length.
+{ jq -c . "$HISTORY_JSONL" 2>/dev/null || true; jq -c . "$snapshot_json"; } | tail -n "$HISTORY_LIMIT" > "$WORK_DIR/history.trimmed.jsonl"
+cp "$WORK_DIR/history.trimmed.jsonl" "$HISTORY_JSONL"
+
 {
   echo "# LLM Model Leaderboard"
   echo
@@ -111,5 +128,62 @@ jq -s '
   echo "- I rank models by verify success, then semantic success, then lower attempts/tokens."
   echo "- This is adapter-driven and depends on the configured backend and prompt profile."
 } > "$OUT_MD"
+
+jq -s '
+  . as $hist
+  | {
+      total_snapshots: ($hist|length),
+      latest: ($hist[-1] // null),
+      previous: ($hist[-2] // null),
+      models_latest: (($hist[-1].models // []) | map(.model))
+    }
+' "$HISTORY_JSONL" > "$WORK_DIR/history.summary.json"
+
+{
+  echo "# LLM Model Leaderboard Trends"
+  echo
+  echo "I generated this report with \`tests/llm_model_matrix.sh\` from \`docs/LLM_MODEL_LEADERBOARD_HISTORY.jsonl\`."
+  echo
+  echo "- total_snapshots: \`$(jq -r '.total_snapshots' "$WORK_DIR/history.summary.json")\`"
+  echo "- latest_generated_utc: \`$(jq -r '.latest.generated_utc // "n/a"' "$WORK_DIR/history.summary.json")\`"
+  echo "- latest_recommended_model: \`$(jq -r '.latest.recommended_model // "n/a"' "$WORK_DIR/history.summary.json")\`"
+  echo
+  echo "## Recent Snapshots"
+  echo
+  echo "| generated_utc | recommended_model | total_models |"
+  echo "|---|---|---:|"
+  jq -r -s '.[-10:][] | "| " + (.generated_utc // "n/a") + " | " + (.recommended_model // "n/a") + " | " + ((.total_models // 0)|tostring) + " |"' "$HISTORY_JSONL"
+  echo
+  echo "## Latest vs Previous (Per Model)"
+  echo
+  echo "| Model | Verify latest | Verify delta | Semantic latest | Semantic delta | Attempts latest | Attempts delta |"
+  echo "|---|---:|---:|---:|---:|---:|---:|"
+  jq -r -s '
+    def to_map(arr): reduce arr[] as $m ({}; .[$m.model] = $m);
+    (.[-1].models // []) as $latest
+    | (if (length>1) then (.[-2].models // []) else [] end) as $prev
+    | (to_map($prev)) as $pm
+    | $latest[]
+    | . as $m
+    | ($pm[$m.model] // {}) as $p
+    | ($p | has("verify_success_rate_pct")) as $has_prev
+    | (if $has_prev then ($m.verify_success_rate_pct - ($p.verify_success_rate_pct // 0) | tostring) else "n/a" end) as $dv
+    | (if $has_prev then ($m.semantic_success_rate_pct - ($p.semantic_success_rate_pct // 0) | tostring) else "n/a" end) as $ds
+    | (if $has_prev then ($m.avg_attempts_used - ($p.avg_attempts_used // 0) | tostring) else "n/a" end) as $da
+    | "| " + $m.model
+      + " | " + ($m.verify_success_rate_pct|tostring)
+      + " | " + $dv
+      + " | " + ($m.semantic_success_rate_pct|tostring)
+      + " | " + $ds
+      + " | " + ($m.avg_attempts_used|tostring)
+      + " | " + $da
+      + " |"
+  ' "$HISTORY_JSONL"
+  echo
+  echo "## Notes"
+  echo
+  echo "- Deltas are latest minus previous snapshot for the same model when available."
+  echo "- This trend report is only as representative as the configured model set and benchmark environment."
+} > "$OUT_TRENDS_MD"
 
 echo "ok"
