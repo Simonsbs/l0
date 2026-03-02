@@ -158,6 +158,26 @@ if ! grep -q '^ok$' /tmp/l0_ok_call_add_with_dead_const_general_lowered.out; the
   echo "FAIL: verify valid_call_add_with_dead_const_general_lowered"
   exit 1
 fi
+"$BIN" verify "$ROOT/tests/valid_call_add_dead_icmp_f0_lowered.l0" >/tmp/l0_ok_call_add_dead_icmp_f0_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_dead_icmp_f0_lowered.out; then
+  echo "FAIL: verify valid_call_add_dead_icmp_f0_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_add_dead_icmp_f1_lowered.l0" >/tmp/l0_ok_call_add_dead_icmp_f1_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_dead_icmp_f1_lowered.out; then
+  echo "FAIL: verify valid_call_add_dead_icmp_f1_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_sub_dead_icmp_supported_lowered.l0" >/tmp/l0_ok_call_sub_dead_icmp_supported_lowered.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_sub_dead_icmp_supported_lowered.out; then
+  echo "FAIL: verify valid_call_sub_dead_icmp_supported_lowered"
+  exit 1
+fi
+"$BIN" verify "$ROOT/tests/valid_call_add_dead_icmp_guardrail_fallback.l0" >/tmp/l0_ok_call_add_dead_icmp_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_ok_call_add_dead_icmp_guardrail_fallback.out; then
+  echo "FAIL: verify valid_call_add_dead_icmp_guardrail_fallback"
+  exit 1
+fi
 "$BIN" verify "$ROOT/tests/valid_call_and_lowered.l0" >/tmp/l0_ok_call_and_lowered.out
 if ! grep -q '^ok$' /tmp/l0_ok_call_and_lowered.out; then
   echo "FAIL: verify valid_call_and_lowered"
@@ -1096,6 +1116,55 @@ if [ "$(tr -d '\n' < /tmp/l0_run_call_add_with_dead_const_general_lowered.out)" 
   echo "FAIL: run call->add with dead const lowered image result"
   exit 1
 fi
+"$BIN" build "$ROOT/tests/valid_call_add_dead_icmp_f0_lowered.l0" /tmp/l0_test_call_add_dead_icmp_f0_lowered.img >/tmp/l0_build_call_add_dead_icmp_f0_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_dead_icmp_f0_lowered.out; then
+  echo "FAIL: build valid_call_add_dead_icmp_f0_lowered"
+  exit 1
+fi
+call_add_dead_icmp_f0_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_dead_icmp_f0_lowered.img | tr -d ' ')
+call_add_dead_icmp_f0_kernel_kind=$(od -An -t u8 -j "$((call_add_dead_icmp_f0_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_dead_icmp_f0_lowered.img | tr -d ' ')
+if [ "$call_add_dead_icmp_f0_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add dead-icmp f0 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_dead_icmp_f0_lowered.img 21 21 >/tmp/l0_run_call_add_dead_icmp_f0_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_dead_icmp_f0_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add dead-icmp f0 lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_dead_icmp_f1_lowered.l0" /tmp/l0_test_call_add_dead_icmp_f1_lowered.img >/tmp/l0_build_call_add_dead_icmp_f1_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_dead_icmp_f1_lowered.out; then
+  echo "FAIL: build valid_call_add_dead_icmp_f1_lowered"
+  exit 1
+fi
+call_add_dead_icmp_f1_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_dead_icmp_f1_lowered.img | tr -d ' ')
+call_add_dead_icmp_f1_kernel_kind=$(od -An -t u8 -j "$((call_add_dead_icmp_f1_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_dead_icmp_f1_lowered.img | tr -d ' ')
+if [ "$call_add_dead_icmp_f1_kernel_kind" != "16" ]; then
+  echo "FAIL: call->add dead-icmp f1 debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_dead_icmp_f1_lowered.img 21 21 >/tmp/l0_run_call_add_dead_icmp_f1_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_dead_icmp_f1_lowered.out)" != "42" ]; then
+  echo "FAIL: run call->add dead-icmp f1 lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_add_dead_icmp_guardrail_fallback.l0" /tmp/l0_test_call_add_dead_icmp_guardrail_fallback.img >/tmp/l0_build_call_add_dead_icmp_guardrail_fallback.out
+if ! grep -q '^ok$' /tmp/l0_build_call_add_dead_icmp_guardrail_fallback.out; then
+  echo "FAIL: build valid_call_add_dead_icmp_guardrail_fallback"
+  exit 1
+fi
+call_add_dead_icmp_guardrail_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_add_dead_icmp_guardrail_fallback.img | tr -d ' ')
+call_add_dead_icmp_guardrail_kernel_kind=$(od -An -t u8 -j "$((call_add_dead_icmp_guardrail_dbg_off + 32))" -N 8 /tmp/l0_test_call_add_dead_icmp_guardrail_fallback.img | tr -d ' ')
+call_add_dead_icmp_guardrail_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_call_add_dead_icmp_guardrail_fallback.img | tr -d ' ')
+if [ "$call_add_dead_icmp_guardrail_kernel_kind" != "0" ] || [ "$call_add_dead_icmp_guardrail_code_size" != "1" ]; then
+  echo "FAIL: call->add dead-icmp guardrail unexpectedly lowered"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_add_dead_icmp_guardrail_fallback.img 21 21 >/tmp/l0_run_call_add_dead_icmp_guardrail_fallback.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_add_dead_icmp_guardrail_fallback.out)" != "21" ]; then
+  echo "FAIL: run call->add dead-icmp guardrail fallback result"
+  exit 1
+fi
 "$BIN" build "$ROOT/tests/valid_call_and_lowered.l0" /tmp/l0_test_call_and_lowered.img >/tmp/l0_build_call_and_lowered.out
 if ! grep -q '^ok$' /tmp/l0_build_call_and_lowered.out; then
   echo "FAIL: build valid_call_and_lowered"
@@ -1478,6 +1547,22 @@ fi
 "$BIN" run /tmp/l0_test_call_sub_f1_argdef_order_swapped_unlowered.img 9 21 >/tmp/l0_run_call_sub_f1_argdef_order_swapped_unlowered.out
 if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_f1_argdef_order_swapped_unlowered.out)" != "12" ]; then
   echo "FAIL: run call->sub f1 argdef-order-swapped reverse lowered image result"
+  exit 1
+fi
+"$BIN" build "$ROOT/tests/valid_call_sub_dead_icmp_supported_lowered.l0" /tmp/l0_test_call_sub_dead_icmp_supported_lowered.img >/tmp/l0_build_call_sub_dead_icmp_supported_lowered.out
+if ! grep -q '^ok$' /tmp/l0_build_call_sub_dead_icmp_supported_lowered.out; then
+  echo "FAIL: build valid_call_sub_dead_icmp_supported_lowered"
+  exit 1
+fi
+call_sub_dead_icmp_supported_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_call_sub_dead_icmp_supported_lowered.img | tr -d ' ')
+call_sub_dead_icmp_supported_kernel_kind=$(od -An -t u8 -j "$((call_sub_dead_icmp_supported_dbg_off + 32))" -N 8 /tmp/l0_test_call_sub_dead_icmp_supported_lowered.img | tr -d ' ')
+if [ "$call_sub_dead_icmp_supported_kernel_kind" != "17" ]; then
+  echo "FAIL: call->sub dead-icmp supported debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_call_sub_dead_icmp_supported_lowered.img 9 21 >/tmp/l0_run_call_sub_dead_icmp_supported_lowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_call_sub_dead_icmp_supported_lowered.out)" != "12" ]; then
+  echo "FAIL: run call->sub dead-icmp supported lowered image result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_call_mul_lowered.l0" /tmp/l0_test_call_mul_lowered.img >/tmp/l0_build_call_mul_lowered.out

@@ -564,26 +564,34 @@ Last updated: 2026-03-01
 
 ### M45: Call-Kernel Dead Pure-Line Tolerance
 
-- Status: planned
-- Planned (measurable):
-  - expand call-kernel normalization to tolerate extra dead pure value lines in both function bodies:
+- Status: complete
+- Scope completed:
+  - confirmed generalized call-path normalization tolerates dead pure `icmp.eq` value lines in both function bodies:
     - `f0` around `call f1 ...`
-    - `f1` around the lowered binary op result line
-  - preserve all existing call-family kernel kinds and non-commutative guardrails (`sub.wrap`, `shl`, `shr`)
-  - add at least 4 new regression fixtures:
-    - lowered call->commutative case with dead pure lines in `f0`
-    - lowered call->commutative case with dead pure lines in `f1`
-    - lowered call->non-commutative supported mapping with dead pure lines
-    - unsupported call-shape guardrail that must remain fallback
-  - acceptance: full suite pass and deterministic lowered/fallback assertions for all new fixtures
+    - `f1` around the lowered op result line
+  - preserved existing call-family lowered kernel kinds (`16` add, `17` sub) and existing non-commutative guardrails
+  - added regression fixtures and assertions:
+    - `valid_call_add_dead_icmp_f0_lowered.l0`
+    - `valid_call_add_dead_icmp_f1_lowered.l0`
+    - `valid_call_sub_dead_icmp_supported_lowered.l0`
+    - `valid_call_add_dead_icmp_guardrail_fallback.l0`
+  - asserted deterministic lowered behavior (kernel kind and runtime outputs) for the three lowered fixtures
+  - asserted deterministic fallback behavior (`kernel_kind 0`, `code_size 1`) for the unsupported guardrail fixture
+  - validated with full-suite pass
 
 ### M46: Intrinsic Path Tolerant Normalization
 
 - Status: planned
 - Planned (measurable):
-  - expand intrinsic normalization (`malloc`, `free`, `write`, `trace`, `exit`) to ignore extra dead pure value lines that do not affect intrinsic operands
+  - expand intrinsic normalization (`malloc`, `free`, `write`, `trace`, `exit`) to ignore extra dead pure value lines (`const` or `icmp.eq`) that do not affect intrinsic operands
   - preserve guardrail fallbacks for `write` alloca-zero cases and unrelated mismatch families
-  - add at least 5 new regression fixtures (one per intrinsic family) plus one guardrail fixture
+  - add at least 6 new regression fixtures:
+    - lowered `malloc` dead-pure fixture
+    - lowered `free` dead-pure fixture
+    - lowered `write` dead-pure fixture
+    - lowered `trace` dead-pure fixture
+    - lowered `exit` dead-pure fixture
+    - one unsupported intrinsic guardrail fixture that must remain fallback
   - acceptance: full suite pass, stable kernel kinds for lowered cases, and explicit fallback assertions for guardrail cases
 
 ## Documentation status

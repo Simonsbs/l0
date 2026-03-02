@@ -302,7 +302,7 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - in the current build selector chain, these const-dependent intrinsic families are routed through generalized normalized selector paths only (legacy direct fallback stages are removed)
     - I now apply the same generalized-only routing to all current generalized families, including const-return (`exit`, `malloc`, `call`, memory roundtrip families, compare/select, binary, and const-return)
     - canonical two-function call kernels (`f0` calling `f1` with `add.wrap`/`sub.wrap`/`mul.wrap`/`and`/`or`)
-    - before call-kernel selection, I run the same dead-const normalization pass, so canonical interleaved `const` defs in `f0`/`f1` do not block call lowering
+    - before call-kernel selection, I run generalized dead pure-line normalization, so canonical interleaved dead `const` and dead `icmp.eq` defs in `f0`/`f1` do not block call lowering
     - call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`, `xor`) also accept swapped call-arg order in `f0` (`call f1 v1 v0`) in bootstrap lowering
     - call->non-commutative targets (`shl`, `shr`) now lower both semantic call-arg mappings:
       - canonical arg0->arg1 mapping
