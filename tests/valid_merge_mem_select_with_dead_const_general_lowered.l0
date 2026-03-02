@@ -1,0 +1,25 @@
+ver 1
+types { t0=i1, t1=i64, t2=p0<i8> }
+consts { }
+extern { }
+globals { }
+fns {
+fn f0 (t0)->t1 {
+b0:
+  v0 = arg 0 : t0
+  v1 = alloca t1, 1 : t2
+  cbr v0 b1 b2
+b1:
+  v9 = const 99 : t1
+  v2 = const 11 : t1
+  st v1 v2
+  br b3
+b2:
+  v3 = const 22 : t1
+  st v1 v3
+  br b3
+b3:
+  v4 = ld v1 : t1
+  ret v4
+}
+}

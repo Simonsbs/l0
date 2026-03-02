@@ -135,3 +135,23 @@ Expected stable outputs:
 - `imgmeta` contains: `kernel_kind 26`, `code_size 27`
 - `run ... 1` prints: `11`
 - `run ... 0` prints: `22`
+
+## Workflow 7: Merge-Block Memory Join CFG
+
+I use this when I want to validate merge-point value selection lowered from a multi-block branch/store/join shape.
+
+```sh
+./bin/l0c verify docs/examples/16_cfg_merge_mem_select.l0
+./bin/l0c build docs/examples/16_cfg_merge_mem_select.l0 /tmp/l0_wf_cfg_merge.img
+./bin/l0c imgcheck /tmp/l0_wf_cfg_merge.img
+./bin/l0c imgmeta /tmp/l0_wf_cfg_merge.img
+./bin/l0c run /tmp/l0_wf_cfg_merge.img 1
+./bin/l0c run /tmp/l0_wf_cfg_merge.img 0
+```
+
+Expected stable outputs:
+- `verify`: `ok`
+- `imgcheck`: `ok`
+- `imgmeta` contains: `kernel_kind 27`, `code_size 27`
+- `run ... 1` prints: `11`
+- `run ... 0` prints: `22`

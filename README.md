@@ -115,6 +115,7 @@ Current bootstrap status:
 - I now consider my M34 call-family backend expansion milestone complete: I extended two-function call lowering to include canonical non-commutative `shl` and `shr` kernels (including dead-const generalized variants), while keeping swapped call-arg guardrails intentionally unlowered.
 - I now consider my M35 multi-block backend kickoff milestone complete: I added direct lowering for canonical branch-identity modules (`cbr` with both branches returning the same SSA arg) so this shape no longer falls back to the single-byte `ret` stub.
 - I now consider my M55 general CFG lowering v1 milestone complete: I added direct lowering for canonical branch-const-select modules (`cbr` with branch-local `const` returns) including dead-const-normalized variants, while preserving strict fallback for unsupported branch-return dataflow mappings.
+- I now consider my M56 SSA join and merge lowering milestone complete: I added direct lowering for canonical branch/store/join memory-select modules (`cbr` with branch-local `const` + `st`, join-block `ld` + `ret`) including dead-const-normalized variants, while preserving strict fallback for unsupported join-return mappings.
 - I now consider my M36 non-commutative call generalization milestone complete: I added deterministic reverse-mapping lowering for `call->sub.wrap` when `f0` provides arg1->arg0 mapping under parsed arg-definition order and `f1` keeps canonical `sub.wrap` mapping, including dead-const generalized coverage.
 - I now consider my M37 compare/select branch-mapping generalization milestone complete: I added deterministic reverse return-mapping lowering for `icmp.eq + cbr` select shapes (`b1` returns arg1, `b2` returns arg0), including dead-const generalized variants.
 - I now consider my M38 non-commutative call generalization milestone complete: I extended deterministic reverse-mapping lowering for `call->sub.wrap` to cover reverse `f1` mapping shapes (including argdef-order-swapped and dead-const generalized variants) while keeping structural mismatch guardrails intact.
@@ -135,7 +136,8 @@ Current bootstrap status:
 - I now consider my M53 verifier completeness closure milestone complete: I added a rule-to-test verifier matrix with one positive and one negative fixture per rule and I enforce it in `make test`.
 - I now consider my M54 type-system expansion and closure milestone complete: I added verifier support for struct/array/function type tokens, added deterministic type-form examples, and locked edge-case rejection fixtures in `make test`.
 - I now consider my M55 general CFG lowering v1 milestone complete: I added lowering for canonical multi-block branch-const-select CFG modules and preserved strict fallback guardrails for unsupported return-mapping shapes.
-- I track my next milestone as M56: SSA join and merge lowering for broader branch convergence semantics.
+- I now consider my M56 SSA join and merge lowering milestone complete: I added lowering for canonical branch/store/join/ld merge CFG modules and preserved strict fallback guardrails for unsupported join-return mappings.
+- I track my next milestone as M57: register allocation generalization and spill-path stress coverage for broader generalized lowering shapes.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

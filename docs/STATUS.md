@@ -811,11 +811,30 @@ Last updated: 2026-03-02
 
 ### M56: SSA Join and Merge Lowering
 
-- Status: planned
-- Planned (measurable):
-  - add deterministic lowering support for merge-point value selection in multi-branch control-flow
-  - add regression fixtures for branch merge/join value correctness
-  - acceptance: merge fixtures pass runtime correctness checks and remain deterministic in emitted artifacts
+- Status: complete
+- Scope completed:
+  - added deterministic lowering support for a merge-point value-selection CFG family:
+    - canonical branch/store/join memory-select modules (`cbr` in `b0`, branch-local `const` + `st` in `b1`/`b2`, join `ld` + `ret` in `b3`)
+  - added generalized normalized selector path:
+    - `try_select_general_merge_mem_select_kernel_code`
+  - added selector/matcher and dynamic payload emission:
+    - `try_select_merge_mem_select_kernel_code`
+    - emitted kernel kind `27` with deterministic code size `27`
+  - preserved strict fallback guardrails for unsupported join-return mappings
+  - extended debug-map routing and image/meta kernel-kind checks to include kernel kind `27`
+  - added deterministic fixtures and assertions:
+    - lowered: `valid_merge_mem_select_lowered.l0`
+    - lowered (dead-const normalized): `valid_merge_mem_select_with_dead_const_general_lowered.l0`
+    - guardrail fallback: `valid_merge_mem_select_guardrail_fallback.l0`
+  - added runnable docs example:
+    - `docs/examples/16_cfg_merge_mem_select.l0`
+  - integrated checks into `tests/run.sh` (verify/build/run/debug-map/fallback assertions)
+  - updated documentation:
+    - `README.md`
+    - `docs/LANGUAGE.md`
+    - `docs/HOW_TO_WRITE_L0.md`
+    - `docs/WORKFLOWS.md`
+  - validated with full-suite pass
 
 ### M57: Register Allocation Generalization
 

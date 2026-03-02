@@ -402,6 +402,36 @@ pat_branch_const_mid_g: .ascii " : t1\n  ret v"
 pat_branch_const_mid_g_len = . - pat_branch_const_mid_g
 pat_branch_const_tail: .ascii "\n}\n"
 pat_branch_const_tail_len = . - pat_branch_const_tail
+pat_merge_mem_head: .ascii "fn f0 (t0)->t1 {\nb0:\n  v"
+pat_merge_mem_head_len = . - pat_merge_mem_head
+pat_merge_mem_mid_a: .ascii " = arg 0 : t0\n  v"
+pat_merge_mem_mid_a_len = . - pat_merge_mem_mid_a
+pat_merge_mem_mid_b: .ascii " = alloca t1, 1 : t2\n  cbr v"
+pat_merge_mem_mid_b_len = . - pat_merge_mem_mid_b
+pat_merge_mem_mid_c: .ascii " b1 b2\nb1:\n  v"
+pat_merge_mem_mid_c_len = . - pat_merge_mem_mid_c
+pat_merge_mem_mid_d: .ascii " = const "
+pat_merge_mem_mid_d_len = . - pat_merge_mem_mid_d
+pat_merge_mem_mid_e: .ascii " : t1\n  st v"
+pat_merge_mem_mid_e_len = . - pat_merge_mem_mid_e
+pat_merge_mem_mid_f: .ascii " v"
+pat_merge_mem_mid_f_len = . - pat_merge_mem_mid_f
+pat_merge_mem_mid_g: .ascii "\n  br b3\nb2:\n  v"
+pat_merge_mem_mid_g_len = . - pat_merge_mem_mid_g
+pat_merge_mem_mid_h: .ascii " = const "
+pat_merge_mem_mid_h_len = . - pat_merge_mem_mid_h
+pat_merge_mem_mid_i: .ascii " : t1\n  st v"
+pat_merge_mem_mid_i_len = . - pat_merge_mem_mid_i
+pat_merge_mem_mid_j: .ascii " v"
+pat_merge_mem_mid_j_len = . - pat_merge_mem_mid_j
+pat_merge_mem_mid_k: .ascii "\n  br b3\nb3:\n  v"
+pat_merge_mem_mid_k_len = . - pat_merge_mem_mid_k
+pat_merge_mem_mid_l: .ascii " = ld v"
+pat_merge_mem_mid_l_len = . - pat_merge_mem_mid_l
+pat_merge_mem_mid_m: .ascii " : t1\n  ret v"
+pat_merge_mem_mid_m_len = . - pat_merge_mem_mid_m
+pat_merge_mem_tail: .ascii "\n}\n"
+pat_merge_mem_tail_len = . - pat_merge_mem_tail
 pat_call_head: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v0 = arg 0 : t0\n  v1 = arg 1 : t0\n  v"
 pat_call_head_len = . - pat_call_head
 pat_call_head_alt: .ascii "fn f0 (t0,t0)->t0 {\nb0:\n  v1 = arg 0 : t0\n  v0 = arg 1 : t0\n  v"
@@ -980,6 +1010,14 @@ do_build:
     mov rsi, rbx
     call try_select_general_branch_const_select_kernel_code
     cmp rax, 1
+    jne .build_try_general_merge_mem_select
+    jmp .build_code_selected
+
+.build_try_general_merge_mem_select:
+    lea rdi, [rip+file_buf]
+    mov rsi, rbx
+    call try_select_general_merge_mem_select_kernel_code
+    cmp rax, 1
     jne .build_try_general_cbr_eq_select
     jmp .build_code_selected
 
@@ -1206,6 +1244,8 @@ do_build:
     cmp rax, 25
     je .build_dbg_map_case_single_full
     cmp rax, 26
+    je .build_dbg_map_case_three_5_16
+    cmp rax, 27
     je .build_dbg_map_case_three_5_16
     jmp .build_dbg_map_case_synth
 
@@ -1594,9 +1634,9 @@ do_imgcheck:
     mov rax, qword ptr [r8+r9+8]  # L0IX version
     cmp rax, 1
     jne fail_img
-    # L0IX kernel kind id must be within known bootstrap range [0,26]
+    # L0IX kernel kind id must be within known bootstrap range [0,27]
     mov rax, qword ptr [r8+r9+32]
-    cmp rax, 26
+    cmp rax, 27
     ja fail_img
     # L0IX code_size must match header code_size
     mov rax, qword ptr [r8+r9+40]
@@ -1695,7 +1735,7 @@ do_imgmeta:
     cmp rax, 1
     jne fail_img
     mov rax, qword ptr [r8+r9+32]  # kernel kind
-    cmp rax, 26
+    cmp rax, 27
     ja fail_img
     mov rax, qword ptr [r8+r9+40]  # debug code_size
     cmp rax, qword ptr [r8+56]
@@ -13054,6 +13094,563 @@ try_select_general_branch_const_select_kernel_code:
     mov r14, rdx
     mov r15, rcx
 .tsgbcs_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_merge_mem_select_kernel_code
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_merge_mem_select_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 96
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+pat_merge_mem_head]
+    mov rcx, pat_merge_mem_head_len
+    mov rdi, r12
+    mov rsi, r13
+    call find_substr_pos
+    cmp rax, -1
+    je .tsmms_no
+
+    mov r8, rax
+    add r8, pat_merge_mem_head_len      # arg id start
+    cmp r8, r13
+    jae .tsmms_no
+    mov r9, r8
+.tsmms_arg_vid_loop:
+    cmp r9, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmms_arg_vid_done
+    cmp al, '9'
+    ja .tsmms_arg_vid_done
+    inc r9
+    jmp .tsmms_arg_vid_loop
+.tsmms_arg_vid_done:
+    cmp r9, r8
+    je .tsmms_no
+    mov qword ptr [rsp+0], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+8], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_a_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_a]
+    mov rdx, pat_merge_mem_mid_a_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_a_len
+
+    # alloca value id
+    cmp r10, r13
+    jae .tsmms_no
+    mov r8, r10
+    mov r9, r8
+.tsmms_alloca_vid_loop:
+    cmp r9, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmms_alloca_vid_done
+    cmp al, '9'
+    ja .tsmms_alloca_vid_done
+    inc r9
+    jmp .tsmms_alloca_vid_loop
+.tsmms_alloca_vid_done:
+    cmp r9, r8
+    je .tsmms_no
+    mov qword ptr [rsp+16], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+24], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_b_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_b]
+    mov rdx, pat_merge_mem_mid_b_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_b_len
+
+    # cbr uses arg id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+8]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_c_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_c]
+    mov rdx, pat_merge_mem_mid_c_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_c_len
+
+    # const1 id
+    cmp r10, r13
+    jae .tsmms_no
+    mov r8, r10
+    mov r9, r8
+.tsmms_c1_vid_loop:
+    cmp r9, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmms_c1_vid_done
+    cmp al, '9'
+    ja .tsmms_c1_vid_done
+    inc r9
+    jmp .tsmms_c1_vid_loop
+.tsmms_c1_vid_done:
+    cmp r9, r8
+    je .tsmms_no
+    mov qword ptr [rsp+32], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+40], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_d_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_d]
+    mov rdx, pat_merge_mem_mid_d_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_d_len
+    cmp r10, r13
+    jae .tsmms_no
+
+    # const1 literal
+    xor r9, r9
+    mov al, byte ptr [r12+r10]
+    cmp al, '-'
+    jne .tsmms_c1_digits
+    mov r9, 1
+    inc r10
+    cmp r10, r13
+    jae .tsmms_no
+.tsmms_c1_digits:
+    mov r8, r10
+    xor rbx, rbx
+.tsmms_c1_loop:
+    cmp r10, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsmms_c1_done
+    cmp al, '9'
+    ja .tsmms_c1_done
+    imul rbx, rbx, 10
+    movzx rax, al
+    sub rax, '0'
+    add rbx, rax
+    inc r10
+    jmp .tsmms_c1_loop
+.tsmms_c1_done:
+    cmp r10, r8
+    je .tsmms_no
+    cmp r9, 1
+    jne .tsmms_c1_store
+    neg rbx
+.tsmms_c1_store:
+    mov qword ptr [rsp+48], rbx
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_e_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_e]
+    mov rdx, pat_merge_mem_mid_e_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_e_len
+
+    # st ptr id matches alloca id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+24]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_f_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_f]
+    mov rdx, pat_merge_mem_mid_f_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_f_len
+
+    # st value id matches const1 id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+32]
+    mov rdx, qword ptr [rsp+40]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+40]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_g_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_g]
+    mov rdx, pat_merge_mem_mid_g_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_g_len
+
+    # const2 id
+    cmp r10, r13
+    jae .tsmms_no
+    mov r8, r10
+    mov r9, r8
+.tsmms_c2_vid_loop:
+    cmp r9, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmms_c2_vid_done
+    cmp al, '9'
+    ja .tsmms_c2_vid_done
+    inc r9
+    jmp .tsmms_c2_vid_loop
+.tsmms_c2_vid_done:
+    cmp r9, r8
+    je .tsmms_no
+    mov qword ptr [rsp+56], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+64], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_h_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_h]
+    mov rdx, pat_merge_mem_mid_h_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_h_len
+    cmp r10, r13
+    jae .tsmms_no
+
+    # const2 literal
+    xor r9, r9
+    mov al, byte ptr [r12+r10]
+    cmp al, '-'
+    jne .tsmms_c2_digits
+    mov r9, 1
+    inc r10
+    cmp r10, r13
+    jae .tsmms_no
+.tsmms_c2_digits:
+    mov r8, r10
+    xor rbx, rbx
+.tsmms_c2_loop:
+    cmp r10, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r10]
+    cmp al, '0'
+    jb .tsmms_c2_done
+    cmp al, '9'
+    ja .tsmms_c2_done
+    imul rbx, rbx, 10
+    movzx rax, al
+    sub rax, '0'
+    add rbx, rax
+    inc r10
+    jmp .tsmms_c2_loop
+.tsmms_c2_done:
+    cmp r10, r8
+    je .tsmms_no
+    cmp r9, 1
+    jne .tsmms_c2_store
+    neg rbx
+.tsmms_c2_store:
+    mov qword ptr [rsp+72], rbx
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_i_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_i]
+    mov rdx, pat_merge_mem_mid_i_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_i_len
+
+    # st ptr id matches alloca id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+24]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_j_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_j]
+    mov rdx, pat_merge_mem_mid_j_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_j_len
+
+    # st value id matches const2 id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+56]
+    mov rdx, qword ptr [rsp+64]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+64]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_k_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_k]
+    mov rdx, pat_merge_mem_mid_k_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_k_len
+
+    # ld result id
+    cmp r10, r13
+    jae .tsmms_no
+    mov r8, r10
+    mov r9, r8
+.tsmms_ld_vid_loop:
+    cmp r9, r13
+    jae .tsmms_no
+    mov al, byte ptr [r12+r9]
+    cmp al, '0'
+    jb .tsmms_ld_vid_done
+    cmp al, '9'
+    ja .tsmms_ld_vid_done
+    inc r9
+    jmp .tsmms_ld_vid_loop
+.tsmms_ld_vid_done:
+    cmp r9, r8
+    je .tsmms_no
+    mov qword ptr [rsp+80], r8
+    mov rax, r9
+    sub rax, r8
+    mov qword ptr [rsp+88], rax
+    mov r10, r9
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_l_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_l]
+    mov rdx, pat_merge_mem_mid_l_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_l_len
+
+    # ld ptr id matches alloca id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+16]
+    mov rdx, qword ptr [rsp+24]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+24]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_mid_m_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_mid_m]
+    mov rdx, pat_merge_mem_mid_m_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, pat_merge_mem_mid_m_len
+
+    # ret id matches ld result id
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+80]
+    mov rdx, qword ptr [rsp+88]
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+    add r10, qword ptr [rsp+88]
+
+    mov rax, r13
+    sub rax, r10
+    cmp rax, pat_merge_mem_tail_len
+    jb .tsmms_no
+    mov rdi, r12
+    add rdi, r10
+    lea rsi, [rip+pat_merge_mem_tail]
+    mov rdx, pat_merge_mem_tail_len
+    call mem_eq
+    cmp rax, 1
+    jne .tsmms_no
+
+    # Emit deterministic branch-select payload (merge semantics lowered)
+    lea rdi, [rip+codegen_buf]
+    mov byte ptr [rdi+0], 0x48
+    mov byte ptr [rdi+1], 0x85
+    mov byte ptr [rdi+2], 0xff
+    mov byte ptr [rdi+3], 0x74
+    mov byte ptr [rdi+4], 0x0b
+    mov byte ptr [rdi+5], 0x48
+    mov byte ptr [rdi+6], 0xb8
+    mov rax, qword ptr [rsp+48]
+    mov qword ptr [rdi+7], rax
+    mov byte ptr [rdi+15], 0xc3
+    mov byte ptr [rdi+16], 0x48
+    mov byte ptr [rdi+17], 0xb8
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rdi+18], rax
+    mov byte ptr [rdi+26], 0xc3
+    lea r14, [rip+codegen_buf]
+    mov r15, 27
+    mov qword ptr [rip+build_kernel_kind], 27
+    mov rax, 1
+    jmp .tsmms_done
+
+.tsmms_no:
+    xor rax, rax
+.tsmms_done:
+    add rsp, 96
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsmms_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsmms_keep_out:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+# try_select_general_merge_mem_select_kernel_code
+# generalized pre-lowering normalization for merge memory-select kernel:
+# - removes canonical dead const value lines
+# - reuses merge memory-select selector on normalized text
+# rdi=src_ptr, rsi=src_len
+# out: rax=1 if selected and sets r14/r15 ; 0 otherwise
+try_select_general_merge_mem_select_kernel_code:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi
+    mov r13, rsi
+    lea rdx, [rip+codegen_buf]
+    mov rdi, r12
+    mov rsi, r13
+    call normalize_strip_const_value_lines
+    cmp rax, 0
+    je .tsgmms_no
+
+    lea rdi, [rip+codegen_buf]
+    mov rsi, rax
+    call try_select_merge_mem_select_kernel_code
+    cmp rax, 1
+    jne .tsgmms_no
+    mov rax, 1
+    jmp .tsgmms_done
+
+.tsgmms_no:
+    xor rax, rax
+.tsgmms_done:
+    pop rcx
+    pop rdx
+    cmp rax, 1
+    je .tsgmms_keep_out
+    mov r14, rdx
+    mov r15, rcx
+.tsgmms_keep_out:
     pop r13
     pop r12
     pop rbx
