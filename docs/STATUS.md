@@ -1217,4 +1217,6 @@ Last updated: 2026-03-02
   - `tests/docs_headings.sh`
 - I now treat documentation phase 2 as complete:
   - command failure examples, grammar/typing consolidation, prompt templates, and row-level coverage traceability are in place
+- I now treat documentation phase 3 as complete:
+  - index/task navigation, troubleshooting and cookbook docs, versioned snapshot policy, 30-minute learning path, and contract-reference consistency gating are in place
 - I use this file (`docs/STATUS.md`) as the quick project-progress dashboard.

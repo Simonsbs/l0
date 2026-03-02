@@ -36,6 +36,12 @@ if ! grep -q '^ok$' /tmp/l0_docs_headings.out; then
   exit 1
 fi
 
+bash "$ROOT/tests/docs_contract_refs.sh" "$ROOT" >/tmp/l0_docs_contract_refs.out
+if ! grep -q '^ok$' /tmp/l0_docs_contract_refs.out; then
+  echo "FAIL: docs contract refs gate did not report ok"
+  exit 1
+fi
+
 bash "$ROOT/tests/parser_fuzz_regress.sh" "$BIN" "$ROOT/tests/fuzz/parser_seeds" >/tmp/l0_m52_parser_fuzz.out
 if ! grep -q '^ok$' /tmp/l0_m52_parser_fuzz.out; then
   echo "FAIL: parser fuzz regression did not report ok"

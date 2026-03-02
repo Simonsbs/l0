@@ -78,6 +78,7 @@ I will keep documentation quality enforced in automation:
 
 - Phase 1 complete: dual-doc pipeline and sync gating are in place.
 - Phase 2 complete: command failure examples, opcode/type/error coverage matrix, consolidated grammar/typing page, docs lint gates, and LLM prompt pack are now added and test-gated.
+- Phase 3 complete: docs index/task navigation, troubleshooting + cookbook docs, versioned snapshot policy, 30-minute learning path, and contract-reference consistency gate are now added and test-gated.
 
 ## Done Definition
 

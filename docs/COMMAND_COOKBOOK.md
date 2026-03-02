@@ -1,0 +1,81 @@
+# L0 Command Cookbook
+
+I use this cookbook for copy/paste command recipes with expected outputs.
+
+## Recipe 1: Verify + Build + Run
+
+```sh
+./bin/l0c verify docs/examples/01_arithmetic_add_wrap.l0
+./bin/l0c build docs/examples/01_arithmetic_add_wrap.l0 /tmp/cook_add.img
+./bin/l0c run /tmp/cook_add.img 5 8
+```
+
+Expected output:
+- `verify`: `ok`
+- `build`: `ok`
+- `run`: `13`
+
+## Recipe 2: Build with Debug Side Artifacts
+
+```sh
+./bin/l0c build docs/examples/10_intrinsic_trace.l0 /tmp/cook_trace.img \
+  --debug-map /tmp/cook_trace.map \
+  --trace-schema /tmp/cook_trace.schema
+./bin/l0c mapcat /tmp/cook_trace.map
+./bin/l0c schemacat /tmp/cook_trace.schema
+```
+
+Expected output:
+- `build`: `ok`
+- `mapcat`: deterministic entry/range lines
+- `schemacat`: `version 1`, `record_size 16`, `fields 2`
+
+## Recipe 3: Decode Trace Records
+
+```sh
+./bin/l0c run /tmp/cook_trace.img 123 >/tmp/cook_trace.out 2>/tmp/cook_trace.bin
+./bin/l0c tracecat /tmp/cook_trace.bin
+./bin/l0c tracejoin /tmp/cook_trace.bin /tmp/cook_trace.map
+```
+
+Expected output:
+- `run`: `0`
+- `tracecat`: `id 1`, `val 123`
+- `tracejoin`: `id 1`, `val 123`, start/end range lines
+
+## Recipe 4: Emit ELF Object
+
+```sh
+./bin/l0c build-elf docs/examples/18_sysv_abi_sum6_kernel.l0 /tmp/cook_sum6.o
+```
+
+Expected output:
+- `ok`
+
+## Recipe 5: Intentional Failure Classification
+
+```sh
+./bin/l0c verify tests/invalid_order.l0
+```
+
+Expected class:
+- `error: invalid module shape or non-canonical input`
+
+## Recipe 6: Refresh Wiki Mirror
+
+```sh
+bash scripts/sync_wiki.sh
+bash scripts/sync_wiki.sh --check
+```
+
+Expected output:
+- both commands print `ok`
+
+## Recipe 7: Publish GitHub Wiki Mirror
+
+```sh
+bash scripts/publish_wiki_remote.sh
+```
+
+Expected output:
+- `ok` (requires GitHub wiki backend enabled)

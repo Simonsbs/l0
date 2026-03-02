@@ -394,7 +394,18 @@ bash tests/docs_headings.sh .
 Expected stable output:
 - `ok`
 
-## Workflow 26: Publish Wiki Mirror to GitHub Wiki
+## Workflow 26: Docs Contract-Reference Gate
+
+I use this when I want to enforce that every frozen contract doc is referenced by index/spec docs and mirrored into wiki mapping.
+
+```sh
+bash tests/docs_contract_refs.sh .
+```
+
+Expected stable output:
+- `ok`
+
+## Workflow 27: Publish Wiki Mirror to GitHub Wiki
 
 I use this when I want to publish my generated `wiki/` mirror to the remote GitHub Wiki repository.
 

@@ -187,12 +187,17 @@ Current bootstrap status:
 - Canonical writing guide: `docs/HOW_TO_WRITE_L0.md`
 - Workflow reference: `docs/WORKFLOWS.md`
 - Documentation roadmap: `docs/DOCUMENTATION_ROADMAP.md`
+- Documentation index: `docs/INDEX.md`
 - Command reference: `docs/COMMAND_REFERENCE.md`
+- Command cookbook: `docs/COMMAND_COOKBOOK.md`
 - Examples catalog: `docs/EXAMPLES_CATALOG.md`
 - Docs coverage matrix: `docs/COVERAGE_MATRIX.md`
+- Troubleshooting guide: `docs/TROUBLESHOOTING.md`
 - LLM quick reference: `docs/LLM_QUICK_REFERENCE.md`
 - Grammar and typing reference: `docs/GRAMMAR_AND_TYPING.md`
 - LLM prompt pack: `docs/LLM_PROMPT_PACK.md`
+- Versioned docs policy: `docs/VERSIONED_DOCS.md`
+- Learning path (30 min): `docs/LEARNING_PATH_30_MIN.md`
 - Runtime intrinsic contracts: `docs/INTRINSIC_CONTRACTS.md`
 - Debug-map schema contracts: `docs/DEBUG_MAP_SCHEMA.md`
 - Trace schema contracts: `docs/TRACE_SCHEMA.md`
@@ -227,6 +232,7 @@ Current bootstrap status:
 - Docs coverage harness: `tests/docs_coverage.sh`
 - Docs links harness: `tests/docs_links.sh`
 - Docs headings harness: `tests/docs_headings.sh`
+- Docs contract refs harness: `tests/docs_contract_refs.sh`
 - Verifier matrix harness: `tests/verifier_matrix.sh`
 - Wiki sync script: `scripts/sync_wiki.sh`
 - Wiki remote publish script: `scripts/publish_wiki_remote.sh` (requires GitHub Wiki enabled)

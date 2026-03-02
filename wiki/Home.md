@@ -48,3 +48,8 @@ I use this wiki as the readable entry point for my canonical documentation in `d
 ### Other
 - [Grammar-and-Typing](Grammar-and-Typing)
 - [LLM-Prompt-Pack](LLM-Prompt-Pack)
+- [Index](Index)
+- [Troubleshooting](Troubleshooting)
+- [Command-Cookbook](Command-Cookbook)
+- [Versioned-Docs](Versioned-Docs)
+- [Learning-Path-30-Min](Learning-Path-30-Min)

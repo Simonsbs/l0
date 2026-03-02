@@ -1,0 +1,70 @@
+# L0 Documentation Index
+
+I use this as the top-level documentation entry point for both people and LLMs.
+
+## Start Here
+
+- Learn what L0 is: `docs/LANGUAGE.md`
+- Learn how to write valid source quickly: `docs/HOW_TO_WRITE_L0.md`
+- Run first example end-to-end: `docs/WORKFLOWS.md` (Workflow 1)
+
+## Task-Based Navigation
+
+### I want to learn the language
+
+- `docs/LANGUAGE.md`
+- `docs/GRAMMAR_AND_TYPING.md`
+- `docs/INSTRUCTION_SET.md`
+
+### I want command usage and practical recipes
+
+- `docs/COMMAND_REFERENCE.md`
+- `docs/COMMAND_COOKBOOK.md`
+- `docs/WORKFLOWS.md`
+
+### I want examples and test fixtures
+
+- `docs/EXAMPLES_CATALOG.md`
+- `docs/examples/*.l0`
+
+### I want debugging and error handling
+
+- `docs/ERROR_MODEL.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/DEBUG_MAP_SCHEMA.md`
+- `docs/TRACE_SCHEMA.md`
+
+### I want release and compatibility policy
+
+- `docs/RELEASE_PIPELINE.md`
+- `docs/COMPATIBILITY_POLICY.md`
+- `docs/VERSIONED_DOCS.md`
+- `docs/PRODUCTION_READINESS.md`
+
+### I want LLM-oriented reference material
+
+- `docs/LLM_QUICK_REFERENCE.md`
+- `docs/LLM_PROMPT_PACK.md`
+- `docs/COVERAGE_MATRIX.md`
+
+## Frozen v1 Contract Set
+
+- `docs/INTRINSIC_CONTRACTS.md` (`intrinsics.v1`)
+- `docs/DEBUG_MAP_SCHEMA.md` (`debugmap.v1`)
+- `docs/TRACE_SCHEMA.md` (`traceschema.v1`)
+- `docs/DETERMINISTIC_BUILDS.md` (`detbuild.v1`)
+- `docs/DIFFERENTIAL_TESTING.md` (`diffsem.v1`)
+- `docs/FUZZ_STRESS.md` (`fuzzstress.v1`)
+- `docs/PERFORMANCE_BASELINES.md` (`perfbase.v1`)
+- `docs/ERROR_MODEL.md` (`errmodel.v1`)
+- `docs/RELEASE_PIPELINE.md` (`relpipe.v1`)
+- `docs/COMPATIBILITY_POLICY.md` (`compat.v1`)
+- `docs/PRODUCTION_READINESS.md` (`prodready.v1`)
+
+## Quality Gates for Docs
+
+- `tests/wiki_sync.sh`
+- `tests/docs_coverage.sh`
+- `tests/docs_links.sh`
+- `tests/docs_headings.sh`
+- `tests/docs_contract_refs.sh`
