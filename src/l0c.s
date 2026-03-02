@@ -7474,6 +7474,7 @@ try_select_mem_gep_roundtrip_kernel_code:
     push r13
     push r14
     push r15
+    sub rsp, 16
 
     mov r12, rdi
     mov r13, rsi
@@ -7506,6 +7507,8 @@ try_select_mem_gep_roundtrip_kernel_code:
     mov rbx, r8
     mov r11, r9
     sub r11, r8                      # arg-id len
+    mov qword ptr [rsp+0], r8
+    mov qword ptr [rsp+8], r11
 
     mov r10, r9
     mov rax, r13
@@ -7684,6 +7687,8 @@ try_select_mem_gep_roundtrip_kernel_code:
     mov rbx, r8
     mov r11, r9
     sub r11, r8
+    mov qword ptr [rsp+0], r8
+    mov qword ptr [rsp+8], r11
     mov r10, r9
     mov rax, r13
     sub rax, r10
@@ -7873,8 +7878,21 @@ try_select_mem_gep_roundtrip_kernel_code:
     mov rdx, r11
     call mem_eq
     cmp rax, 1
+    je .tsgr_ret_id_ld_ok
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
     jne .tsgr_no
+    mov rax, qword ptr [rsp+8]
+    add r10, rax
+    jmp .tsgr_ret_id_done
+.tsgr_ret_id_ld_ok:
     add r10, r11
+.tsgr_ret_id_done:
 
     mov rax, r13
     sub rax, r10
@@ -7899,6 +7917,7 @@ try_select_mem_gep_roundtrip_kernel_code:
 .tsgr_no:
     xor rax, rax
 .tsgr_done:
+    add rsp, 16
     pop rcx
     pop rdx
     cmp rax, 1
@@ -7920,6 +7939,7 @@ try_select_mem_roundtrip_kernel_code:
     push r13
     push r14
     push r15
+    sub rsp, 16
 
     mov r12, rdi
     mov r13, rsi
@@ -7952,6 +7972,8 @@ try_select_mem_roundtrip_kernel_code:
     mov rbx, r8
     mov r11, r9
     sub r11, r8                      # arg-id len
+    mov qword ptr [rsp+0], r8
+    mov qword ptr [rsp+8], r11
 
     mov r10, r9
     mov rax, r13
@@ -8130,6 +8152,8 @@ try_select_mem_roundtrip_kernel_code:
     mov rbx, r8
     mov r11, r9
     sub r11, r8
+    mov qword ptr [rsp+0], r8
+    mov qword ptr [rsp+8], r11
     mov r10, r9
     mov rax, r13
     sub rax, r10
@@ -8257,8 +8281,21 @@ try_select_mem_roundtrip_kernel_code:
     mov rdx, r11
     call mem_eq
     cmp rax, 1
+    je .tsmr_ret_id_ld_ok
+    mov rdi, r12
+    add rdi, r10
+    mov rsi, r12
+    add rsi, qword ptr [rsp+0]
+    mov rdx, qword ptr [rsp+8]
+    call mem_eq
+    cmp rax, 1
     jne .tsmr_no
+    mov rax, qword ptr [rsp+8]
+    add r10, rax
+    jmp .tsmr_ret_id_done
+.tsmr_ret_id_ld_ok:
     add r10, r11
+.tsmr_ret_id_done:
 
     mov rax, r13
     sub rax, r10
@@ -8281,6 +8318,7 @@ try_select_mem_roundtrip_kernel_code:
 .tsmr_no:
     xor rax, rax
 .tsmr_done:
+    add rsp, 16
     pop rcx
     pop rdx
     cmp rax, 1

@@ -48,12 +48,14 @@ Current bootstrap status:
   - memory-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/load/return dataflow when each use references matching defs
   - memory-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - memory-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
-  - I keep mismatched memory-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
+  - memory-roundtrip lowering now also accepts arg-return forms (`ret vArg`) when the stored value is the same arg (`st vAlloca vArg`)
+  - I keep memory-roundtrip return-path mismatches outside current lowering when return id is neither the load id nor the stored arg id
   - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld` + `ret`)
   - memory-gep-roundtrip lowering now accepts canonical nonzero ids across arg/alloca/store/gep/load/return dataflow when each use references matching defs
   - memory-gep-roundtrip lowering now accepts canonical nonzero `alloca` element counts (not only `1`) and keeps `alloca ... , 0` intentionally unlowered
   - memory-gep-roundtrip lowering now accepts either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
-  - I keep mismatched memory-gep-roundtrip load/return-id shapes outside current lowering and regression-test them as intentionally unlowered
+  - memory-gep-roundtrip lowering now also accepts arg-return forms (`ret vArg`) when the stored value is the same arg (`st vAlloca vArg`)
+  - I keep memory-gep-roundtrip return-path mismatches outside current lowering when return id is neither the load id nor the stored arg id
   - canonical two-function call kernels (`f0` calls `f1` where `f1` is `add.wrap`, `sub.wrap`, `mul.wrap`, `and`, `or`, `xor`, `shl`, or `shr`)
   - for call->commutative targets (`add.wrap`, `mul.wrap`, `and`, `or`, `xor`), I also lower swapped call-arg form in `f0` (`call f1 v1 v0`)
   - call-kernel lowering now accepts either canonical arg-definition order in `f0` (`arg 0` then `arg 1`, or `arg 1` then `arg 0`)
@@ -119,7 +121,8 @@ Current bootstrap status:
 - I now consider my M40 non-commutative shift-call generalization milestone complete: I extended `call->shl` and `call->shr` lowering to canonical swapped call-arg forms (`call f1 v1 v0`) with deterministic reverse-shift payloads while preserving existing structural mismatch guardrails.
 - I now consider my M41 non-returning-exit generalization milestone complete: I lower canonical `exit` shapes when arg-to-exit mapping is valid even if trailing return-path lines are unreachable, including dead-const variants.
 - I now consider my M42 dead-compare normalization milestone complete: I extended generalized normalization to strip dead `icmp.eq` value lines and now lower compare/select shapes that include extra unused compare defs.
-- I track full non-template multi-block backend/codegen completion as my next milestone (M43).
+- I now consider my M43 memory arg-return generalization milestone complete: I lower canonical memory roundtrip and memory-gep roundtrip shapes when `ret` returns the stored arg id instead of the load id.
+- I track my next milestone as M44: `f0` multi-block compare/select lowering with canonical `b0` compare+`cbr` and `b1`/`b2` return blocks plus one extra side-effect-free value line per block.
 - I can run `l0c run <file.l0img> [u64_a] [u64_b]` to execute emitted code in an executable mmap region and print the returned `u64` value.
 - I enforce function/block structural rules in `fns`.
 - I enforce contiguous canonical function ordering (`f0`, `f1`, `f2`, ...).

@@ -535,14 +535,52 @@ Last updated: 2026-03-01
   - preserved existing compare/select guardrails for branch-return/dataflow mismatch families
   - validated with full-suite pass
 
-### M43: Non-template backend and full general codegen completion
+### M43: Memory Arg-Return Generalization
+
+- Status: complete
+- Scope completed:
+  - extended `mem_roundtrip` selector lowering to accept canonical arg-return form (`ret vArg`) when `st vAlloca vArg` is present
+  - extended `mem_gep_roundtrip` selector lowering to accept canonical arg-return form (`ret vArg`) when `st vAlloca vArg` is present
+  - preserved existing kernel kinds (`14` for memory roundtrip, `19` for memory-gep roundtrip)
+  - updated regression assertions for previously intentional unlowered fixtures:
+    - `valid_mem_roundtrip_arg_alloca_order_swapped_unlowered.l0`
+    - `valid_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.l0`
+  - converted those assertions from fallback checks (`kernel_kind 0`, `code_size 1`) to lowered checks (`kernel_kind 14/19`) plus deterministic runtime output checks
+  - validated with full-suite pass
+
+### M44: Compare/Select Multi-Block Tolerant Normalization
 
 - Status: planned
-- Planned:
-  - lower general multi-block SSA modules beyond canonical kernel templates
-  - integrate a generalized instruction-selection pipeline instead of template matching
-  - integrate register allocation across generalized function bodies
-  - widen type/memory ABI coverage toward the full MVP language spec
+- Planned (measurable):
+  - expand compare/select normalization to tolerate one extra dead pure value line (`icmp.eq` or `const`) in each block of canonical `icmp.eq + cbr` modules
+  - keep `kernel_kind 12` stable
+  - add at least 3 new regression fixtures:
+    - multi-block with extra dead line in `b0`
+    - multi-block with extra dead line in `b1`/`b2`
+    - one intentional mismatch guardrail case that must remain fallback
+  - acceptance: full suite pass and all new fixtures assert exact kernel kind and runtime behavior
+
+### M45: Call-Kernel Dead Pure-Line Tolerance
+
+- Status: planned
+- Planned (measurable):
+  - expand call-kernel normalization to tolerate extra dead pure value lines around `call f1 ...` in `f0` and around op-result lines in `f1`
+  - preserve existing non-commutative `sub.wrap` guardrails and kernel kinds
+  - add at least 4 new regression fixtures:
+    - lowered call->commutative with dead pure lines in `f0`
+    - lowered call->commutative with dead pure lines in `f1`
+    - lowered call->non-commutative supported mapping with dead pure lines
+    - intentional mismatch/guardrail fallback case
+  - acceptance: full suite pass and deterministic lowered/fallback assertions for all new fixtures
+
+### M46: Intrinsic Path Tolerant Normalization
+
+- Status: planned
+- Planned (measurable):
+  - expand intrinsic normalization (`malloc`, `free`, `write`, `trace`, `exit`) to ignore extra dead pure value lines that do not affect intrinsic operands
+  - preserve guardrail fallbacks for `write` alloca-zero cases and unrelated mismatch families
+  - add at least 5 new regression fixtures (one per intrinsic family) plus one guardrail fixture
+  - acceptance: full suite pass, stable kernel kinds for lowered cases, and explicit fallback assertions for guardrail cases
 
 ## Documentation status
 

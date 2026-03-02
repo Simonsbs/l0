@@ -2674,9 +2674,13 @@ if ! grep -q '^ok$' /tmp/l0_build_mem_roundtrip_arg_alloca_order_swapped_unlower
 fi
 mem_roundtrip_arg_alloca_order_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
 mem_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((mem_roundtrip_arg_alloca_order_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_mem_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
-mem_roundtrip_arg_alloca_order_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_mem_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
-if [ "$mem_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind" != "0" ] || [ "$mem_roundtrip_arg_alloca_order_swapped_unlowered_code_size" != "1" ]; then
-  echo "FAIL: mem roundtrip arg-alloca-order-swapped unlowered unexpectedly lowered"
+if [ "$mem_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind" != "14" ]; then
+  echo "FAIL: mem roundtrip arg-alloca-order-swapped arg-ret debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_roundtrip_arg_alloca_order_swapped_unlowered.img 42 >/tmp/l0_run_mem_roundtrip_arg_alloca_order_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_roundtrip_arg_alloca_order_swapped_unlowered.out)" != "42" ]; then
+  echo "FAIL: run mem roundtrip arg-alloca-order-swapped arg-ret result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_mem_gep_roundtrip.l0" /tmp/l0_test_mem_gep_roundtrip.img >/tmp/l0_build_mem_gep_roundtrip.out
@@ -2790,9 +2794,13 @@ if ! grep -q '^ok$' /tmp/l0_build_mem_gep_roundtrip_arg_alloca_order_swapped_unl
 fi
 mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_dbg_off=$(od -An -t u8 -j 64 -N 8 /tmp/l0_test_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
 mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind=$(od -An -t u8 -j "$((mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_dbg_off + 32))" -N 8 /tmp/l0_test_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
-mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_code_size=$(od -An -t u8 -j 56 -N 8 /tmp/l0_test_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.img | tr -d ' ')
-if [ "$mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind" != "0" ] || [ "$mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_code_size" != "1" ]; then
-  echo "FAIL: mem gep roundtrip arg-alloca-order-swapped unlowered unexpectedly lowered"
+if [ "$mem_gep_roundtrip_arg_alloca_order_swapped_unlowered_kernel_kind" != "19" ]; then
+  echo "FAIL: mem gep roundtrip arg-alloca-order-swapped arg-ret debug kernel kind id"
+  exit 1
+fi
+"$BIN" run /tmp/l0_test_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.img 42 >/tmp/l0_run_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.out
+if [ "$(tr -d '\n' < /tmp/l0_run_mem_gep_roundtrip_arg_alloca_order_swapped_unlowered.out)" != "42" ]; then
+  echo "FAIL: run mem gep roundtrip arg-alloca-order-swapped arg-ret result"
   exit 1
 fi
 "$BIN" build "$ROOT/tests/valid_malloc.l0" /tmp/l0_test_malloc.img >/tmp/l0_build_malloc.out

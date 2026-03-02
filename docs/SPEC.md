@@ -130,6 +130,7 @@ I also enforce a structural subset inside `fns`:
     - `ret v2`
   - before memory-roundtrip kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - for memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/ld/ret when all uses reference the corresponding defs
+  - for memory roundtrip, I also accept canonical arg-return form (`ret vArg`) when the stored value is that same arg
   - for memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical `gep` memory roundtrip kernel shape:
     - `v1 = alloca t0, N : t1` (bootstrap selector currently requires `N > 0`)
@@ -139,6 +140,7 @@ I also enforce a structural subset inside `fns`:
     - `ret v3`
   - before `gep` memory-roundtrip kernel selection, I normalize by stripping canonical dead `const` value lines so interleaved dead const defs do not block lowering
   - for `gep` memory roundtrip, I also accept canonical nonzero ids across arg/alloca/st/gep/ld/ret when all uses reference the corresponding defs
+  - for `gep` memory roundtrip, I also accept canonical arg-return form (`ret vArg`) when the stored value is that same arg
   - for `gep` memory roundtrip, I also accept either canonical arg/alloca definition order in `f0` (`arg` then `alloca`, or `alloca` then `arg`)
   - I lower canonical two-function call kernel shapes:
     - `f0` computes args and calls `f1`

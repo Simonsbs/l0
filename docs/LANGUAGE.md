@@ -280,11 +280,13 @@ Bootstrap build output currently also includes a compact 64-byte debug semantic 
     - canonical memory roundtrip kernel (`alloca` + `st` + `ld`)
     - before memory-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/ld/ret when ids/dataflow match
+    - memory-roundtrip kernel also accepts canonical arg-return form (`ret vArg`) when the stored value is that same arg
     - memory-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - memory-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical `gep` memory roundtrip kernel (`alloca` + `st` + `gep` + `ld`)
     - before memory-gep-roundtrip kernel selection, I run the same dead-const normalization pass, so canonical interleaved dead `const` defs do not block lowering
     - memory-gep-roundtrip kernel also accepts canonical nonzero ids across arg/alloca/st/gep/ld/ret when ids/dataflow match
+    - memory-gep-roundtrip kernel also accepts canonical arg-return form (`ret vArg`) when the stored value is that same arg
     - memory-gep-roundtrip kernel also accepts canonical nonzero `alloca` element counts (`alloca t0, N`, `N > 0`)
     - memory-gep-roundtrip kernel also accepts either canonical arg/alloca definition order (`arg` then `alloca`, or `alloca` then `arg`)
     - canonical intrinsic kernels (`malloc` syscall-backed allocator, `free` no-op, `exit` syscall, `write` syscall; canonical newline test returns `0`, `trace` currently lowers to fixed 16-byte binary stderr emission)
