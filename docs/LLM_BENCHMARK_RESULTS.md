@@ -2,7 +2,7 @@
 
 I generated this report with `tests/llm_usability_bench.sh`.
 
-- generated_utc: `2026-05-11T05:05:44Z`
+- generated_utc: `2026-05-12T04:55:43Z`
 - mode: `reference`
 - max_attempts: `1`
 - total_tasks: `6`
