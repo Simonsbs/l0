@@ -2,9 +2,9 @@
 
 I generated this snapshot automatically with `tests/benchmark_compare.sh`.
 
-- generated_utc: `2026-05-15T04:36:21Z`
-- host: `runnervmeorf1`
-- kernel: `Linux 6.17.0-1010-azure x86_64`
+- generated_utc: `2026-05-16T04:24:26Z`
+- host: `runnervmrw5os`
+- kernel: `Linux 6.17.0-1013-azure x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
 
@@ -20,8 +20,8 @@ This is an operational comparison, not a language-runtime microbenchmark.
 
 | Workload | L0 (`l0c`) ops/s | GCC C ops/s |
 |---|---:|---:|
-| Build minimal add artifact | 1550 | 25 |
-| Run minimal add artifact/program | 2016 | 1230 |
+| Build minimal add artifact | 1626 | 26 |
+| Run minimal add artifact/program | 2166 | 1333 |
 
 ## Notes
 
