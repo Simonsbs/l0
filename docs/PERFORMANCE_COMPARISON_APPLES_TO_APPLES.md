@@ -2,8 +2,8 @@
 
 I generated this snapshot automatically with `tests/benchmark_apples_to_apples.sh`.
 
-- generated_utc: `2026-06-18T04:51:44Z`
-- host: `runnervm1li68`
+- generated_utc: `2026-06-19T04:52:13Z`
+- host: `runnervm7b5n9`
 - kernel: `Linux 6.17.0-1018-azure x86_64`
 - l0c: `./bin/l0c`
 - gcc: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
@@ -32,22 +32,22 @@ I compare multiple equivalent `f0(uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,u
 
 | Kernel | L0 fixture | Build ops/s L0 (median) | Build ops/s GCC (median) | Build ratio L0/GCC | Runtime Mops/s L0 (median ± CI95) | Runtime Mops/s GCC (median ± CI95) | Runtime ratio L0/GCC | CI95% L0 | Stability |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| add.wrap (2-arg) | `tests/valid_add_v7.l0` | 792.0000 | 62.0000 | 12.7742 | 426.0744 ± 0.5172 | 426.5024 ± 1.2054 | 0.9990 | 0.12% | ok |
-| sub.wrap (2-arg) | `tests/valid_sub.l0` | 761.0000 | 72.0000 | 10.5694 | 425.4525 ± 0.3081 | 426.0279 ± 0.5417 | 0.9986 | 0.07% | ok |
-| mul.wrap (2-arg) | `tests/valid_mul.l0` | 769.0000 | 73.0000 | 10.5342 | 426.0837 ± 0.7435 | 426.2046 ± 0.7995 | 0.9997 | 0.17% | ok |
-| and (2-arg) | `tests/valid_and.l0` | 769.0000 | 72.0000 | 10.6806 | 427.4358 ± 0.7493 | 426.1116 ± 1.7241 | 1.0031 | 0.18% | ok |
-| xor (2-arg) | `tests/valid_xor.l0` | 761.0000 | 73.0000 | 10.4247 | 427.5668 ± 0.7856 | 427.7728 ± 0.5455 | 0.9995 | 0.18% | ok |
-| cbr select (eq ? a : b) | `tests/valid_cbr_eq_select_v7.l0` | 754.0000 | 73.0000 | 10.3288 | 424.9342 ± 1.0521 | 424.9434 ± 1.4842 | 1.0000 | 0.25% | ok |
-| memory roundtrip | `tests/valid_mem_roundtrip_v7.l0` | 776.0000 | 74.0000 | 10.4865 | 427.5574 ± 0.1018 | 427.7072 ± 0.8745 | 0.9996 | 0.02% | ok |
-| call add (f0->f1) | `tests/valid_call_add_v7_lowered.l0` | 769.0000 | 73.0000 | 10.5342 | 426.5396 ± 0.8828 | 428.1010 ± 0.5469 | 0.9964 | 0.21% | ok |
-| sum6 sysv | `tests/valid_sysv_abi_sum6_lowered.l0` | 747.0000 | 71.0000 | 10.5211 | 426.2325 ± 0.5073 | 425.2488 ± 1.1142 | 1.0023 | 0.12% | ok |
+| add.wrap (2-arg) | `tests/valid_add_v7.l0` | 747.0000 | 70.0000 | 10.6714 | 423.0748 ± 3.5611 | 423.0657 ± 0.6964 | 1.0000 | 0.84% | ok |
+| sub.wrap (2-arg) | `tests/valid_sub.l0` | 740.0000 | 72.0000 | 10.2778 | 423.9841 ± 0.8402 | 424.0117 ± 0.7054 | 0.9999 | 0.20% | ok |
+| mul.wrap (2-arg) | `tests/valid_mul.l0` | 740.0000 | 71.0000 | 10.4225 | 422.2790 ± 0.6782 | 423.9104 ± 0.3150 | 0.9962 | 0.16% | ok |
+| and (2-arg) | `tests/valid_and.l0` | 727.0000 | 70.0000 | 10.3857 | 423.4693 ± 0.6938 | 423.5427 ± 0.2705 | 0.9998 | 0.16% | ok |
+| xor (2-arg) | `tests/valid_xor.l0` | 740.0000 | 71.0000 | 10.4225 | 423.4968 ± 0.0884 | 424.4263 ± 0.6682 | 0.9978 | 0.02% | ok |
+| cbr select (eq ? a : b) | `tests/valid_cbr_eq_select_v7.l0` | 740.0000 | 72.0000 | 10.2778 | 422.7635 ± 0.3742 | 423.5611 ± 0.7553 | 0.9981 | 0.09% | ok |
+| memory roundtrip | `tests/valid_mem_roundtrip_v7.l0` | 733.0000 | 72.0000 | 10.1806 | 422.6903 ± 1.2354 | 423.3408 ± 0.4527 | 0.9985 | 0.29% | ok |
+| call add (f0->f1) | `tests/valid_call_add_v7_lowered.l0` | 747.0000 | 71.0000 | 10.5211 | 424.2235 ± 0.4770 | 424.4079 ± 0.3191 | 0.9996 | 0.11% | ok |
+| sum6 sysv | `tests/valid_sysv_abi_sum6_lowered.l0` | 740.0000 | 70.0000 | 10.5714 | 424.1314 ± 1.2445 | 423.8185 ± 1.3237 | 1.0007 | 0.29% | ok |
 
 ## Aggregate
 
 | Metric | Value |
 |---|---:|
-| Geometric mean build ratio (L0/GCC) | 10.7399 |
-| Geometric mean runtime ratio (L0/GCC) | 0.9998 |
+| Geometric mean build ratio (L0/GCC) | 10.4135 |
+| Geometric mean runtime ratio (L0/GCC) | 0.9990 |
 | Kernels above runtime CI95 warning threshold | 0 |
 
 ## Interpretation
